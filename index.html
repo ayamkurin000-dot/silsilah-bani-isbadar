@@ -1892,6 +1892,14 @@
         const modal = document.getElementById('photo-lightbox-modal');
         if (modal) modal.style.display = 'none';
     }
+    // Klik pada avatar pesan chat (foto profil) -> buka lightbox perbesar foto
+    document.addEventListener('click', function(e) {
+        const avatar = e.target.closest ? e.target.closest('.avatar-clickable') : null;
+        if (!avatar) return;
+        const img = avatar.querySelector('img');
+        if (!img || !img.src) return;
+        openPhotoLightbox(img.src, avatar.getAttribute('data-avatar-name') || '');
+    });
 
     function escapeHtml(s) {
         return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -2452,16 +2460,14 @@
                     ${renderAvatarHtml(m.name, m.email, getEffectivePhoto(m.email, m.photoUrl))}
                     <div style="flex:1; min-width:0;">
                         <div class="msg-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:6px;">
-                            <span style="display:flex; align-items:baseline; gap:6px; min-width:0; flex:1; overflow:hidden;">
-                                <span class="msg-name" style="font-weight:800; color:#0f172a; font-size:0.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%;">${escapeHtml(m.name)}</span>
-                                <span class="msg-time-relative" data-ts="${m.ts}" title="${formatChatTime(m.ts)}" style="font-size:0.62rem; color:#94a3b8; font-weight:600; white-space:nowrap; flex-shrink:0;">${formatRelativeTime(m.ts)}</span>
-                            </span>
+                            <span class="msg-name" style="font-weight:800; color:#0f172a; font-size:0.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%;">${escapeHtml(m.name)}</span>
                             <span class="chat-bani-badge" style="background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:20px; font-size:0.65rem; font-weight:800; flex-shrink:0;">${escapeHtml(m.bani)}</span>
                         </div>
                         <div class="msg-text" style="color:#334155; font-size:0.82rem; line-height:1.4; white-space:pre-wrap; word-break:break-word;">${escapeHtml(m.text)}</div>${m.image ? `<div style="margin-top:8px;"><img src="${m.image}" style="max-width:220px; max-height:220px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;" onclick="window.open(this.src, '_blank')"><div style="font-size:0.6rem; color:#64748b; margin-top:2px;">📎 ${escapeHtml(m.fileName||'file')}</div></div>` : ''}
-                        <div class="msg-actions" style="margin-top:6px; display:flex; gap:10px;">
+                        <div class="msg-actions" style="margin-top:6px; display:flex; justify-content:flex-end; align-items:center; gap:10px;">
                             <button onclick="replyMessage('${m.id}')" style="background:none; border:none; font-size:0.68rem; font-weight:700; color:#3b82f6; cursor:pointer;">↩️ Balas</button>
                             ${(isMe||isAdmin)?`<button onclick="deleteMessage('${m.id}')" style="background:none; border:none; font-size:0.68rem; font-weight:700; color:${isAdmin && !isMe ? '#7c3aed' : '#dc2626'}; cursor:pointer;">${isAdmin && !isMe ? '🛡️ Hapus' : '🗑️ Hapus'}</button>`:''}
+                            <span class="msg-time-relative" data-ts="${m.ts}" title="${formatChatTime(m.ts)}" style="font-size:0.62rem; color:#94a3b8; font-weight:600; white-space:nowrap; margin-left:auto;">${formatRelativeTime(m.ts)}</span>
                         </div>
                     </div>
                 </div>
