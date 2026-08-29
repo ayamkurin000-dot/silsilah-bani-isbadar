@@ -346,6 +346,9 @@
             stroke: #15803d;
             stroke-width: 3.5px;
         }
+        .node-farath .node-shape {
+            fill: #ffffff;
+        }
         .node-founder text.name-life {
             font-size: 18px;
             font-weight: 900;
@@ -994,6 +997,7 @@
             .attr('class', d => {
                 let cls = `node node-${d.data.type || 'gen3'}`;
                 if (d.data.name === 'ISBADAR bin BURNAWI') cls += ' node-founder';
+                if (d.data.name && d.data.name.toUpperCase().includes('FARATH')) cls += ' node-farath';
                 return cls;
             })
             .attr("transform", d => `translate(${source.y0},${source.x0})`)
