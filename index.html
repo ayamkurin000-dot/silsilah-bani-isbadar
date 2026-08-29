@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silsilah Interaktif - BANI ISBADAR</title>
+    <script src="https://d3js.org/d3.v7.min.js">
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            overflow: hidden;
+            background-color: #f8fafc;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%2394a3b8' stroke-width='1' opacity='0.16'%3E%3Ccircle cx='30' cy='30' r='16'/%3E%3Ccircle cx='90' cy='30' r='16'/%3E%3Ccircle cx='30' cy='90' r='16'/%3E%3Ccircle cx='90' cy='90' r='16'/%3E%3Ccircle cx='60' cy='60' r='16'/%3E%3Ccircle cx='30' cy='30' r='6'/%3E%3Ccircle cx='90' cy='30' r='6'/%3E%3Ccircle cx='30' cy='90' r='6'/%3E%3Ccircle cx='90' cy='90' r='6'/%3E%3Ccircle cx='60' cy='60' r='6'/%3E%3Cpath d='M30 14 L34 30 L30 46 L26 30 Z'/%3E%3Cpath d='M90 14 L94 30 L90 46 L86 30 Z'/%3E%3Cpath d='M30 74 L34 90 L30 106 L26 90 Z'/%3E%3Cpath d='M90 74 L94 90 L90 106 L86 90 Z'/%3E%3Cpath d='M60 44 L64 60 L60 76 L56 60 Z'/%3E%3C/g%3E%3C/svg%3E");
+            background-repeat: repeat;
+            background-size: 120px 120px;
+            background-attachment: fixed;
+        }
+        #header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            padding: 14px 24px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        #header h1 {
+            font-size: 1.25rem;
+            color: #0f172a;
+            font-weight: 700;
+        }
+        #header p {
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        .controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        .btn:disabled,
+        .btn[disabled] {
+            background: #cbd5e1;
+            color: #94a3b8;
+            cursor: not-allowed;
+        }
+        .btn:disabled:hover,
+        .btn[disabled]:hover {
+            background: #cbd5e1;
+        }
+        .controls .btn {
+            font-size: 0.7rem;
+            padding: 5px 10px;
+        }
+        #search-container {
+            position: relative;
+            flex: 1 1 auto;
+            max-width: 300px;
+            min-width: 150px;
+        }
+        #search-input {
+            width: 100%;
+            padding: 7px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            font-size: 0.7rem;
+            outline: none;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        #search-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        #search-results {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 500;
+            display: none;
+        }
+        #search-results.active {
+            display: block;
+        }
+        .search-result-item {
+            padding: 9px 14px;
+            font-size: 0.85rem;
+            color: #1e293b;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background 0.15s ease;
+        }
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+        .search-result-item:hover,
+        .search-result-item.kbd-active {
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+        .search-no-result {
+            padding: 9px 14px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+        @media (max-width: 640px) {
+            #header {
+                padding: 10px 12px;
+            }
+            #header h1 {
+                font-size: 1rem;
+            }
+            #header p {
+                font-size: 0.6rem;
+                white-space: nowrap;
+                letter-spacing: -0.1px;
+            }
+            #search-container {
+                max-width: none;
+                width: 100%;
+                flex-basis: 100%;
+                order: 3;
+            }
+            .controls .btn {
+                font-size: 0.6rem;
+                padding: 4px 7px;
+            }
+            #search-input {
+                font-size: 0.6rem;
+            }
+        }
+        #chart-container {
+            width: 100vw;
+            height: 100vh;
+            padding-top: 60px;
+            position: relative;
+            z-index: 1;
+        }
+        #cursor-fx {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        #credit-tag {
+            position: fixed;
+            bottom: 10px;
+            right: 14px;
+            font-size: 0.6rem;
+            color: #475569;
+            background: #ffffff;
+            padding: 5px 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+            border: 1px solid #e2e8f0;
+            z-index: 10000;
+            pointer-events: none;
+            user-select: none;
+            letter-spacing: 0.2px;
+            font-weight: 600;
+        }
+        #gen-legend {
+            position: fixed;
+            top: 80px;
+            left: 14px;
+            z-index: 9998;
+            background: #ffffffee;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+            padding: 12px 16px;
+            font-size: 0.78rem;
+            color: #334155;
+            max-width: 220px;
+            line-height: 1.5;
+            transition: max-height 0.25s ease, padding 0.25s ease, opacity 0.25s ease;
+        }
+        #gen-legend .gen-legend-title {
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+            display: block;
+        }
+        #gen-legend ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        #gen-legend li {
+            margin-bottom: 2px;
+        }
+        #gen-legend-toggle {
+            display: none;
+        }
+        @media (max-width: 640px) {
+            #gen-legend {
+                top: auto;
+                bottom: 44px;
+                left: 8px;
+                right: 8px;
+                max-width: none;
+                font-size: 0.68rem;
+                padding: 8px 10px 8px 12px;
+                max-height: 220px;
+                overflow-y: auto;
+            }
+            #gen-legend.collapsed {
+                max-height: 26px;
+                overflow: hidden;
+                padding-top: 4px;
+                padding-bottom: 4px;
+            }
+            #gen-legend .gen-legend-title {
+                margin-bottom: 4px;
+                cursor: pointer;
+            }
+            #gen-legend-toggle {
+                display: inline;
+                float: right;
+                font-weight: 400;
+                color: #2563eb;
+            }
+            #gen-legend ol {
+                padding-left: 16px;
+                columns: 2;
+                column-gap: 14px;
+            }
+        }
+        .node {
+            cursor: pointer;
+        }
+        .node .node-shape {
+            stroke-width: 2px;
+            stroke-linejoin: round;
+            transition: transform 0.15s ease, filter 0.2s ease, stroke-width 0.2s ease;
+            transform-box: fill-box;
+            transform-origin: center;
+            filter: drop-shadow(0 3px 6px rgba(15, 23, 42, 0.28));
+        }
+        .node:hover .node-shape {
+            transform: scale(1.045);
+            filter: drop-shadow(0 7px 16px rgba(15, 23, 42, 0.35)) brightness(1.06);
+            stroke-width: 2.5px;
+        }
+        .node.pressed .node-shape {
+            animation: btn-press 0.32s cubic-bezier(.4, 0, .2, 1);
+        }
+        @keyframes btn-press {
+            0% {
+                transform: scale(1);
+                filter: drop-shadow(0 3px 6px rgba(15, 23, 42, 0.28));
+            }
+            40% {
+                transform: scale(0.9);
+                filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.4)) brightness(0.9);
+            }
+            100% {
+                transform: scale(1);
+                filter: drop-shadow(0 3px 6px rgba(15, 23, 42, 0.28));
+            }
+        }
+        .link {
+            fill: none;
+            stroke: #cbd5e1;
+            stroke-width: 2px;
+        }
+        .node-root .node-shape {
+            fill: url(#grad-root);
+            stroke: #ca8a04;
+        }
+        .node-wife .node-shape {
+            fill: url(#grad-wife);
+            stroke: #db2777;
+        }
+        .node-gen1 .node-shape {
+            fill: url(#grad-gen1);
+            stroke: #2563eb;
+        }
+        .node-gen2 .node-shape {
+            fill: url(#grad-gen2);
+            stroke: #4f46e5;
+        }
+        .node-gen3 .node-shape {
+            fill: url(#grad-gen3);
+            stroke: #16a34a;
+        }
+        .node-gen4 .node-shape {
+            fill: url(#grad-gen4);
+            stroke: #9333ea;
+        }
+        .node-gen5 .node-shape {
+            fill: url(#grad-gen5);
+            stroke: #ea580c;
+        }
+        .node-gen6 .node-shape {
+            fill: url(#grad-gen6);
+            stroke: #0891b2;
+        }
+        .node-gen7 .node-shape {
+            fill: url(#grad-gen7);
+            stroke: #e11d48;
+        }
+        .node-gen8 .node-shape {
+            fill: url(#grad-gen8);
+            stroke: #7c3aed;
+        }
+        .node-founder .node-shape {
+            fill: url(#grad-founder);
+            stroke: #15803d;
+            stroke-width: 3.5px;
+        }
+        .node-founder text.name-life {
+            font-size: 18px;
+            font-weight: 900;
+            fill: #000000;
+            text-transform: uppercase;
+        }
+        .node-founder text.spouse-info {
+            font-size: 11px;
+            font-weight: 700;
+            fill: #14532d;
+        }
+        .node-founder .separator-line {
+            stroke: #15803d;
+            stroke-width: 1.5px;
+            stroke-dasharray: 4,4;
+        }
+        .node.search-highlight .node-shape {
+            stroke: #f59e0b !important;
+            stroke-width: 4px !important;
+            animation: search-pulse 1.3s ease-in-out 2;
+        }
+        @keyframes search-pulse {
+            0% {
+                filter: drop-shadow(0 0 0px rgba(245, 158, 11, 0.95));
+            }
+            50% {
+                filter: drop-shadow(0 0 18px rgba(245, 158, 11, 0.95)) brightness(1.08);
+            }
+            100% {
+                filter: drop-shadow(0 0 0px rgba(245, 158, 11, 0.95));
+            }
+        }
+        .node-root-shape .node-shape {
+            width: 260px !important;
+            height: 68px !important;
+        }
+        .node-default-shape .node-shape {
+            width: 240px !important;
+            height: 60px !important;
+        }
+        .toggle-indicator {
+            pointer-events: none;
+        }
+        .toggle-indicator circle {
+            fill: #ffffff;
+            stroke: #94a3b8;
+            stroke-width: 1.5px;
+        }
+        .toggle-indicator .toggle-icon {
+            stroke: #334155;
+            stroke-width: 1.8px;
+            stroke-linecap: round;
+        }
+        @media (max-width: 640px) {
+            #credit-tag {
+                bottom: 10px !important;
+                right: 8px !important;
+                left: auto !important;
+            }
+        }
+        </style>
+</head>
+<body>
+    <div id="header">
+        <div>
+            <h1>SILSILAH BANI ISBADAR</h1>
+            <p>KLIK NODE UNTUK BUKA/TUTUP, SCROLL/DRAG UNTUK ZOOM & PAN</p>
+        </div>
+        <div id="search-container">
+            <input type="text" id="search-input" placeholder="cari nama (min. 3 huruf)..." autocomplete="off">
+            <div id="search-results"></div>
+        </div>
+        <div class="controls">
+            <button class="btn" onclick="resetZoom()">RESET</button>
+            <button class="btn" onclick="expandAll()">BUKA SEMUA</button>
+            <button class="btn" onclick="resetToInitialState()">TUTUP SEMUA</button>
+            <button class="btn" id="perf-btn" onclick="togglePerf()" style="background:#64748b;">⚡ EFEK: ON</button>
+        </div>
+    </div>
+
+    <div id="chart-container"></div>
+    <canvas id="cursor-fx"></canvas>
+    <div id="credit-tag">DIBUAT OLEH: MANNIXS-21</div>
+
+    <div id="gen-legend">
+        <span class="gen-legend-title" onclick="toggleGenLegend()">GENERASI KE ATAS / BAWAH: <span id="gen-legend-toggle">▲</span></span>
+        <ol>
+            <li>BAPAK/IBU-ANAK/PUTRA</li>
+            <li>SI MBAH-PUTU/WAYAH</li>
+            <li>BUYUT</li>
+            <li>CANGGAH</li>
+            <li>WARENG</li>
+            <li>UDHEG-UDHEG</li>
+            <li>GANTUNG SIWUR</li>
+            <li>GROPAK SENTHE</li>
+            <li>DEBOG BOSOK</li>
+            <li>GALIH ASEM</li>
+        </ol>
+    </div>
+
+    <script>
+    // =====================================================================
+    // DATA SILSILAH BANI ISBADAR - DARI EXCEL
+    // =====================================================================
+
+    const treeData = {
+        "name": "ISBADAR bin BURNAWI",
+        "life": "1901 - 1995",
+        "spouse": "UMI NASBUNATUN binti H. AHSIN",
+        "spouse_life": "",
+        "type": "root",
+        "extraName": "BANI ISBADAR",
+        "children": [
+            // ============ ANAK KE-1 ============
+            {
+                "name": "Hj. SITI ALCHAMAH",
+                "life": "1937 - 2014",
+                "spouse": "MOCH. DANI SOERJO",
+                "spouse_life": "1927 - 2003",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-1",
+                "children": [
+                    { "name": "MOCH. ASMUI", "life": "1955 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "ZAENAL ARIFIN", "life": "1957 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "alm.", "children": [] },
+                    { "name": "MIFTACHUDIN", "life": "1959 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "alm.", "children": [] },
+                    { "name": "ZAENAL QOMAR", "life": "1961 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "HASAN MACHMUD", "life": "1963 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "NIKMATUROHMAH", "life": "1965 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "ASFIHANI", "life": "1966 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "AGUS WAHYUDI", "life": "1968 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "alm.", "children": [] },
+                    { "name": "ILMAYUNI ROWIYATI", "life": "1970 - ....", "spouse": "GUNAWAN", "spouse_life": "1966 - ....", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "MEGA FAHMA L.", "life": "2001 - ....", "spouse": "MUH. RIZKI MUBAROK", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "ZAYYINA MAULIDA A.", "life": "2005 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
+                    { "name": "NGIZAM MASROIR", "life": "1972 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] }
+                ]
+            },
+            // ============ ANAK KE-2 ============
+            {
+                "name": "SOFIATUN",
+                "life": "",
+                "spouse": "MUSTANGIN",
+                "spouse_life": "",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-2",
+                "children": []
+            },
+            // ============ ANAK KE-3 ============
+            {
+                "name": "SITI AISYAH",
+                "life": "",
+                "spouse": "MOH. SHODIQ",
+                "spouse_life": ".... - 2009",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-3",
+                "children": [
+                    { "name": "SAMSUDIN", "life": "", "spouse": "KHOLISIYAH", "spouse_life": "", "type": "gen2", "address": "", "extraName": "istri almh.", "children": [
+                        { "name": "MA'RUF DARDINI", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "ILMA SA'ADAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "INDANA ZULFA", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "NIKMATUL JALILAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
+                    { "name": "SAMSUN", "life": "", "spouse": "IFTIKAH", "spouse_life": "", "type": "gen2", "address": "", "extraName": "alm., istri almh.", "children": [
+                        { "name": "AHMAD RIFAI", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "ULFA LUTFIANA", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "BADRIATUS SHOLIKAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "NURINA ZAHROTUN NAFIDAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
+                    { "name": "SITI MUKAYANAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "TUTIK KHUSNUL ZULAIKAH", "life": "", "spouse": "KHABIB", "spouse_life": "", "type": "gen2", "address": "", "extraName": "almh., suami alm.", "children": [
+                        { "name": "M. ZAINUL IFANDA", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "ELLA DWI WULANDARI", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
+                    { "name": "BINTI SULISTYANI", "life": "", "spouse": "HARIYANTO", "spouse_life": "", "type": "gen2", "address": "", "extraName": "suami alm.", "children": [
+                        { "name": "RIZA NASIHIN", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "LAILATUL MUNA", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
+                    { "name": "ENDANG BUDI FATMAWATI", "life": "", "spouse": "ENDRO TOMO", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "RISKA YUFANI AYUNINGTYAS", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "TIARA", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] }
+                ]
+            },
+            // ============ ANAK KE-4 ============
+            {
+                "name": "SITI RUKHANAH",
+                "life": "1939 - 2020",
+                "spouse": "SOFWAN WIRYONO",
+                "spouse_life": "1934 - 2019",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-4",
+                "children": [
+                    { "name": "NURHIDAYATI", "life": "", "spouse": "SUNARYO", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "ANDY RISDIYANTO", "life": "1978 - ....", "spouse": "NURHIKMAH", "spouse_life": "1983 - ....", "type": "gen3", "address": "", "extraName": "", "children": [
+                            { "name": "ANNUR QURROTTA A'YUNI ALIFAH", "life": "2007 - ....", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] },
+                            { "name": "MUHAMMAD LUTHFI SYAHRI", "life": "2011 - ....", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] },
+                            { "name": "TSALISA YUMNA ZAFIRAH", "life": "2013 - ....", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] },
+                            { "name": "MUHAMMAD FATIH AL FAREZI", "life": "2021 - ....", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] }
+                        ] },
+                        { "name": "CANDRA IRAWAN", "life": "", "spouse": "SUSI", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [
+                            { "name": "RIZKI", "life": "", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] },
+                            { "name": "ANGGA", "life": "", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] }
+                        ] },
+                        { "name": "BAYU TRI LAKSONO", "life": "1987 - ....", "spouse": "DEAN DEWANTI", "spouse_life": "1988 - ....", "type": "gen3", "address": "", "extraName": "", "children": [
+                            { "name": "AQILA LAKSONO", "life": "2015 - ....", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] },
+                            { "name": "ASIFA LAKSONO", "life": "2018 - ....", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] },
+                            { "name": "ASKIYA LAKSONO", "life": "2025 - ....", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] }
+                        ] }
+                    ] },
+                    { "name": "WIWIK / SRI SUHARTIWI", "life": "1961 - ....", "spouse": "SUGENG HARIANTO", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "ADITIYA SAPUTRO", "life": "1987 - ....", "spouse": "KARTIKA ARUM SARI", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [
+                            { "name": "AFKAR", "life": "", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] },
+                            { "name": "ARHAN", "life": "", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] }
+                        ] },
+                        { "name": "NANDA AYU", "life": "", "spouse": "WAHYUDI", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [
+                            { "name": "ZAHIRA", "life": "", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] }
+                        ] }
+                    ] },
+                    { "name": "TUTIK", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "alm.", "children": [] },
+                    { "name": "SAIFUL HADI / SYAIKHU", "life": "", "spouse": "WATUTIK AISYAH", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "FEBRIAN SETIANTO", "life": "", "spouse": "UMMI KHAIRA LATIF", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "DENIS PRAMANA", "life": "", "spouse": "KHARISMA", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "ANISA WANDALIA", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
+                    { "name": "UMI HANIK", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "RUDY YUWONO", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "alm.", "children": [] }
+                ]
+            },
+            // ============ ANAK KE-5 ============
+            {
+                "name": "Hj. RODLIYAH",
+                "life": "1943 - 2020",
+                "spouse": "MOH. SUJAK MUKTI",
+                "spouse_life": "1931 - 1995",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-5",
+                "children": [
+                    { "name": "ANAS MIFTAHUL HUDA", "life": "1961 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "ZAENAL FATONI", "life": "1963 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "alm.", "children": [] },
+                    { "name": "SITI KHOLIFAH", "life": "1966 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "SITI AZIZAH", "life": "1969 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "CHOIRUL ANAM", "life": "1972 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "IMAM NASA'I", "life": "1976 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "NIK ZAMI'AH", "life": "1977 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] }
+                ]
+            },
+            // ============ ANAK KE-6 ============
+            {
+                "name": "H. IMAM GHOZALI",
+                "life": "",
+                "spouse": "SRI UTAMI",
+                "spouse_life": "",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-6",
+                "children": [
+                    { "name": "AININURIAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "M. SYAFI'I", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "USWATUN HASANAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "SLAMET KOMARUDIN", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "M. NAHRONI", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "CHOIRUL AZIS", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "MALIKATUNNISA", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] }
+                ]
+            },
+            // ============ ANAK KE-7 ============
+            {
+                "name": "HJ. NOORCHOSIJAH",
+                "life": "1948 - 2018",
+                "spouse": "H. CHOIRUDDIN FATCHULILLAH",
+                "spouse_life": "1943 - 2003",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-7",
+                "children": [
+                    { "name": "ARWANI MA'RUF", "life": "1971 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "DIANA MA'RUF", "life": "1972 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "MARYAM JAMILAH MA'RUF", "life": "1973 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "VALIANTI NUR MA'RUF", "life": "1980 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "MA'RUF AQBAR", "life": "1982 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] }
+                ]
+            },
+            // ============ ANAK KE-8 ============
+            {
+                "name": "SAHUDI",
+                "life": "1949 - ....",
+                "spouse": "ISTIQOMAH",
+                "spouse_life": "1953 - ....",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-8",
+                "children": [
+                    { "name": "NGIZATUL LAILA FIFTIASARI", "life": "1976 - ....", "spouse": "MOHAMAD TUHRI", "spouse_life": "1970 - ....", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "MOHAMMAD RIFQI AZIZI", "life": "2000 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "THOHAROTUZ ZAKIYATUS SOLIHAH", "life": "2001 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "THARIZZAKI SHILKHA", "life": "2010 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
+                    { "name": "DARIS SALAM ALWI", "life": "1981 - ....", "spouse": "ARIS SETYORINDA", "spouse_life": "1986 - ....", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "MUHAMMAD ULIL AZMI", "life": "2008 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "AHMAD FAHMI AMRILLAH", "life": "2015 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
+                    { "name": "LUKMAN HAKIM", "life": "1983 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] }
+                ]
+            },
+            // ============ ANAK KE-9 ============
+            {
+                "name": "MUJAYIN",
+                "life": "",
+                "spouse": "MU'ALIFAH",
+                "spouse_life": "",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-9",
+                "children": [
+                    { "name": "SALIS SAIFULLAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "DWI NURHANDOKO", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "TRI MUZAKY CAHYONO", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "alm.", "children": [] }
+                ]
+            },
+            // ============ ANAK KE-10 ============
+            {
+                "name": "H. M. RIFA'I",
+                "life": "1954 - ....",
+                "spouse": "Hj. MAESAROH",
+                "spouse_life": "1959 - ....",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-10",
+                "children": [
+                    { "name": "M. SULHAN ARIF", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "ZAHROIL UMMAMAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "M. FAIZIN", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "KIPTIYATUL MASITHOH", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] }
+                ]
+            },
+            // ============ ANAK KE-11 ============
+            {
+                "name": "Bapak Huda",
+                "life": "",
+                "spouse": "Ibu",
+                "spouse_life": "",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-11",
+                "children": []
+            },
+            // ============ ANAK KE-12 ============
+            {
+                "name": "KHUSNUL JUNAIDI",
+                "life": "1958 - ....",
+                "spouse": "WIJI UTAMI",
+                "spouse_life": "1965 - ....",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-12",
+                "children": [
+                    { "name": "DARWIS CHOLIL", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "ROZIQ SULAIMAN", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "ANNA KHOIRUL WALIDIYAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "FARIDATUS SA'ADAH", "life": "1992 - ....", "spouse": "JULI HARIYANTO", "spouse_life": "1977 - ....", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "AISYAH RAFIFATUR RIFDA", "life": "2014 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "M. ARKA ALWI SIHAB", "life": "2020 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] }
+                ]
+            },
+            // ============ ANAK KE-13 ============
+            {
+                "name": "H. KUSNUN HADI",
+                "life": "1960 - ....",
+                "spouse": "Hj. SITI MAYROTIN",
+                "spouse_life": "1965 - ....",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-13",
+                "children": [
+                    { "name": "SITI NUR AISYAH", "life": "", "spouse": "MARNO", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "LULU MASRO'ATUL LAILI", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "BINTI AMANAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
+                    { "name": "HJ. DWI WAHYUNINGSIH", "life": "", "spouse": "H. MUHAMMAD SAHLAN", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "KANZA HIKMAWATI", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "AHMAD ARJU NAJA", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
+                    { "name": "SITI NUR LAILATUS SA'ADAH", "life": "", "spouse": "AHMAD AFANDI", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "NAFISAH HUSNA KAUTSAR", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "MUHAMMAD MA'RUF HAKIM", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
+                    { "name": "DZUROTUN NASYIKHAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "SITI ALVIAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] }
+                ]
+            },
+            // ============ ANAK KE-14 ============
+            {
+                "name": "BINTI SOLICHAH",
+                "life": "1961 - ....",
+                "spouse": "NURHADI",
+                "spouse_life": "1955 - ....",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-14",
+                "children": [
+                    { "name": "IMRO'ATUL KHOIRIYAH", "life": "1977 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] }
+                ]
+            },
+            // ============ ANAK KE-15 ============
+            {
+                "name": "CHOZINATUL ASROR",
+                "life": "1962 - ....",
+                "spouse": "SITI NAFI'AH",
+                "spouse_life": "1970 - ....",
+                "type": "gen1",
+                "address": "",
+                "extraName": "ANAK KE-15",
+                "children": [
+                    { "name": "M. KHOZIN WAHID", "life": "1990 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "M. NASRULLOH", "life": "1993 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "HALIMATUS SA'DIYAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] }
+                ]
+            }
+        ]
+    };
+
+    // =====================================================================
+    // KONFIGURASI DAN RENDER VISUALISASI
+    // =====================================================================
+
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const cardWidth = 240;
+    const cardHeight = 60;
+    const founderCardWidth = 320;  // DIPERBESAR untuk 2 baris teks
+    const founderCardHeight = 100; // DIPERBESAR untuk 2 baris teks
+    const rootCardWidth = 260;
+    const rootCardHeight = 68;
+    const extraNameHeight = 18;
+
+    function batteryPath(w, h) {
+        if (!w || !h) return 'M0,0 Z';
+        const r = Math.min(14, h / 2, w / 2);
+        const nubH = Math.min(h * 0.38, 34);
+        const nubW = 10;
+        const nubR = 3;
+        const y0 = -h / 2, y1 = h / 2;
+        return `M ${r},${y0} L ${w - r},${y0} Q ${w},${y0} ${w},${y0 + r} ` +
+            `L ${w},${-nubH / 2 - nubR} Q ${w},${-nubH / 2} ${w + nubR},${-nubH / 2} ` +
+            `L ${w + nubW - nubR},${-nubH / 2} Q ${w + nubW},${-nubH / 2} ${w + nubW},${-nubH / 2 + nubR} ` +
+            `L ${w + nubW},${nubH / 2 - nubR} Q ${w + nubW},${nubH / 2} ${w + nubW - nubR},${nubH / 2} ` +
+            `L ${w + nubR},${nubH / 2} Q ${w},${nubH / 2} ${w},${nubH / 2 + nubR} ` +
+            `L ${w},${y1 - r} Q ${w},${y1} ${w - r},${y1} ` +
+            `L ${r},${y1} Q 0,${y1} 0,${y1 - r} ` +
+            `L 0,${y0 + r} Q 0,${y0} ${r},${y0} Z`;
+    }
+
+    let i = 0;
+    const duration = 500;
+    let root;
+
+    const svg = d3.select("#chart-container")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    const defs = svg.append("defs");
+    const nodeGradients = [
+        { id: 'grad-root', c1: '#fef9c3', c2: '#fbbf24' },
+        { id: 'grad-wife', c1: '#fce7f3', c2: '#f472b6' },
+        { id: 'grad-gen1', c1: '#dbeafe', c2: '#60a5fa' },
+        { id: 'grad-gen2', c1: '#e0e7ff', c2: '#818cf8' },
+        { id: 'grad-gen3', c1: '#dcfce7', c2: '#4ade80' },
+        { id: 'grad-gen4', c1: '#fae8ff', c2: '#d946ef' },
+        { id: 'grad-gen5', c1: '#ffedd5', c2: '#fb923c' },
+        { id: 'grad-gen6', c1: '#cffafe', c2: '#22d3ee' },
+        { id: 'grad-gen7', c1: '#ffe4e6', c2: '#fb7185' },
+        { id: 'grad-gen8', c1: '#ede9fe', c2: '#7c3aed' },
+        { id: 'grad-founder', c1: '#fef3c7', c2: '#f59e0b' }
+    ];
+    nodeGradients.forEach(g => {
+        const lg = defs.append('linearGradient')
+            .attr('id', g.id)
+            .attr('x1', '0%').attr('y1', '0%')
+            .attr('x2', '0%').attr('y2', '100%');
+        lg.append('stop').attr('offset', '0%').attr('stop-color', g.c1);
+        lg.append('stop').attr('offset', '100%').attr('stop-color', g.c2);
+    });
+
+    const gContainer = svg.append("g");
+
+    const zoom = d3.zoom()
+        .scaleExtent([0.2, 2])
+        .on("zoom", (event) => {
+            gContainer.attr("transform", event.transform);
+        });
+
+    svg.call(zoom);
+
+    const tree = d3.tree().nodeSize([cardHeight + extraNameHeight + 25, cardWidth + 100]);
+
+    root = d3.hierarchy(treeData, d => d.children);
+    root.x0 = height / 2;
+    root.y0 = 60;
+
+    function findNodeByName(node, name) {
+        if (node.data.name === name) return node;
+        if (node.children) {
+            for (const c of node.children) {
+                const found = findNodeByName(c, name);
+                if (found) return found;
+            }
+        }
+        if (node._children) {
+            for (const c of node._children) {
+                const found = findNodeByName(c, name);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+
+    function resetToInitialState() {
+        expand(root);
+        const founderNode = findNodeByName(root, 'ISBADAR bin BURNAWI');
+        if (founderNode) {
+            const ancestors = [];
+            let n = founderNode.parent;
+            while (n) { ancestors.unshift(n);
+                n = n.parent; }
+            for (let i = 0; i < ancestors.length; i++) {
+                const node = ancestors[i];
+                const nextInPath = (i + 1 < ancestors.length) ? ancestors[i + 1] : founderNode;
+                if (node.children) {
+                    node.children.forEach(child => {
+                        if (child !== nextInPath) collapse(child);
+                    });
+                }
+            }
+            collapse(founderNode);
+        } else if (root.children) {
+            root.children.forEach(collapse);
+        }
+        update(root);
+    }
+
+    resetToInitialState();
+
+    function computeVisibleBBox() {
+        const list = root.descendants();
+        let minX = Infinity,
+            maxX = -Infinity,
+            minY = Infinity,
+            maxY = -Infinity;
+        list.forEach(d => {
+            let w = cardWidth;
+            let h = cardHeight + (d.data.extraName ? extraNameHeight : 0);
+            if (d.data.name === 'ISBADAR bin BURNAWI') {
+                w = founderCardWidth;
+                h = founderCardHeight;
+            }
+            minX = Math.min(minX, d.x - h / 2);
+            maxX = Math.max(maxX, d.x + h / 2);
+            minY = Math.min(minY, d.y);
+            maxY = Math.max(maxY, d.y + w);
+        });
+        return { x: minY, y: minX, width: maxY - minY, height: maxX - minX };
+    }
+
+    function fitToView(duration) {
+        const bbox = computeVisibleBBox();
+        if (!isFinite(bbox.width) || !isFinite(bbox.height) || bbox.width <= 0 || bbox.height <= 0) return;
+        const padding = 30;
+        const headerOffset = 70;
+        const curW = window.innerWidth;
+        const curH = window.innerHeight;
+        const availW = curW - padding * 2;
+        const availH = curH - padding * 2 - headerOffset;
+        let scale = Math.min(availW / bbox.width, availH / bbox.height);
+        scale = Math.min(scale, 1);
+        scale = Math.max(scale, 0.25);
+        const tx = (curW - bbox.width * scale) / 2 - bbox.x * scale;
+        const ty = headerOffset + (availH - bbox.height * scale) / 2 - bbox.y * scale;
+        svg.transition().duration(duration).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+    }
+
+    fitToView(0);
+
+    // ============================================================
+    // UPDATE VISUALISASI
+    // ============================================================
+
+    function update(source) {
+        const treeMap = tree(root);
+        const nodes = treeMap.descendants();
+        const links = treeMap.links();
+
+        const founderChildGap = 180; // jarak ekstra antara shape ISBADAR dan anak-anaknya
+        nodes.forEach(d => {
+            if (d.depth === 0) {
+                d.y = 0;
+            } else {
+                d.y = (founderCardWidth + founderChildGap) + (d.depth - 1) * (cardWidth + 100);
+            }
+        });
+
+        const node = gContainer.selectAll('g.node')
+            .data(nodes, d => d.id || (d.id = ++i));
+
+        const nodeEnter = node.enter().append('g')
+            .attr('class', d => {
+                let cls = `node node-${d.data.type || 'gen3'}`;
+                if (d.data.name === 'ISBADAR bin BURNAWI') cls += ' node-founder';
+                return cls;
+            })
+            .attr("transform", d => `translate(${source.y0},${source.x0})`)
+            .on('click', function(event, d) {
+                const nodeSel = d3.select(this);
+                nodeSel.classed('pressed', false);
+                nodeSel.node().getBoundingClientRect();
+                nodeSel.classed('pressed', true);
+                setTimeout(() => nodeSel.classed('pressed', false), 320);
+
+                if (d.children) {
+                    d._children = d.children;
+                    d.children = null;
+                } else if (d._children) {
+                    if (d.parent) {
+                        d.parent.children.forEach(sibling => {
+                            if (sibling !== d) collapse(sibling);
+                        });
+                    }
+                    d.children = d._children;
+                    d._children = null;
+                }
+                update(d);
+            });
+
+        // Shape node
+        nodeEnter.append('path')
+            .attr('class', 'node-shape')
+            .attr('d', d => {
+                let w = cardWidth;
+                let h = cardHeight + (d.data.extraName ? extraNameHeight : 0) + (d.data.address ? extraNameHeight : 0);
+                if (d.data.name === 'ISBADAR bin BURNAWI') { 
+                    w = founderCardWidth; 
+                    h = founderCardHeight; 
+                }
+                return batteryPath(w, h);
+            });
+
+        // ========== GARIS PEMBATAS UNTUK ROOT ==========
+        nodeEnter.filter(d => d.data.name === 'ISBADAR bin BURNAWI')
+            .append('line')
+            .attr('class', 'separator-line')
+            .attr('x1', 20)
+            .attr('x2', founderCardWidth - 20)
+            .attr('y1', 10)
+            .attr('y2', 10)
+            .style('stroke', '#15803d')
+            .style('stroke-width', 2)
+            .style('stroke-dasharray', '6,4');
+
+        // ========== NAMA ISTRI UNTUK ROOT (di bawah garis) ==========
+        nodeEnter.filter(d => d.data.name === 'ISBADAR bin BURNAWI')
+            .append('text')
+            .attr('class', 'spouse-name-root')
+            .attr('x', founderCardWidth / 2)
+            .attr('y', 30)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '18px')
+            .style('font-weight', '700')
+            .style('fill', '#0f172a')
+            .style('text-transform', 'uppercase')
+            .text(d => d.data.spouse || '');
+
+        // Indicator "+"
+        const toggleIndicator = nodeEnter.append('g')
+            .attr('class', 'toggle-indicator')
+            .attr('transform', d => {
+                let w = cardWidth;
+                if (d.data.name === 'ISBADAR bin BURNAWI') w = founderCardWidth;
+                return `translate(${w + 10},0)`;
+            })
+            .style('display', d => (d.children || d._children) ? null : 'none');
+        toggleIndicator.append('circle')
+            .attr('r', 9);
+        toggleIndicator.append('path')
+            .attr('class', 'toggle-icon')
+            .attr('d', d => d._children ? 'M -4,0 L 4,0 M 0,-4 L 0,4' : 'M -4,0 L 4,0');
+
+        const hasSpouseLine = d => {
+            if (!d.data.spouse) return false;
+            if (d.data.type === 'root' || d.data.type === 'wife') return false;
+            const hasWifeBranch = Array.isArray(d.data.children) && d.data.children.some(c => c.type === 'wife');
+            return !hasWifeBranch;
+        };
+        const TEXT_PAD_X = 14;
+
+        function autoFitText(textEl, maxWidth, minFontSize, maxFontSize) {
+            let fontSize = maxFontSize;
+            textEl.style('font-size', fontSize + 'px');
+            while (fontSize > minFontSize && textEl.node().getComputedTextLength() > maxWidth) {
+                fontSize -= 1;
+                textEl.style('font-size', fontSize + 'px');
+            }
+            return fontSize;
+        }
+
+        // ========== NAMA + TAHUN UNTUK ROOT ==========
+        nodeEnter.filter(d => d.data.name === 'ISBADAR bin BURNAWI')
+            .append('text')
+            .attr('class', 'name-life')
+            .attr('x', founderCardWidth / 2)
+            .attr('y', -22)
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'middle')
+            .style('text-transform', 'uppercase')
+            .style('font-weight', '900')
+            .style('font-size', '20px')
+            .style('fill', '#0f172a')
+            .text(d => d.data.name);
+
+        // ========== TAHUN UNTUK ROOT ==========
+        nodeEnter.filter(d => d.data.name === 'ISBADAR bin BURNAWI')
+            .append('text')
+            .attr('class', 'spouse-info')
+            .attr('x', founderCardWidth / 2)
+            .attr('y', 0)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '14px')
+            .style('font-weight', '600')
+            .style('fill', '#475569')
+            .text(d => d.data.life || '');
+
+        // ========== NAMA UNTUK NODE LAINNYA ==========
+        nodeEnter.filter(d => d.data.name !== 'ISBADAR bin BURNAWI')
+            .append('text')
+            .attr('class', 'name-life')
+            .attr('x', TEXT_PAD_X)
+            .attr('y', d => {
+                const order = d.data.partnerOrder;
+                const hasExtra = d.data.extraName ? true : false;
+                const hasAddress = d.data.address ? true : false;
+                const offset = (hasExtra ? extraNameHeight : 0) + (hasAddress ? extraNameHeight : 0);
+                if (order) return hasExtra || hasAddress ? -6 - offset/2 : -6;
+                if (hasExtra || hasAddress) return -6 - offset/2;
+                return hasSpouseLine(d) ? -6 : 2;
+            })
+            .attr('text-anchor', 'start')
+            .attr('dominant-baseline', 'middle')
+            .style('text-transform', 'uppercase')
+            .style('font-weight', '700')
+            .style('font-size', '14px')
+            .style('fill', '#0f172a')
+            .text(d => {
+                let lifeStr = d.data.life ? ` (${d.data.life})` : '';
+                return `${d.data.name}${lifeStr}`;
+            })
+            .each(function(d) {
+                const maxWidth = cardWidth - TEXT_PAD_X * 2;
+                autoFitText(d3.select(this), maxWidth, 10, 16);
+            });
+
+        // ========== EXTRA NAME UNTUK SEMUA NODE ==========
+        nodeEnter.append('text')
+            .attr('class', 'extra-name')
+            .attr('x', TEXT_PAD_X)
+            .attr('y', d => {
+                if (d.data.extraName && d.data.name !== 'ISBADAR bin BURNAWI') {
+                    const hasAddress = d.data.address ? true : false;
+                    const baseY = 2;
+                    return baseY + 16 + (hasAddress ? 0 : 0);
+                }
+                return 0;
+            })
+            .attr('text-anchor', 'start')
+            .style('text-transform', 'uppercase')
+            .style('font-weight', '700')
+            .style('font-size', '13px')
+            .style('fill', '#0f172a')
+            .text(d => {
+                if (d.data.name === 'ISBADAR bin BURNAWI') return '';
+                return d.data.extraName || '';
+            })
+            .each(function(d) {
+                if (d.data.extraName && d.data.name !== 'ISBADAR bin BURNAWI') {
+                    const maxWidth = cardWidth - TEXT_PAD_X * 2;
+                    autoFitText(d3.select(this), maxWidth, 9, 14);
+                }
+            });
+
+        // ========== ADDRESS UNTUK SEMUA NODE ==========
+        nodeEnter.append('text')
+            .attr('class', 'address-info')
+            .attr('x', TEXT_PAD_X)
+            .attr('y', d => {
+                if (d.data.address && d.data.name !== 'ISBADAR bin BURNAWI') {
+                    const hasExtra = d.data.extraName ? true : false;
+                    const baseY = 16;
+                    return baseY + (hasExtra ? extraNameHeight : 0);
+                }
+                return 0;
+            })
+            .attr('text-anchor', 'start')
+            .style('font-weight', '400')
+            .style('font-size', '9px')
+            .style('fill', '#64748b')
+            .style('font-style', 'italic')
+            .text(d => d.data.address || '');
+
+        // ========== SPOUSE INFO UNTUK NODE LAINNYA ==========
+        nodeEnter.filter(d => d.data.name !== 'ISBADAR bin BURNAWI')
+            .append('text')
+            .attr('class', 'spouse-info')
+            .attr('x', TEXT_PAD_X)
+            .attr('y', d => {
+                const wifeOrder = d.data.partnerOrder;
+                const hasExtra = d.data.extraName ? true : false;
+                const hasAddress = d.data.address ? true : false;
+                const offset = (hasExtra ? extraNameHeight : 0) + (hasAddress ? extraNameHeight : 0);
+                if (wifeOrder) return hasExtra || hasAddress ? 24 - offset/2 : 24;
+                if (hasExtra || hasAddress) return 14 - offset/2;
+                return 14;
+            })
+            .attr('text-anchor', 'start')
+            .style('text-transform', 'uppercase')
+            .style('font-size', '10px')
+            .style('font-weight', '500')
+            .style('fill', '#475569')
+            .text(d => {
+                if (!hasSpouseLine(d)) return '';
+                let sLife = d.data.spouse_life ? ` (${d.data.spouse_life})` : '';
+                return `${d.data.spouse}${sLife}`;
+            });
+
+        const nodeUpdate = nodeEnter.merge(node);
+
+        nodeUpdate.transition()
+            .duration(duration)
+            .attr("transform", d => `translate(${d.y},${d.x})`);
+
+        nodeUpdate.select('.toggle-indicator')
+            .style('display', d => (d.children || d._children) ? null : 'none');
+        nodeUpdate.select('.toggle-icon')
+            .attr('d', d => d._children ? 'M -4,0 L 4,0 M 0,-4 L 0,4' : 'M -4,0 L 4,0');
+
+        const nodeExit = node.exit().transition()
+            .duration(duration)
+            .attr("transform", d => `translate(${source.y},${source.x})`)
+            .remove();
+
+        nodeExit.selectAll('.node-shape')
+            .attr('d', batteryPath(0, 0));
+
+        const link = gContainer.selectAll('path.link')
+            .data(links, d => d.target.id);
+
+        const linkEnter = link.enter().insert('path', "g")
+            .attr("class", "link")
+            .attr('d', d => {
+                const o = { x: source.x0, y: source.y0 };
+                return diagonal(o, o);
+            });
+
+        const linkUpdate = linkEnter.merge(link);
+
+        linkUpdate.transition()
+            .duration(duration)
+            .attr('d', d => diagonal(d.source, d.target));
+
+        link.exit().transition()
+            .duration(duration)
+            .attr('d', d => {
+                const o = { x: source.x, y: source.y };
+                return diagonal(o, o);
+            })
+            .remove();
+
+        nodes.forEach(d => {
+            d.x0 = d.x;
+            d.y0 = d.y;
+        });
+    }
+
+    function diagonal(s, d) {
+        let w1 = cardWidth;
+        if (s.data && s.data.name === 'ISBADAR bin BURNAWI') w1 = founderCardWidth;
+        return `M ${s.y + w1} ${s.x}
+                    C ${(s.y + w1 + d.y) / 2} ${s.x},
+                      ${(s.y + w1 + d.y) / 2} ${d.x},
+                      ${d.y} ${d.x}`;
+    }
+
+    function toggleGenLegend() {
+        const el = document.getElementById('gen-legend');
+        const toggleIcon = document.getElementById('gen-legend-toggle');
+        el.classList.toggle('collapsed');
+        toggleIcon.textContent = el.classList.contains('collapsed') ? '▼' : '▲';
+    }
+
+    // =====================================================================
+    // FUNGSI NAVIGASI
+    // =====================================================================
+
+    function resetZoom() {
+        fitToView(500);
+    }
+
+    function collapse(d) {
+        if (d.children) {
+            d._children = d.children;
+            d._children.forEach(collapse);
+            d.children = null;
+        }
+    }
+
+    function expand(d) {
+        if (d._children) {
+            d.children = d._children;
+            d._children = null;
+        }
+        if (d.children) {
+            d.children.forEach(expand);
+        }
+    }
+
+    function expandAll() {
+        expand(root);
+        update(root);
+    }
+
+    // =====================================================================
+    // FITUR PENCARIAN
+    // =====================================================================
+
+    function collectAllNames(node, list) {
+        if (node.name) list.push(node.name);
+        if (node.extraName) list.push(node.extraName);
+        if (Array.isArray(node.children)) {
+            node.children.forEach(c => collectAllNames(c, list));
+        }
+    }
+    const allPersonNames = (function() {
+        const raw = [];
+        collectAllNames(treeData, raw);
+        return Array.from(new Set(raw)).sort((a, b) => a.localeCompare(b, 'id'));
+    })();
+
+    const searchInputEl = document.getElementById('search-input');
+    const searchResultsEl = document.getElementById('search-results');
+    let searchActiveIndex = -1;
+    let searchCurrentMatches = [];
+
+    function closeSearchResults() {
+        searchResultsEl.classList.remove('active');
+        searchResultsEl.innerHTML = '';
+        searchActiveIndex = -1;
+        searchCurrentMatches = [];
+    }
+
+    function renderSearchResults(matches) {
+        searchResultsEl.innerHTML = '';
+        searchCurrentMatches = matches;
+        searchActiveIndex = -1;
+        if (matches.length === 0) {
+            const div = document.createElement('div');
+            div.className = 'search-no-result';
+            div.textContent = 'NAMA TIDAK DITEMUKAN';
+            searchResultsEl.appendChild(div);
+        } else {
+            matches.slice(0, 25).forEach(name => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.textContent = name;
+                item.addEventListener('click', () => selectSearchResult(name));
+                searchResultsEl.appendChild(item);
+            });
+        }
+        searchResultsEl.classList.add('active');
+    }
+
+    searchInputEl.addEventListener('input', () => {
+        const q = searchInputEl.value.trim().toLowerCase();
+        if (q.length < 3) {
+            closeSearchResults();
+            return;
+        }
+        const matches = allPersonNames.filter(n => n.toLowerCase().includes(q));
+        renderSearchResults(matches);
+    });
+
+    searchInputEl.addEventListener('keydown', (e) => {
+        const items = Array.from(searchResultsEl.querySelectorAll('.search-result-item'));
+        if (e.key === 'Escape') {
+            closeSearchResults();
+            searchInputEl.blur();
+        } else if (e.key === 'ArrowDown' && items.length) {
+            e.preventDefault();
+            searchActiveIndex = Math.min(searchActiveIndex + 1, items.length - 1);
+            items.forEach((it, idx) => it.classList.toggle('kbd-active', idx === searchActiveIndex));
+            items[searchActiveIndex].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'ArrowUp' && items.length) {
+            e.preventDefault();
+            searchActiveIndex = Math.max(searchActiveIndex - 1, 0);
+            items.forEach((it, idx) => it.classList.toggle('kbd-active', idx === searchActiveIndex));
+            items[searchActiveIndex].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter') {
+            if (searchActiveIndex >= 0 && searchCurrentMatches[searchActiveIndex]) {
+                selectSearchResult(searchCurrentMatches[searchActiveIndex]);
+            } else if (searchCurrentMatches.length === 1) {
+                selectSearchResult(searchCurrentMatches[0]);
+            }
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        const container = document.getElementById('search-container');
+        if (container && !container.contains(e.target)) {
+            closeSearchResults();
+        }
+    });
+
+    function getAncestorPath(node) {
+        const ancestors = [];
+        let n = node.parent;
+        while (n) { ancestors.unshift(n);
+            n = n.parent; }
+        return ancestors;
+    }
+
+    function revealNode(target) {
+        const ancestors = getAncestorPath(target);
+        ancestors.forEach((node, i) => {
+            const nextInPath = (i + 1 < ancestors.length) ? ancestors[i + 1] : target;
+            if (node._children) {
+                node.children = node._children;
+                node._children = null;
+            }
+            if (node.children) {
+                node.children.forEach(child => {
+                    if (child !== nextInPath) collapse(child);
+                });
+            }
+        });
+    }
+
+    function centerOnNode(node, dur) {
+        dur = (dur === undefined) ? 750 : dur;
+        let w = cardWidth;
+        if (node.data.name === 'ISBADAR bin BURNAWI') w = founderCardWidth;
+        const targetX = node.y + w / 2;
+        const targetY = node.x;
+        const curW = window.innerWidth;
+        const curH = window.innerHeight;
+        const headerOffset = 70;
+        const currentK = d3.zoomTransform(svg.node()).k || 1;
+        const scale = Math.min(1, Math.max(0.6, currentK));
+        const tx = curW / 2 - targetX * scale;
+        const ty = headerOffset + (curH - headerOffset) / 2 - targetY * scale;
+        svg.transition().duration(dur).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+    }
+
+    function highlightFoundNode(node) {
+        gContainer.selectAll('g.node')
+            .filter(d => d.id === node.id)
+            .classed('search-highlight', true)
+            .each(function() {
+                const el = this;
+                setTimeout(() => d3.select(el).classed('search-highlight', false), 2700);
+            });
+    }
+
+    function selectSearchResult(name) {
+        let target = findNodeByName(root, name);
+        if (!target) {
+            const allNodes = root.descendants();
+            for (const n of allNodes) {
+                if (n.data.extraName === name) {
+                    target = n;
+                    break;
+                }
+            }
+        }
+        closeSearchResults();
+        searchInputEl.value = '';
+        if (!target) return;
+        revealNode(target);
+        update(root);
+        setTimeout(() => {
+            centerOnNode(target, 700);
+            highlightFoundNode(target);
+        }, 60);
+    }
+
+    // =====================================================================
+    // DETEKSI MOBILE & EFEK KURSOR
+    // =====================================================================
+
+    let perfMode = localStorage.getItem('perfMode') || 'on';
+    function togglePerf() {
+        perfMode = perfMode === 'on' ? 'off' : 'on';
+        localStorage.setItem('perfMode', perfMode);
+        const btn = document.getElementById('perf-btn');
+        const canvas = document.getElementById('cursor-fx');
+        if (perfMode === 'off') {
+            if (canvas) canvas.style.display = 'none';
+            if (btn) { btn.textContent = '⚡ EFEK: OFF'; btn.style.background = '#dc2626'; }
+        } else {
+            if (canvas) canvas.style.display = 'block';
+            if (btn) { btn.textContent = '⚡ EFEK: ON'; btn.style.background = '#64748b'; }
+        }
+    }
+    setTimeout(()=>{
+        const btn = document.getElementById('perf-btn');
+        const canvas = document.getElementById('cursor-fx');
+        if (perfMode === 'off') {
+            if (canvas) canvas.style.display = 'none';
+            if (btn) { btn.textContent = '⚡ EFEK: OFF'; btn.style.background = '#dc2626'; }
+        }
+    }, 400);
+
+    const isMobileDevice = window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window || navigator
+        .maxTouchPoints > 0;
+
+    if (!isMobileDevice && perfMode !== 'off')(function initCursorFX() {
+        const canvas = document.getElementById('cursor-fx');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+
+        function resizeCanvas() {
+            w = canvas.width = window.innerWidth;
+            h = canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const palette = ['#3b82f6', '#db2777', '#4f46e5', '#16a34a', '#9333ea', '#ca8a04', '#f472b6', '#60a5fa'];
+
+        let mouseX = w / 2,
+            mouseY = h / 2;
+        let lastX = mouseX,
+            lastY = mouseY;
+        let hasMoved = false;
+        const particles = [];
+        const MAX_PARTICLES = 70;
+
+        function spawnParticle(x, y, speed) {
+            const angle = Math.random() * Math.PI * 2;
+            const dist = Math.random() * 2.4 + 0.3;
+            particles.push({
+                x: x + (Math.random() - 0.5) * 10,
+                y: y + (Math.random() - 0.5) * 10,
+                vx: Math.cos(angle) * dist + (Math.random() - 0.5) * 0.6,
+                vy: Math.sin(angle) * dist + (Math.random() - 0.5) * 0.6,
+                life: 1,
+                decay: 0.012 + Math.random() * 0.022,
+                size: 1.5 + Math.random() * (2.5 + Math.min(speed, 25) * 0.2),
+                color: palette[Math.floor(Math.random() * palette.length)],
+                twinklePhase: Math.random() * Math.PI * 2,
+                twinkleSpeed: 0.15 + Math.random() * 0.25
+            });
+            while (particles.length > MAX_PARTICLES) particles.shift();
+        }
+
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            const dx = mouseX - lastX;
+            const dy = mouseY - lastY;
+            const speed = Math.sqrt(dx * dx + dy * dy);
+            hasMoved = true;
+
+            const count = Math.min(3, 1 + Math.floor(speed / 15));
+            for (let i = 0; i < count; i++) {
+                spawnParticle(mouseX, mouseY, speed);
+            }
+            lastX = mouseX;
+            lastY = mouseY;
+        });
+
+        setInterval(() => {
+            if (hasMoved) spawnParticle(mouseX, mouseY, 1);
+        }, 180);
+
+        function draw() {
+            ctx.clearRect(0, 0, w, h);
+
+            if (hasMoved) {
+                const glow = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 30);
+                glow.addColorStop(0, 'rgba(59,130,246,0.3)');
+                glow.addColorStop(0.5, 'rgba(147,51,234,0.12)');
+                glow.addColorStop(1, 'rgba(59,130,246,0)');
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(mouseX, mouseY, 30, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vx *= 0.97;
+                p.vy *= 0.97;
+                p.life -= p.decay;
+                p.twinklePhase += p.twinkleSpeed;
+
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                const twinkle = 0.55 + 0.45 * Math.sin(p.twinklePhase);
+                ctx.globalAlpha = Math.max(p.life * twinkle, 0);
+                ctx.beginPath();
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 4;
+                ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+
+            requestAnimationFrame(draw);
+        }
+        draw();
+    })();
+    </script>
+</body>
+</html>
