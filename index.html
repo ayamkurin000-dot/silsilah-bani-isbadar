@@ -177,7 +177,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            transform: translate(-50%, 0);
+            transform: translate(-50%, -100%);
             animation: hint-fade-in 0.4s ease-out;
         }
         #root-tap-hint .hint-hand {
@@ -187,7 +187,7 @@
             filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
         }
         #root-tap-hint .hint-text {
-            margin-top: 2px;
+            margin-bottom: 2px;
             background: #f59e0b;
             color: #ffffff;
             font-weight: 800;
@@ -199,11 +199,11 @@
         }
         @keyframes hint-bounce {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
+            50% { transform: translateY(10px); }
         }
         @keyframes hint-fade-in {
-            0% { opacity: 0; transform: translate(-50%, 10px); }
-            100% { opacity: 1; transform: translate(-50%, 0); }
+            0% { opacity: 0; transform: translate(-50%, calc(-100% - 10px)); }
+            100% { opacity: 1; transform: translate(-50%, -100%); }
         }
         #cursor-fx {
             position: fixed;
@@ -810,8 +810,8 @@
 
     <!-- Hint tap awal: arahkan user untuk mengetuk shape ISBADAR (root) pertama kali -->
     <div id="root-tap-hint" style="display:none;">
-        <div class="hint-hand">👆</div>
         <div class="hint-text">Ketuk di sini</div>
+        <div class="hint-hand">👇</div>
     </div>
     <canvas id="cursor-fx"></canvas>
     <div id="credit-tag">DIBUAT OLEH: MANNIXS-21</div>
@@ -1588,7 +1588,7 @@
         if (!founderShape) return;
         const rect = founderShape.getBoundingClientRect();
         hintEl.style.left = (rect.left + rect.width / 2) + 'px';
-        hintEl.style.top = (rect.bottom + 8) + 'px';
+        hintEl.style.top = (rect.top - 8) + 'px';
         hintEl.style.display = 'flex';
     }
 
