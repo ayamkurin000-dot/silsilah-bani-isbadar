@@ -592,6 +592,24 @@
                 filter: drop-shadow(0 3px 6px rgba(15, 23, 42, 0.28));
             }
         }
+        .node.shake-highlight .node-shape {
+            animation: shake-node 0.5s ease-in-out 3, shake-border-color 0.5s ease-in-out 3;
+            transform-origin: center;
+            stroke-width: 4px !important;
+        }
+        @keyframes shake-border-color {
+            0%, 100% { stroke: #000000; filter: drop-shadow(0 0 0px rgba(245, 158, 11, 0)); }
+            50% { stroke: #f59e0b; filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.85)); }
+        }
+        @keyframes shake-node {
+            0%, 100% { transform: translateX(0) scale(1); }
+            15% { transform: translateX(-7px) scale(1.03); }
+            30% { transform: translateX(6px) scale(1.03); }
+            45% { transform: translateX(-5px) scale(1.03); }
+            60% { transform: translateX(4px) scale(1.03); }
+            75% { transform: translateX(-2px) scale(1.02); }
+            90% { transform: translateX(2px) scale(1.02); }
+        }
         .link {
             fill: none;
             stroke: #cbd5e1;
@@ -1548,7 +1566,20 @@
         }
 
         svg.transition().duration(600)
-            .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(targetScale));
+            .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(targetScale))
+            .on('end', () => {
+                if (targetNode) shakeNode(targetNode);
+            });
+    }
+
+    // Efek getar (shake) pada shape tertentu, dipicu setelah kamera selesai berpindah
+    function shakeNode(targetNode) {
+        const nodeSel = gContainer.selectAll('g.node')
+            .filter(n => n === targetNode || (n.data && n.data.name === targetNode.data.name));
+        nodeSel.classed('shake-highlight', false);
+        nodeSel.node() && nodeSel.node().getBoundingClientRect();
+        nodeSel.classed('shake-highlight', true);
+        setTimeout(() => nodeSel.classed('shake-highlight', false), 1600);
     }
 
     // ============================================================
