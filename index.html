@@ -1527,11 +1527,14 @@
         const targetScale = 0.75;
         const svgW = window.innerWidth;
         const svgH = window.innerHeight;
-        // posisikan shape root di area kiri layar (bukan di tengah) agar shape
-        // gen 1 di sebelah kanannya ikut terlihat sebagian
-        const anchorX = svgW * 0.2;
+        // Posisikan TEPI KANAN shape root persis di tengah layar (bukan tengah shape-nya),
+        // supaya seluruh sisa lebar layar (separuh kanan) terpakai untuk memperlihatkan
+        // sebagian shape anak-anak (gen 1) yang ada di sisi kanan root. Ini konsisten
+        // di semua ukuran layar (termasuk HP yang sempit).
+        const rootRightEdgeY = d.y + founderCardWidth; // posisi tepi kanan shape root di koordinat tree
+        const anchorX = svgW * 0.5; // titik tengah layar
         const anchorY = svgH / 2;
-        const tx = anchorX - d.y * targetScale;
+        const tx = anchorX - rootRightEdgeY * targetScale;
         const ty = anchorY - d.x * targetScale;
         svg.transition().duration(600)
             .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(targetScale));
