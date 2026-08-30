@@ -1364,6 +1364,23 @@
         .attr("height", height);
 
     const defs = svg.append("defs");
+
+    // Pattern garis diagonal putih untuk overlay di atas bar indikator baterai
+    const diagPattern = defs.append('pattern')
+        .attr('id', 'diag-stripes')
+        .attr('width', 8)
+        .attr('height', 8)
+        .attr('patternUnits', 'userSpaceOnUse')
+        .attr('patternTransform', 'rotate(45)');
+    diagPattern.append('rect')
+        .attr('width', 8).attr('height', 8)
+        .attr('fill', 'transparent');
+    diagPattern.append('rect')
+        .attr('x', 0).attr('y', 0)
+        .attr('width', 3.5).attr('height', 8)
+        .attr('fill', '#ffffff')
+        .attr('opacity', 0.55);
+
     const nodeGradients = [
         { id: 'grad-root', c1: '#fffbeb', c2: '#fcd34d' },
         { id: 'grad-wife', c1: '#fdf4ff', c2: '#e879f9' },
@@ -1549,8 +1566,10 @@
             .attr('class', 'battery-bars')
             .each(function(d) {
                 const { w, h } = cardDims(d);
-                d3.select(this).selectAll('rect')
-                    .data(batteryBars(w, h))
+                const bars = batteryBars(w, h);
+                const g = d3.select(this);
+                g.selectAll('.battery-bar')
+                    .data(bars)
                     .enter()
                     .append('rect')
                     .attr('class', 'battery-bar')
@@ -1559,6 +1578,19 @@
                     .attr('width', b => b.w)
                     .attr('height', b => b.h)
                     .attr('rx', 4);
+                // Overlay garis diagonal putih di atas tiap bar (motif seperti indikator baterai)
+                g.selectAll('.battery-bar-stripe')
+                    .data(bars)
+                    .enter()
+                    .append('rect')
+                    .attr('class', 'battery-bar-stripe')
+                    .attr('x', b => b.x)
+                    .attr('y', b => b.y)
+                    .attr('width', b => b.w)
+                    .attr('height', b => b.h)
+                    .attr('rx', 4)
+                    .attr('fill', 'url(#diag-stripes)')
+                    .attr('pointer-events', 'none');
             });
 
         // ========== GARIS PEMBATAS UNTUK ROOT ==========
