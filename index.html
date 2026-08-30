@@ -1360,6 +1360,7 @@
     let i = 0;
     const duration = 500;
     let root;
+    let rootFirstExpandZoomDone = false; // flag: efek zoom-out + geser kiri hanya berlaku sekali (klik pertama shape root)
 
     const svg = d3.select("#chart-container")
         .append("svg")
@@ -1518,6 +1519,24 @@
 
     fitToView(0);
 
+    // Efek khusus: saat shape ROOT (Bani Isbadar) diklik/diketuk PERTAMA KALI untuk
+    // membuka anak-anaknya (gen 1), tampilan mengecil ke 75% dan bergeser ke kiri
+    // sehingga sebagian shape gen 1 ikut terlihat. Klik-klik berikutnya tidak lagi
+    // memicu pengecilan ini (konsisten).
+    function zoomRootFirstExpand(d) {
+        const targetScale = 0.75;
+        const svgW = window.innerWidth;
+        const svgH = window.innerHeight;
+        // posisikan shape root di area kiri layar (bukan di tengah) agar shape
+        // gen 1 di sebelah kanannya ikut terlihat sebagian
+        const anchorX = svgW * 0.2;
+        const anchorY = svgH / 2;
+        const tx = anchorX - d.y * targetScale;
+        const ty = anchorY - d.x * targetScale;
+        svg.transition().duration(600)
+            .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(targetScale));
+    }
+
     // ============================================================
     // UPDATE VISUALISASI
     // ============================================================
@@ -1554,6 +1573,9 @@
                 nodeSel.classed('pressed', true);
                 setTimeout(() => nodeSel.classed('pressed', false), 320);
 
+                const isRootNode = d.data.name === 'ISBADAR bin BURNAWI';
+                const isFirstRootExpand = isRootNode && !!d._children && !d.children && !rootFirstExpandZoomDone;
+
                 if (d.children) {
                     d._children = d.children;
                     d.children = null;
@@ -1567,6 +1589,11 @@
                     d._children = null;
                 }
                 update(d);
+
+                if (isFirstRootExpand) {
+                    rootFirstExpandZoomDone = true;
+                    zoomRootFirstExpand(d);
+                }
             });
 
         // Shape node
