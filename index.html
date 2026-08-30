@@ -640,8 +640,11 @@
             stroke-width: 4.5px;
         }
         .node-founder .battery-bar {
-            fill: #4ade80;
+            fill: url(#grad-battery-scale);
             opacity: 1;
+        }
+        .node-founder .battery-bar-stripe {
+            display: none;
         }
         .node-farath .node-shape {
             fill: #ffffff;
@@ -1380,6 +1383,19 @@
         .attr('width', 3.5).attr('height', 8)
         .attr('fill', '#ffffff')
         .attr('opacity', 0.55);
+
+    // Gradient khusus root/founder: merah - oranye - kuning - hijau (spt indikator baterai)
+    const battScale = defs.append('linearGradient')
+        .attr('id', 'grad-battery-scale')
+        .attr('gradientUnits', 'userSpaceOnUse')
+        .attr('x1', 0).attr('y1', 0)
+        .attr('x2', founderCardWidth).attr('y2', 0);
+    [
+        { off: '0%', c: '#dc2626' },
+        { off: '35%', c: '#f97316' },
+        { off: '60%', c: '#eab308' },
+        { off: '100%', c: '#22c55e' }
+    ].forEach(s => battScale.append('stop').attr('offset', s.off).attr('stop-color', s.c));
 
     const nodeGradients = [
         { id: 'grad-root', c1: '#fffbeb', c2: '#fcd34d' },
