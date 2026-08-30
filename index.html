@@ -170,6 +170,41 @@
             position: relative;
             z-index: 1;
         }
+        #root-tap-hint {
+            position: fixed;
+            z-index: 500;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translate(-50%, 0);
+            animation: hint-fade-in 0.4s ease-out;
+        }
+        #root-tap-hint .hint-hand {
+            font-size: 2.4rem;
+            line-height: 1;
+            animation: hint-bounce 1.1s ease-in-out infinite;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35));
+        }
+        #root-tap-hint .hint-text {
+            margin-top: 2px;
+            background: #f59e0b;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 0.78rem;
+            padding: 5px 12px;
+            border-radius: 999px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28);
+            white-space: nowrap;
+        }
+        @keyframes hint-bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        @keyframes hint-fade-in {
+            0% { opacity: 0; transform: translate(-50%, 10px); }
+            100% { opacity: 1; transform: translate(-50%, 0); }
+        }
         #cursor-fx {
             position: fixed;
             top: 0;
@@ -772,6 +807,12 @@
     <div id="feature-disabled-toast" class="feature-disabled-toast">Fitur ini dinonaktifkan</div>
 
     <div id="chart-container"></div>
+
+    <!-- Hint tap awal: arahkan user untuk mengetuk shape ISBADAR (root) pertama kali -->
+    <div id="root-tap-hint" style="display:none;">
+        <div class="hint-hand">👆</div>
+        <div class="hint-text">Ketuk di sini</div>
+    </div>
     <canvas id="cursor-fx"></canvas>
     <div id="credit-tag">DIBUAT OLEH: MANNIXS-21</div>
     <div id="panel-switcher">
@@ -1537,6 +1578,30 @@
 
     fitToView(0);
 
+    // ============================================================
+    // HINT AWAL: arahkan user untuk mengetuk shape ISBADAR (root)
+    // ============================================================
+    function positionRootTapHint() {
+        const hintEl = document.getElementById('root-tap-hint');
+        if (!hintEl || hintEl.dataset.dismissed === '1') return;
+        const founderShape = document.querySelector('.node-founder .node-shape');
+        if (!founderShape) return;
+        const rect = founderShape.getBoundingClientRect();
+        hintEl.style.left = (rect.left + rect.width / 2) + 'px';
+        hintEl.style.top = (rect.bottom + 8) + 'px';
+        hintEl.style.display = 'flex';
+    }
+
+    function hideRootTapHint() {
+        const hintEl = document.getElementById('root-tap-hint');
+        if (!hintEl) return;
+        hintEl.dataset.dismissed = '1';
+        hintEl.style.display = 'none';
+    }
+
+    setTimeout(positionRootTapHint, 50);
+    window.addEventListener('resize', positionRootTapHint);
+
     // Efek khusus: saat shape ROOT (Bani Isbadar) diklik/diketuk PERTAMA KALI untuk
     // membuka anak-anaknya (gen 1), tampilan mengecil ke 75% dan bergeser ke kiri
     // sehingga sebagian shape gen 1 ikut terlihat. Klik-klik berikutnya tidak lagi
@@ -1620,6 +1685,8 @@
 
                 const isRootNode = d.data.name === 'ISBADAR bin BURNAWI';
                 const isFirstRootExpand = isRootNode && !!d._children && !d.children && !rootFirstExpandZoomDone;
+
+                if (isRootNode) hideRootTapHint();
 
                 if (d.children) {
                     d._children = d.children;
