@@ -707,7 +707,29 @@
                 left: auto !important;
             }
         }
-        </style>
+            .feature-disabled-toast {
+            position: fixed;
+            top: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-12px);
+            background: #1e293b;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .feature-disabled-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
 </head>
 <body>
     <div id="header">
@@ -721,11 +743,13 @@
         </div>
         <div class="controls">
             <button class="btn" onclick="resetZoom()">RESET</button>
-            <button class="btn" onclick="expandAll()">BUKA SEMUA</button>
-            <button class="btn" onclick="resetToInitialState()">TUTUP SEMUA</button>
+            <button class="btn" onclick="showFeatureDisabledNotice()">BUKA SEMUA</button>
+            <button class="btn" onclick="showFeatureDisabledNotice()">TUTUP SEMUA</button>
             <button class="btn" id="perf-btn" onclick="togglePerf()" style="background:#64748b;">⚡ EFEK: ON</button>
         </div>
     </div>
+
+    <div id="feature-disabled-toast" class="feature-disabled-toast">Fitur ini dinonaktifkan</div>
 
     <div id="chart-container"></div>
     <canvas id="cursor-fx"></canvas>
@@ -2642,6 +2666,17 @@
     function expandAll() {
         expand(root);
         update(root);
+    }
+
+    let featureDisabledTimer = null;
+    function showFeatureDisabledNotice() {
+        const toast = document.getElementById('feature-disabled-toast');
+        if (!toast) return;
+        toast.classList.add('show');
+        clearTimeout(featureDisabledTimer);
+        featureDisabledTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2200);
     }
 
     // =====================================================================
