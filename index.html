@@ -1527,15 +1527,26 @@
         const targetScale = 0.75;
         const svgW = window.innerWidth;
         const svgH = window.innerHeight;
-        // Posisikan TEPI KANAN shape root persis di tengah layar (bukan tengah shape-nya),
-        // supaya seluruh sisa lebar layar (separuh kanan) terpakai untuk memperlihatkan
-        // sebagian shape anak-anak (gen 1) yang ada di sisi kanan root. Ini konsisten
-        // di semua ukuran layar (termasuk HP yang sempit).
-        const rootRightEdgeY = d.y + founderCardWidth; // posisi tepi kanan shape root di koordinat tree
-        const anchorX = svgW * 0.5; // titik tengah layar
-        const anchorY = svgH / 2;
-        const tx = anchorX - rootRightEdgeY * targetScale;
-        const ty = anchorY - d.x * targetScale;
+        const anchorX = svgW * 0.5; // tengah layar (horizontal)
+        const anchorY = svgH / 2;   // tengah layar (vertikal)
+
+        // Node yang ingin ditampilkan tepat di tengah layar setelah root diklik pertama kali
+        const targetNode = findNodeByName(root, 'HJ. NOORCHOSIJAH');
+
+        let tx, ty;
+        if (targetNode) {
+            const w = cardWidth; // lebar shape anak (gen1) standar
+            const centerY = targetNode.y + w / 2; // titik tengah horizontal shape target
+            const centerX = targetNode.x;          // titik tengah vertikal shape target
+            tx = anchorX - centerY * targetScale;
+            ty = anchorY - centerX * targetScale;
+        } else {
+            // fallback: tepi kanan shape root di tengah layar (perilaku sebelumnya)
+            const rootRightEdgeY = d.y + founderCardWidth;
+            tx = anchorX - rootRightEdgeY * targetScale;
+            ty = anchorY - d.x * targetScale;
+        }
+
         svg.transition().duration(600)
             .call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(targetScale));
     }
