@@ -2104,7 +2104,8 @@
             .text(d => {
                 if (!hasSpouseLine(d)) return '';
                 let sLife = d.data.spouse_life ? ` (${d.data.spouse_life})` : '';
-                return `${d.data.spouse}${sLife}`;
+                let flowerStr = d.data.spouseDeceased ? '\uD83C\uDF39 ' : '';
+                return `${flowerStr}${d.data.spouse}${sLife}`;
             });
 
         const nodeUpdate = nodeEnter.merge(node);
