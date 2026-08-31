@@ -1878,7 +1878,8 @@
 
         // ========== BADGE BUNGA MERAH BESAR: HANYA UNTUK ANGGOTA BANI/KETURUNAN YANG SUDAH MENINGGAL ==========
         // (bukan untuk pasangan/istri-suami yang meninggal saja — itu cukup bunga kecil di sebelah nama pasangan)
-        nodeEnter.filter(d => d.data.deceased)
+        // Termasuk juga node "FARATH" (anak yang wafat sebelum dewasa / meninggal dunia)
+        nodeEnter.filter(d => d.data.deceased || (d.data.name && d.data.name.toUpperCase().includes('FARATH')))
             .append('use')
             .attr('href', '#big-flower-badge-red')
             .attr('class', 'deceased-flower-badge')
