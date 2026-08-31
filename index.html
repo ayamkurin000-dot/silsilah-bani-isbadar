@@ -1840,6 +1840,10 @@
 
                 if (isRootNode) { hideRootTapHint(); hideRootPhotoFrame(); }
 
+                if (NO_DATA_NODES.includes(d.data.name)) {
+                    showNoDataNotice();
+                }
+
                 if (d.children) {
                     d._children = d.children;
                     d.children = null;
@@ -3036,14 +3040,21 @@
     }
 
     let featureDisabledTimer = null;
-    function showFeatureDisabledNotice() {
+    function showFeatureDisabledNotice(customMessage) {
         const toast = document.getElementById('feature-disabled-toast');
         if (!toast) return;
+        toast.textContent = customMessage || 'Fitur ini dinonaktifkan';
         toast.classList.add('show');
         clearTimeout(featureDisabledTimer);
         featureDisabledTimer = setTimeout(() => {
             toast.classList.remove('show');
         }, 2200);
+    }
+
+    // Nama-nama node yang belum ada data keturunan/pasangan lengkap: tampilkan notif saat diketuk
+    const NO_DATA_NODES = ['Bapak Huda', 'SOFIATUN'];
+    function showNoDataNotice() {
+        showFeatureDisabledNotice('Belum ada Data');
     }
 
     // =====================================================================
