@@ -1740,7 +1740,7 @@
         // Ditempatkan di tengah, menumpuk di atas shape ISBADAR (sebagian menutupi tepi atas shape)
         frameEl.style.left = (rect.left + rect.width / 2) + 'px';
         frameEl.style.top = rect.top + 'px';
-        frameEl.style.transform = 'translate(-50%, -104%)';
+        frameEl.style.transform = 'translate(-50%, -130%)';
         frameEl.style.display = 'block';
         requestAnimationFrame(() => { frameEl.style.opacity = '1'; });
     }
@@ -1750,7 +1750,7 @@
         if (!frameEl || frameEl.dataset.dismissed === '1') return;
         frameEl.dataset.dismissed = '1';
         frameEl.style.opacity = '0';
-        frameEl.style.transform = 'translate(-50%, -104%) scale(0.85)';
+        frameEl.style.transform = 'translate(-50%, -130%) scale(0.85)';
         setTimeout(() => { frameEl.style.display = 'none'; }, 650);
     }
 
