@@ -816,7 +816,7 @@
 
     <!-- Foto pasangan di atas shape ISBADAR (root) - hanya tampil di tampilan awal, fade out saat shape diketuk -->
     <div id="root-photo-frame" style="position:fixed; z-index:55; pointer-events:none; display:none; opacity:0; transition:opacity 0.6s ease, transform 0.6s ease;">
-        <svg viewBox="0 0 220 220" width="118" height="118" style="display:block; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.35));">
+        <svg viewBox="0 0 220 220" width="190" height="190" style="display:block; filter:drop-shadow(0 4px 10px rgba(0,0,0,0.35));">
             <defs>
                 <clipPath id="root-photo-clip">
                     <circle cx="110" cy="110" r="78"/>
@@ -1182,7 +1182,7 @@
                     { "name": "ANAS MIFTAHUL HUDA", "life": "1961 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
                     { "name": "ZAENAL FATONI", "life": "1963 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "deceased": true, "children": [] },
                     { "name": "SITI KHOLIFAH", "life": "1966 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
-                    { "name": "SITI AZIZAH", "life": "1969 - ....", "spouse": "NURSALAM", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [
+                    { "name": "SITI AZIZAH", "life": "1969 - ....", "spouse": "NURSALAM", "spouse_life": "1968 - ....", "type": "gen2", "address": "", "extraName": "", "children": [
                         { "name": "MAULANA ASYARI", "life": "1991 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
                         { "name": "ARSYAD ILMI", "life": "2000 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
                         { "name": "LUKMAN HALIM", "life": "2005 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
@@ -1663,7 +1663,7 @@
         // Ditempatkan di tengah, menumpuk di atas shape ISBADAR (sebagian menutupi tepi atas shape)
         frameEl.style.left = (rect.left + rect.width / 2) + 'px';
         frameEl.style.top = rect.top + 'px';
-        frameEl.style.transform = 'translate(-50%, -62%)';
+        frameEl.style.transform = 'translate(-50%, -88%)';
         frameEl.style.display = 'block';
         requestAnimationFrame(() => { frameEl.style.opacity = '1'; });
     }
@@ -1673,6 +1673,7 @@
         if (!frameEl || frameEl.dataset.dismissed === '1') return;
         frameEl.dataset.dismissed = '1';
         frameEl.style.opacity = '0';
+        frameEl.style.transform = 'translate(-50%, -88%) scale(0.85)';
         setTimeout(() => { frameEl.style.display = 'none'; }, 650);
     }
 
