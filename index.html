@@ -1533,6 +1533,28 @@
     bigFlowerBadge.append('circle')
         .attr('r', 5.5).attr('fill', 'none').attr('stroke', '#eab308').attr('stroke-width', 1);
 
+    // ===== Symbol: badge bunga merah besar untuk node yang sudah alm./almh. (deceased) =====
+    const bigFlowerBadgeRed = defs.append('g').attr('id', 'big-flower-badge-red');
+    bigFlowerBadgeRed.append('circle')
+        .attr('r', 20).attr('fill', '#ffffff').attr('opacity', 0.95);
+    bigFlowerBadgeRed.append('circle')
+        .attr('r', 20).attr('fill', 'none').attr('stroke', '#b91c1c').attr('stroke-width', 1.5).attr('opacity', 0.8);
+    [0, 72, 144, 216, 288].forEach(angle => {
+        const rad = angle * Math.PI / 180;
+        const px = 9.5 * Math.cos(rad);
+        const py = 9.5 * Math.sin(rad);
+        bigFlowerBadgeRed.append('ellipse')
+            .attr('cx', px).attr('cy', py)
+            .attr('rx', 7.5).attr('ry', 5.5)
+            .attr('transform', `rotate(${angle + 90}, ${px}, ${py})`)
+            .attr('fill', angle % 144 === 0 ? '#b91c1c' : '#dc2626');
+    });
+    bigFlowerBadgeRed.append('circle')
+        .attr('r', 5.5).attr('fill', '#fecaca');
+    bigFlowerBadgeRed.append('circle')
+        .attr('r', 5.5).attr('fill', 'none').attr('stroke', '#b91c1c').attr('stroke-width', 1);
+
+
 
     // Gradient khusus root/founder: merah - oranye - kuning - hijau (spt indikator baterai)
     const battScale = defs.append('linearGradient')
@@ -1854,6 +1876,19 @@
             .style('pointer-events', 'none')
             .style('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))');
 
+        // ========== BADGE BUNGA MERAH BESAR UNTUK NODE YANG SUDAH ALM./ALMH. ==========
+        nodeEnter.filter(d => d.data.deceased || d.data.spouseDeceased)
+            .append('use')
+            .attr('href', '#big-flower-badge-red')
+            .attr('class', 'deceased-flower-badge')
+            .attr('transform', d => {
+                const { w, h } = cardDims(d);
+                return `translate(${w - 2},${-h / 2 - 2})`;
+            })
+            .style('pointer-events', 'none')
+            .style('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))');
+
+
 
         // Bar indikator baterai (aksen warna per generasi, transparan di belakang teks)
         nodeEnter.append('g')
@@ -1993,8 +2028,7 @@
             .style('fill', '#0f172a')
             .text(d => {
                 let lifeStr = d.data.life ? ` (${d.data.life})` : '';
-                let flowerStr = d.data.deceased ? '\uD83C\uDF39 ' : '';
-                return `${flowerStr}${d.data.name}${lifeStr}`;
+                return `${d.data.name}${lifeStr}`;
             })
             .each(function(d) {
                 const maxWidth = cardWidth - TEXT_PAD_X * 2;
@@ -2070,8 +2104,7 @@
             .text(d => {
                 if (!hasSpouseLine(d)) return '';
                 let sLife = d.data.spouse_life ? ` (${d.data.spouse_life})` : '';
-                let flowerStr = d.data.spouseDeceased ? '\uD83C\uDF39 ' : '';
-                return `${flowerStr}${d.data.spouse}${sLife}`;
+                return `${d.data.spouse}${sLife}`;
             });
 
         const nodeUpdate = nodeEnter.merge(node);
