@@ -1306,7 +1306,10 @@
                 "extraName": "ANAK KE-9",
                 "children": [
                     { "name": "SALIS SAIFULLAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
-                    { "name": "DWI NURHANDOKO", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "DWI NURHANDOKO", "life": "1985 - ....", "spouse": "ERWINDA LESTARI", "spouse_life": "1988 - ....", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "HABUBULLAH DAFFA HANDOKO", "life": "2015 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "RAFA AKBAR HANDOKO", "life": "2017 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
                     { "name": "TRI MUZAKY CAHYONO", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "deceased": true, "children": [] }
                 ]
             },
@@ -1841,7 +1844,7 @@
                 if (isRootNode) { hideRootTapHint(); hideRootPhotoFrame(); }
 
                 if (NO_DATA_NODES.includes(d.data.name)) {
-                    showNoDataNotice();
+                    showNoDataNotice(nodeSel.node());
                 }
 
                 if (d.children) {
@@ -3044,6 +3047,10 @@
         const toast = document.getElementById('feature-disabled-toast');
         if (!toast) return;
         toast.textContent = customMessage || 'Fitur ini dinonaktifkan';
+        // reset ke posisi default (tengah atas layar)
+        toast.style.left = '50%';
+        toast.style.top = '90px';
+        toast.style.transform = 'translateX(-50%) translateY(-12px)';
         toast.classList.add('show');
         clearTimeout(featureDisabledTimer);
         featureDisabledTimer = setTimeout(() => {
@@ -3053,8 +3060,25 @@
 
     // Nama-nama node yang belum ada data keturunan/pasangan lengkap: tampilkan notif saat diketuk
     const NO_DATA_NODES = ['Bapak Huda', 'SOFIATUN'];
-    function showNoDataNotice() {
-        showFeatureDisabledNotice('Belum ada Data');
+    function showNoDataNotice(targetEl) {
+        const toast = document.getElementById('feature-disabled-toast');
+        if (!toast) return;
+        toast.textContent = 'Belum ada Data';
+        if (targetEl) {
+            const rect = targetEl.getBoundingClientRect();
+            toast.style.left = rect.left + 'px';
+            toast.style.top = (rect.top - 12) + 'px';
+            toast.style.transform = 'translate(-100%, -100%)';
+        } else {
+            toast.style.left = '50%';
+            toast.style.top = '90px';
+            toast.style.transform = 'translateX(-50%) translateY(-12px)';
+        }
+        toast.classList.add('show');
+        clearTimeout(featureDisabledTimer);
+        featureDisabledTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2200);
     }
 
     // =====================================================================
