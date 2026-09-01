@@ -681,7 +681,10 @@
         .node-root .node-fill { fill: #fcd34d; } /* kuning amber - bukan hijau */
         .node-wife .node-fill { fill: #f9a8d4; } /* pink */
         .node-gen1 .node-fill { fill: #fda4af; } /* rose */
-        .node-gen2 .node-fill { fill: url(#grad-gen2-split); } /* HIJAU MUDA SEPARO - MERAH SEPARO untuk ARWANI */
+        .node-gen2 .node-fill { display: none; } /* hidden, replaced by 3D split */
+        .node-gen2 .node-fill-green { fill: url(#grad-gen2-green-3d); pointer-events: none; stroke: none; }
+        .node-gen2 .node-fill-red { fill: url(#grad-gen2-red-3d); pointer-events: none; stroke: none; }
+        .node-gen2 .node-fill-shine { display: none; }
         .node-gen3 .node-fill { fill: #60a5fa; } /* biru */
         .node-gen4 .node-fill { fill: #a78bfa; } /* ungu */
         .node-gen5 .node-fill { fill: #fb923c; } /* oranye */
@@ -1675,15 +1678,30 @@
         { off: '100%', c: '#22c55e' }
     ].forEach(s => battScale.append('stop').attr('offset', s.off).attr('stop-color', s.c));
 
-    // Gradient khusus gen2: separo hijau muda - separo merah
-    const gen2Split = defs.append('linearGradient')
-        .attr('id', 'grad-gen2-split')
+    // Gradient 3D pipa/botol - hijau muda
+    const gen2Green3D = defs.append('linearGradient')
+        .attr('id', 'grad-gen2-green-3d')
         .attr('x1', '0%').attr('y1', '0%')
-        .attr('x2', '100%').attr('y2', '0%');
-    gen2Split.append('stop').attr('offset', '0%').attr('stop-color', '#86efac');
-    gen2Split.append('stop').attr('offset', '50%').attr('stop-color', '#86efac');
-    gen2Split.append('stop').attr('offset', '50%').attr('stop-color', '#ef4444');
-    gen2Split.append('stop').attr('offset', '100%').attr('stop-color', '#ef4444');
+        .attr('x2', '0%').attr('y2', '100%');
+    gen2Green3D.append('stop').attr('offset', '0%').attr('stop-color', '#052e16');
+    gen2Green3D.append('stop').attr('offset', '12%').attr('stop-color', '#16a34a');
+    gen2Green3D.append('stop').attr('offset', '28%').attr('stop-color', '#bbf7d0');
+    gen2Green3D.append('stop').attr('offset', '50%').attr('stop-color', '#86efac');
+    gen2Green3D.append('stop').attr('offset', '78%').attr('stop-color', '#16a34a');
+    gen2Green3D.append('stop').attr('offset', '100%').attr('stop-color', '#052e16');
+
+    // Gradient 3D pipa/botol - merah
+    const gen2Red3D = defs.append('linearGradient')
+        .attr('id', 'grad-gen2-red-3d')
+        .attr('x1', '0%').attr('y1', '0%')
+        .attr('x2', '0%').attr('y2', '100%');
+    gen2Red3D.append('stop').attr('offset', '0%').attr('stop-color', '#450a0a');
+    gen2Red3D.append('stop').attr('offset', '12%').attr('stop-color', '#dc2626');
+    gen2Red3D.append('stop').attr('offset', '28%').attr('stop-color', '#fca5a5');
+    gen2Red3D.append('stop').attr('offset', '50%').attr('stop-color', '#ef4444');
+    gen2Red3D.append('stop').attr('offset', '78%').attr('stop-color', '#b91c1c');
+    gen2Red3D.append('stop').attr('offset', '100%').attr('stop-color', '#450a0a');
+
 
 
     const nodeGradients = [
@@ -2009,6 +2027,38 @@
             .attr('d', d => {
                 const { w, h } = cardDims(d);
                 return innerBatteryPath(w, h);
+            });
+
+        // Gen2: PIPA/BOTOL 3D - separo hijau muda, separo merah
+        nodeEnter.filter(d => d.data.type === 'gen2')
+            .append('path')
+            .attr('class', 'node-fill-green')
+            .attr('transform', d => `translate(${FILL_GAP},0)`)
+            .attr('d', d => {
+                const { w, h } = cardDims(d);
+                const wi = Math.max(12, w - FILL_GAP*2);
+                const hi = Math.max(12, h - FILL_GAP*2);
+                const halfW = wi / 2;
+                const r = Math.min(8, hi/2, halfW/2);
+                // kiri: hijau, setengah baterai tanpa nub
+                return `M ${r},${-hi/2} L ${halfW - r},${-hi/2} Q ${halfW},${-hi/2} ${halfW},${-hi/2 + r} L ${halfW},${hi/2 - r} Q ${halfW},${hi/2} ${halfW - r},${hi/2} L ${r},${hi/2} Q 0,${hi/2} 0,${hi/2 - r} L 0,${-hi/2 + r} Q 0,${-hi/2} ${r},${-hi/2} Z`;
+            });
+
+        nodeEnter.filter(d => d.data.type === 'gen2')
+            .append('path')
+            .attr('class', 'node-fill-red')
+            .attr('transform', d => `translate(${FILL_GAP},0)`)
+            .attr('d', d => {
+                const { w, h } = cardDims(d);
+                const wi = Math.max(12, w - FILL_GAP*2);
+                const hi = Math.max(12, h - FILL_GAP*2);
+                const halfW = wi / 2;
+                const nubW = 6;
+                const nubH = Math.min(hi * 0.34, 22);
+                const nubR = 2;
+                const r = Math.min(8, hi/2, (wi/2)/2);
+                // kanan: merah, setengah kanan + nub/tutup botol
+                return `M ${halfW},${-hi/2} L ${wi - r},${-hi/2} Q ${wi},${-hi/2} ${wi},${-hi/2 + r} L ${wi},${-nubH/2 - nubR} Q ${wi},${-nubH/2} ${wi + nubR},${-nubH/2} L ${wi + nubW - nubR},${-nubH/2} Q ${wi + nubW},${-nubH/2} ${wi + nubW},${-nubH/2 + nubR} L ${wi + nubW},${nubH/2 - nubR} Q ${wi + nubW},${nubH/2} ${wi + nubW - nubR},${nubH/2} L ${wi + nubR},${nubH/2} Q ${wi},${nubH/2} ${wi},${nubH/2 + nubR} L ${wi},${hi/2 - r} Q ${wi},${hi/2} ${wi - r},${hi/2} L ${halfW},${hi/2} Z`;
             });
 
         // ========== BADGE BUNGA BESAR UNTUK NODE "AMIRUL MUKMININ" (pasangan belum berketurunan) ==========
