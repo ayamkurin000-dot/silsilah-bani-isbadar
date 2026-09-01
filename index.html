@@ -20,10 +20,9 @@
             color: #1e293b;
             overflow: hidden;
             background-color: #f8fafc;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%2394a3b8' stroke-width='1' opacity='0.15'%3E%3Ccircle cx='0' cy='0' r='13'/%3E%3Ccircle cx='100' cy='0' r='13'/%3E%3Ccircle cx='0' cy='100' r='13'/%3E%3Ccircle cx='100' cy='100' r='13'/%3E%3Ccircle cx='50' cy='50' r='13'/%3E%3Ccircle cx='50' cy='28' r='5.5'/%3E%3Ccircle cx='50' cy='72' r='5.5'/%3E%3Ccircle cx='28' cy='50' r='5.5'/%3E%3Ccircle cx='72' cy='50' r='5.5'/%3E%3Ccircle cx='33' cy='33' r='5.5'/%3E%3Ccircle cx='67' cy='33' r='5.5'/%3E%3Ccircle cx='33' cy='67' r='5.5'/%3E%3Ccircle cx='67' cy='67' r='5.5'/%3E%3C/g%3E%3Cg fill='none' stroke='%23b45309' stroke-width='0.9' opacity='0.11'%3E%3Cpath d='M0 50 L4 46 M0 50 L4 54 M0 50 L-3 46 M0 50 L-3 54'/%3E%3Cpath d='M100 50 L96 46 M100 50 L96 54 M100 50 L103 46 M100 50 L103 54'/%3E%3Cpath d='M50 0 L46 4 M50 0 L54 4 M50 0 L46 -3 M50 0 L54 -3'/%3E%3Cpath d='M50 100 L46 96 M50 100 L54 96 M50 100 L46 103 M50 100 L54 103'/%3E%3Cpath d='M50 50 L54 46 M50 50 L54 54 M50 50 L46 46 M50 50 L46 54'/%3E%3C/g%3E%3Cg fill='none' stroke='%2394a3b8' stroke-width='0.6' opacity='0.09'%3E%3Cpath d='M8 92 L42 58 M58 42 L92 8'/%3E%3Cpath d='M92 92 L58 58 M42 42 L8 8'/%3E%3C/g%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%2394a3b8' stroke-width='1' opacity='0.14'%3E%3Ccircle cx='30' cy='30' r='16'/%3E%3Ccircle cx='90' cy='30' r='16'/%3E%3Ccircle cx='30' cy='90' r='16'/%3E%3Ccircle cx='90' cy='90' r='16'/%3E%3Ccircle cx='60' cy='60' r='16'/%3E%3C/g%3E%3C/svg%3E");
             background-repeat: repeat;
-            background-size: 100px 100px;
-            background-attachment: fixed;
+            background-size: 120px 120px;
         }
         #header {
             position: fixed;
@@ -209,6 +208,23 @@
             0% { opacity: 0; transform: translate(-50%, calc(-100% - 10px)); }
             100% { opacity: 1; transform: translate(-50%, -100%); }
         }
+
+        /* === MOBILE PERF PATCH === */
+        .node .node-shape {
+            will-change: transform;
+        }
+        @media (max-width: 640px) {
+            body { background-attachment: scroll !important; }
+            .node .node-shape {
+                filter: none !important;
+                transition: transform 0.12s ease !important;
+            }
+            .node:hover .node-shape {
+                filter: none !important;
+            }
+            #cursor-fx { display: none !important; }
+        }
+
         #cursor-fx {
             position: fixed;
             top: 0;
@@ -632,13 +648,13 @@
             }
         }
         .node.shake-highlight .node-shape {
-            animation: shake-node 0.5s ease-in-out 3, shake-border-color 0.5s ease-in-out 3;
+            animation: shake-node 0.35s ease-in-out 1;
             transform-origin: center;
             stroke-width: 4px !important;
         }
         @keyframes shake-border-color {
-            0%, 100% { stroke: #000000; filter: drop-shadow(0 0 0px rgba(245, 158, 11, 0)); }
-            50% { stroke: #f59e0b; filter: drop-shadow(0 0 14px rgba(245, 158, 11, 0.85)); }
+            0%, 100% { stroke: #000000; }
+            50% { stroke: #f59e0b; }
         }
         @keyframes shake-node {
             0%, 100% { transform: translateX(0) scale(1); }
@@ -1842,7 +1858,6 @@
         const nodeSel = gContainer.selectAll('g.node')
             .filter(n => n === targetNode || (n.data && n.data.name === targetNode.data.name));
         nodeSel.classed('shake-highlight', false);
-        nodeSel.node() && nodeSel.node().getBoundingClientRect();
         nodeSel.classed('shake-highlight', true);
         setTimeout(() => nodeSel.classed('shake-highlight', false), 1600);
     }
