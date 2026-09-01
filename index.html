@@ -671,30 +671,34 @@
             stroke-width: 2px;
         }
         .node-shape {
-            fill: #ffffff;
+            fill: none !important;
+            stroke: #0f172a;
+            stroke-width: 2.5px;
         }
-        .node-fill {
-            pointer-events: none;
-            stroke: none;
+        .node-fill,
+        .node-fill-green,
+        .node-fill-red,
+        .node-fill-shine,
+        .battery-bars,
+        .battery-bar,
+        .battery-bar-stripe {
+            display: none !important;
         }
-        /* === WARNA SOLID PER GENERASI - ARWANI (gen2) = HIJAU === */
-        .node-root .node-fill { fill: #fcd34d; } /* kuning amber - bukan hijau */
-        .node-wife .node-fill { fill: #f9a8d4; } /* pink */
-        .node-gen1 .node-fill { fill: #fda4af; } /* rose */
-        .node-gen2 .node-fill { display: none; } /* hidden, replaced by 3D split */
-        .node-gen2 .node-fill-green { fill: url(#grad-gen2-green-3d); pointer-events: none; stroke: none; }
-        .node-gen2 .node-fill-red { fill: url(#grad-gen2-red-3d); pointer-events: none; stroke: none; }
-        .node-gen2 .node-fill-shine { display: none; }
-        .node-gen3 .node-fill { fill: #60a5fa; } /* biru */
-        .node-gen4 .node-fill { fill: #a78bfa; } /* ungu */
-        .node-gen5 .node-fill { fill: #fb923c; } /* oranye */
-        .node-gen6 .node-fill { fill: #2dd4bf; } /* teal */
-        .node-gen7 .node-fill { fill: #f472b6; } /* pink tua */
-        .node-gen8 .node-fill { fill: #38bdf8; } /* sky blue */
-        .node-founder .node-fill { fill: url(#grad-battery-scale); }
-
+        /* pastikan semua generasi hanya bingkai */
+        .node-root .node-shape,
+        .node-wife .node-shape,
+        .node-gen1 .node-shape,
+        .node-gen2 .node-shape,
+        .node-gen3 .node-shape,
+        .node-gen4 .node-shape,
+        .node-gen5 .node-shape,
+        .node-gen6 .node-shape,
+        .node-gen7 .node-shape,
+        .node-gen8 .node-shape,
+        .node-founder .node-shape {
+            fill: none !important;
+        }
         .battery-bars {
-            display: none;
             pointer-events: none;
         }
         .battery-bar {
@@ -708,9 +712,6 @@
         }
         .node-gen1 .battery-bar {
             fill: #fca5a5;
-        }
-        .node-gen2 .battery-bar {
-            fill: #fdba74;
         }
         .node-gen3 .battery-bar {
             fill: #93c5fd;
@@ -729,6 +730,35 @@
         }
         .node-gen8 .battery-bar {
             fill: #93c5fd;
+        }
+        /* ===== Shape baterai full-frame bergradasi pipa 3D: root + gen1-gen5 ===== */
+        .node-root .battery-bars,
+        .node-root .battery-bar,
+        .node-gen1 .battery-bars,
+        .node-gen1 .battery-bar,
+        .node-gen2 .battery-bars,
+        .node-gen2 .battery-bar,
+        .node-gen3 .battery-bars,
+        .node-gen3 .battery-bar,
+        .node-gen4 .battery-bars,
+        .node-gen4 .battery-bar,
+        .node-gen5 .battery-bars,
+        .node-gen5 .battery-bar {
+            display: block !important;
+        }
+        .node-root .battery-bar { fill: url(#grad-tube-root) !important; stroke: #444444; stroke-width: 0.75px; }
+        .node-gen1 .battery-bar { fill: url(#grad-tube-gen1) !important; stroke: #0c3d66; stroke-width: 0.75px; }
+        .node-gen2 .battery-bar { fill: url(#grad-tube-gen2) !important; stroke: #14532d; stroke-width: 0.75px; }
+        .node-gen3 .battery-bar { fill: url(#grad-tube-gen3) !important; stroke: #831843; stroke-width: 0.75px; }
+        .node-gen4 .battery-bar { fill: url(#grad-tube-gen4) !important; stroke: #4c1d95; stroke-width: 0.75px; }
+        .node-gen5 .battery-bar { fill: url(#grad-tube-gen5) !important; stroke: #713f12; stroke-width: 0.75px; }
+        .node-root .battery-bar-stripe,
+        .node-gen1 .battery-bar-stripe,
+        .node-gen2 .battery-bar-stripe,
+        .node-gen3 .battery-bar-stripe,
+        .node-gen4 .battery-bar-stripe,
+        .node-gen5 .battery-bar-stripe {
+            display: none !important;
         }
         .node-founder .node-shape {
             stroke-width: 4.5px;
@@ -1547,31 +1577,11 @@
             `L 0,${y0 + r} Q 0,${y0} ${r},${y0} Z`;
     }
 
-    const FILL_GAP = 6;
-    function innerBatteryPath(w, h) {
-        const gap = FILL_GAP;
-        const wi = Math.max(12, w - gap*2);
-        const hi = Math.max(12, h - gap*2);
-        const r = Math.min(8, hi / 2, wi / 2);
-        const nubH = Math.min(hi * 0.34, 22);
-        const nubW = 6;
-        const nubR = 2;
-        const y0 = -hi / 2, y1 = hi / 2;
-        return `M ${r},${y0} L ${wi - r},${y0} Q ${wi},${y0} ${wi},${y0 + r} ` +
-            `L ${wi},${-nubH / 2 - nubR} Q ${wi},${-nubH / 2} ${wi + nubR},${-nubH / 2} ` +
-            `L ${wi + nubW - nubR},${-nubH / 2} Q ${wi + nubW},${-nubH / 2} ${wi + nubW},${-nubH / 2 + nubR} ` +
-            `L ${wi + nubW},${nubH / 2 - nubR} Q ${wi + nubW},${nubH / 2} ${wi + nubW - nubR},${nubH / 2} ` +
-            `L ${wi + nubR},${nubH / 2} Q ${wi},${nubH / 2} ${wi},${nubH / 2 + nubR} ` +
-            `L ${wi},${y1 - r} Q ${wi},${y1} ${wi - r},${y1} ` +
-            `L ${r},${y1} Q 0,${y1} 0,${y1 - r} ` +
-            `L 0,${y0 + r} Q 0,${y0} ${r},${y0} Z`;
-    }
-
-    function batteryBars(w, h) {
+    function batteryBars(w, h, forceCount, pad) {
         if (!w || !h) return [];
-        const count = w >= 300 ? 6 : 4;
-        const padX = 18;
-        const padY = 10;
+        const count = forceCount || (w >= 300 ? 6 : 4);
+        const padX = (pad && pad.x !== undefined) ? pad.x : 18;
+        const padY = (pad && pad.y !== undefined) ? pad.y : 10;
         const gap = 6;
         const usableW = w - padX * 2;
         const barW = (usableW - (count - 1) * gap) / count;
@@ -1665,6 +1675,82 @@
 
 
 
+    // Gradasi tabung 3D per generasi (arah vertikal: terang di atas, gelap di bawah)
+    function addTubeGradient(id, stops) {
+        const g = defs.append('linearGradient')
+            .attr('id', id)
+            .attr('x1', '0%').attr('y1', '0%')
+            .attr('x2', '0%').attr('y2', '100%');
+        stops.forEach(s => g.append('stop').attr('offset', s.off).attr('stop-color', s.c));
+        return g;
+    }
+    addTubeGradient('grad-tube-gen1', [
+        { off: '0%', c: '#bfdbfe' },
+        { off: '12%', c: '#eff6ff' },
+        { off: '32%', c: '#60a5fa' },
+        { off: '55%', c: '#2563eb' },
+        { off: '78%', c: '#1d4ed8' },
+        { off: '100%', c: '#1e3a8a' }
+    ]);
+    addTubeGradient('grad-tube-gen2', [
+        { off: '0%', c: '#bbf7d0' },
+        { off: '12%', c: '#f0fdf4' },
+        { off: '32%', c: '#4ade80' },
+        { off: '55%', c: '#16a34a' },
+        { off: '78%', c: '#15803d' },
+        { off: '100%', c: '#14532d' }
+    ]);
+    addTubeGradient('grad-tube-gen3', [
+        { off: '0%', c: '#fbcfe8' },
+        { off: '12%', c: '#fdf2f8' },
+        { off: '32%', c: '#f472b6' },
+        { off: '55%', c: '#db2777' },
+        { off: '78%', c: '#be185d' },
+        { off: '100%', c: '#831843' }
+    ]);
+    addTubeGradient('grad-tube-gen4', [
+        { off: '0%', c: '#ddd6fe' },
+        { off: '12%', c: '#f5f3ff' },
+        { off: '32%', c: '#a78bfa' },
+        { off: '55%', c: '#7c3aed' },
+        { off: '78%', c: '#6d28d9' },
+        { off: '100%', c: '#4c1d95' }
+    ]);
+    addTubeGradient('grad-tube-gen5', [
+        { off: '0%', c: '#fef08a' },
+        { off: '12%', c: '#fefce8' },
+        { off: '32%', c: '#facc15' },
+        { off: '55%', c: '#ca8a04' },
+        { off: '78%', c: '#a16207' },
+        { off: '100%', c: '#713f12' }
+    ]);
+    // Root: gradasi pelangi horizontal
+    const tubeRoot = defs.append('linearGradient')
+        .attr('id', 'grad-tube-root')
+        .attr('x1', '0%').attr('y1', '0%')
+        .attr('x2', '100%').attr('y2', '0%');
+    [
+        { off: '0%', c: '#ef4444' },
+        { off: '17%', c: '#f97316' },
+        { off: '34%', c: '#eab308' },
+        { off: '51%', c: '#22c55e' },
+        { off: '68%', c: '#3b82f6' },
+        { off: '84%', c: '#6366f1' },
+        { off: '100%', c: '#a855f7' }
+    ].forEach(s => tubeRoot.append('stop').attr('offset', s.off).attr('stop-color', s.c));
+    // Overlay kilap kaca vertikal (dipakai di atas warna pelangi root agar tetap terasa tabung 3D)
+    const glassGloss = defs.append('linearGradient')
+        .attr('id', 'grad-glass-gloss')
+        .attr('x1', '0%').attr('y1', '0%')
+        .attr('x2', '0%').attr('y2', '100%');
+    [
+        { off: '0%', c: '#ffffff', o: 0.6 },
+        { off: '28%', c: '#ffffff', o: 0.08 },
+        { off: '55%', c: '#000000', o: 0 },
+        { off: '80%', c: '#000000', o: 0.16 },
+        { off: '100%', c: '#000000', o: 0.32 }
+    ].forEach(s => glassGloss.append('stop').attr('offset', s.off).attr('stop-color', s.c).attr('stop-opacity', s.o));
+
     // Gradient khusus root/founder: merah - oranye - kuning - hijau (spt indikator baterai)
     const battScale = defs.append('linearGradient')
         .attr('id', 'grad-battery-scale')
@@ -1677,31 +1763,6 @@
         { off: '60%', c: '#eab308' },
         { off: '100%', c: '#22c55e' }
     ].forEach(s => battScale.append('stop').attr('offset', s.off).attr('stop-color', s.c));
-
-    // Gradient 3D pipa/botol - hijau muda
-    const gen2Green3D = defs.append('linearGradient')
-        .attr('id', 'grad-gen2-green-3d')
-        .attr('x1', '0%').attr('y1', '0%')
-        .attr('x2', '0%').attr('y2', '100%');
-    gen2Green3D.append('stop').attr('offset', '0%').attr('stop-color', '#052e16');
-    gen2Green3D.append('stop').attr('offset', '12%').attr('stop-color', '#16a34a');
-    gen2Green3D.append('stop').attr('offset', '28%').attr('stop-color', '#bbf7d0');
-    gen2Green3D.append('stop').attr('offset', '50%').attr('stop-color', '#86efac');
-    gen2Green3D.append('stop').attr('offset', '78%').attr('stop-color', '#16a34a');
-    gen2Green3D.append('stop').attr('offset', '100%').attr('stop-color', '#052e16');
-
-    // Gradient 3D pipa/botol - merah
-    const gen2Red3D = defs.append('linearGradient')
-        .attr('id', 'grad-gen2-red-3d')
-        .attr('x1', '0%').attr('y1', '0%')
-        .attr('x2', '0%').attr('y2', '100%');
-    gen2Red3D.append('stop').attr('offset', '0%').attr('stop-color', '#450a0a');
-    gen2Red3D.append('stop').attr('offset', '12%').attr('stop-color', '#dc2626');
-    gen2Red3D.append('stop').attr('offset', '28%').attr('stop-color', '#fca5a5');
-    gen2Red3D.append('stop').attr('offset', '50%').attr('stop-color', '#ef4444');
-    gen2Red3D.append('stop').attr('offset', '78%').attr('stop-color', '#b91c1c');
-    gen2Red3D.append('stop').attr('offset', '100%').attr('stop-color', '#450a0a');
-
 
 
     const nodeGradients = [
@@ -2012,53 +2073,12 @@
                 }
             });
 
-        // Shape node - outer frame (white + black border)
+        // Shape node
         nodeEnter.append('path')
             .attr('class', 'node-shape')
             .attr('d', d => {
                 const { w, h } = cardDims(d);
                 return batteryPath(w, h);
-            });
-
-        // Inner solid fill dengan jarak gap dari bingkai
-        nodeEnter.append('path')
-            .attr('class', 'node-fill')
-            .attr('transform', d => `translate(${FILL_GAP},0)`)
-            .attr('d', d => {
-                const { w, h } = cardDims(d);
-                return innerBatteryPath(w, h);
-            });
-
-        // Gen2: PIPA/BOTOL 3D - separo hijau muda, separo merah
-        nodeEnter.filter(d => d.data.type === 'gen2')
-            .append('path')
-            .attr('class', 'node-fill-green')
-            .attr('transform', d => `translate(${FILL_GAP},0)`)
-            .attr('d', d => {
-                const { w, h } = cardDims(d);
-                const wi = Math.max(12, w - FILL_GAP*2);
-                const hi = Math.max(12, h - FILL_GAP*2);
-                const halfW = wi / 2;
-                const r = Math.min(8, hi/2, halfW/2);
-                // kiri: hijau, setengah baterai tanpa nub
-                return `M ${r},${-hi/2} L ${halfW - r},${-hi/2} Q ${halfW},${-hi/2} ${halfW},${-hi/2 + r} L ${halfW},${hi/2 - r} Q ${halfW},${hi/2} ${halfW - r},${hi/2} L ${r},${hi/2} Q 0,${hi/2} 0,${hi/2 - r} L 0,${-hi/2 + r} Q 0,${-hi/2} ${r},${-hi/2} Z`;
-            });
-
-        nodeEnter.filter(d => d.data.type === 'gen2')
-            .append('path')
-            .attr('class', 'node-fill-red')
-            .attr('transform', d => `translate(${FILL_GAP},0)`)
-            .attr('d', d => {
-                const { w, h } = cardDims(d);
-                const wi = Math.max(12, w - FILL_GAP*2);
-                const hi = Math.max(12, h - FILL_GAP*2);
-                const halfW = wi / 2;
-                const nubW = 6;
-                const nubH = Math.min(hi * 0.34, 22);
-                const nubR = 2;
-                const r = Math.min(8, hi/2, (wi/2)/2);
-                // kanan: merah, setengah kanan + nub/tutup botol
-                return `M ${halfW},${-hi/2} L ${wi - r},${-hi/2} Q ${wi},${-hi/2} ${wi},${-hi/2 + r} L ${wi},${-nubH/2 - nubR} Q ${wi},${-nubH/2} ${wi + nubR},${-nubH/2} L ${wi + nubW - nubR},${-nubH/2} Q ${wi + nubW},${-nubH/2} ${wi + nubW},${-nubH/2 + nubR} L ${wi + nubW},${nubH/2 - nubR} Q ${wi + nubW},${nubH/2} ${wi + nubW - nubR},${nubH/2} L ${wi + nubR},${nubH/2} Q ${wi},${nubH/2} ${wi},${nubH/2 + nubR} L ${wi},${hi/2 - r} Q ${wi},${hi/2} ${wi - r},${hi/2} L ${halfW},${hi/2} Z`;
             });
 
         // ========== BADGE BUNGA BESAR UNTUK NODE "AMIRUL MUKMININ" (pasangan belum berketurunan) ==========
@@ -2094,7 +2114,13 @@
             .attr('class', 'battery-bars')
             .each(function(d) {
                 const { w, h } = cardDims(d);
-                const bars = batteryBars(w, h);
+                const tubeTypes = ['root', 'gen1', 'gen2', 'gen3', 'gen4', 'gen5'];
+                const isTube = tubeTypes.includes(d.data.type);
+                const forceCount = isTube ? 1 : undefined;
+                const pad = isTube ? { x: 4, y: 4 } : undefined;
+                const shapeR = Math.min(14, h / 2, w / 2);
+                const barRx = isTube ? Math.max(shapeR - 4, 0) : 4;
+                const bars = batteryBars(w, h, forceCount, pad);
                 const g = d3.select(this);
                 g.selectAll('.battery-bar')
                     .data(bars)
@@ -2105,7 +2131,7 @@
                     .attr('y', b => b.y)
                     .attr('width', b => b.w)
                     .attr('height', b => b.h)
-                    .attr('rx', 4);
+                    .attr('rx', barRx);
                 // Overlay garis diagonal putih di atas tiap bar (motif seperti indikator baterai)
                 g.selectAll('.battery-bar-stripe')
                     .data(bars)
@@ -2116,9 +2142,25 @@
                     .attr('y', b => b.y)
                     .attr('width', b => b.w)
                     .attr('height', b => b.h)
-                    .attr('rx', 4)
+                    .attr('rx', barRx)
                     .attr('fill', 'url(#diag-stripes)')
                     .attr('pointer-events', 'none');
+                // Overlay kilap kaca vertikal khusus root (warna dasarnya pelangi horizontal,
+                // overlay ini memberi kesan terang di atas - gelap di bawah seperti pipa 3D)
+                if (d.data.type === 'root') {
+                    g.selectAll('.battery-bar-gloss')
+                        .data(bars)
+                        .enter()
+                        .append('rect')
+                        .attr('class', 'battery-bar-gloss')
+                        .attr('x', b => b.x)
+                        .attr('y', b => b.y)
+                        .attr('width', b => b.w)
+                        .attr('height', b => b.h)
+                        .attr('rx', barRx)
+                        .attr('fill', 'url(#grad-glass-gloss)')
+                        .attr('pointer-events', 'none');
+                }
             });
 
         // ========== GARIS PEMBATAS UNTUK ROOT ==========
