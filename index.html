@@ -19,8 +19,9 @@
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             color: #1e293b;
             overflow: hidden;
-            background-color: #f8fafc;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%2394a3b8' stroke-width='1' opacity='0.14'%3E%3Ccircle cx='30' cy='30' r='16'/%3E%3Ccircle cx='90' cy='30' r='16'/%3E%3Ccircle cx='30' cy='90' r='16'/%3E%3Ccircle cx='90' cy='90' r='16'/%3E%3Ccircle cx='60' cy='60' r='16'/%3E%3C/g%3E%3C/svg%3E");
+            background-color: #fdfbf7;
+            background-image: linear-gradient(135deg, #fdfbf7 0%, #eff6ff 35%, #f5f3ff 70%, #fefce8 100%);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%2394a3b8' stroke-width='1' opacity='0.06'%3E%3Ccircle cx='30' cy='30' r='16'/%3E%3Ccircle cx='90' cy='30' r='16'/%3E%3Ccircle cx='30' cy='90' r='16'/%3E%3Ccircle cx='90' cy='90' r='16'/%3E%3Ccircle cx='60' cy='60' r='16'/%3E%3C/g%3E%3C/svg%3E");
             background-repeat: repeat;
             background-size: 120px 120px;
         }
@@ -31,7 +32,7 @@
             right: 0;
             background: #ffffff;
             padding: 14px 24px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 2px 12px rgba(148,163,184,0.12);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -54,7 +55,7 @@
             flex-wrap: wrap;
         }
         .btn {
-            background: #3b82f6;
+            background: linear-gradient(135deg, #93c5fd, #a5b4fc);
             color: white;
             border: none;
             padding: 6px 14px;
@@ -65,7 +66,7 @@
             transition: 0.2s ease;
         }
         .btn:hover {
-            background: #2563eb;
+            background: linear-gradient(135deg, #60a5fa, #818cf8);
         }
         .btn:disabled,
         .btn[disabled] {
@@ -372,7 +373,7 @@
             position: relative;
         }
         #panel-switcher button.active {
-            background: #3b82f6;
+            background: linear-gradient(135deg, #93c5fd, #a5b4fc);
             color: white;
         }
         #panel-switcher button:hover:not(.active) {
@@ -380,7 +381,7 @@
             color: #1d4ed8;
         }
         #panel-switcher button.active:hover {
-            background: #2563eb;
+            background: linear-gradient(135deg, #60a5fa, #818cf8);
         }
         #chat-panel {
             position: fixed;
@@ -1685,44 +1686,29 @@
         return g;
     }
     addTubeGradient('grad-tube-gen1', [
-        { off: '0%', c: '#bfdbfe' },
-        { off: '12%', c: '#eff6ff' },
-        { off: '32%', c: '#60a5fa' },
-        { off: '55%', c: '#2563eb' },
-        { off: '78%', c: '#1d4ed8' },
-        { off: '100%', c: '#1e3a8a' }
+        { off: '0%', c: '#eff6ff' },
+        { off: '35%', c: '#dbeafe' },
+        { off: '100%', c: '#bfdbfe' }
     ]);
     addTubeGradient('grad-tube-gen2', [
-        { off: '0%', c: '#bbf7d0' },
-        { off: '12%', c: '#f0fdf4' },
-        { off: '32%', c: '#4ade80' },
-        { off: '55%', c: '#16a34a' },
-        { off: '78%', c: '#15803d' },
-        { off: '100%', c: '#14532d' }
+        { off: '0%', c: '#f0fdf4' },
+        { off: '35%', c: '#dcfce7' },
+        { off: '100%', c: '#bbf7d0' }
     ]);
     addTubeGradient('grad-tube-gen3', [
-        { off: '0%', c: '#fbcfe8' },
-        { off: '12%', c: '#fdf2f8' },
-        { off: '32%', c: '#f472b6' },
-        { off: '55%', c: '#db2777' },
-        { off: '78%', c: '#be185d' },
-        { off: '100%', c: '#831843' }
+        { off: '0%', c: '#fdf2f8' },
+        { off: '35%', c: '#fce7f3' },
+        { off: '100%', c: '#fbcfe8' }
     ]);
     addTubeGradient('grad-tube-gen4', [
-        { off: '0%', c: '#ddd6fe' },
-        { off: '12%', c: '#f5f3ff' },
-        { off: '32%', c: '#a78bfa' },
-        { off: '55%', c: '#7c3aed' },
-        { off: '78%', c: '#6d28d9' },
-        { off: '100%', c: '#4c1d95' }
+        { off: '0%', c: '#f5f3ff' },
+        { off: '35%', c: '#ede9fe' },
+        { off: '100%', c: '#ddd6fe' }
     ]);
     addTubeGradient('grad-tube-gen5', [
-        { off: '0%', c: '#fef08a' },
-        { off: '12%', c: '#fefce8' },
-        { off: '32%', c: '#facc15' },
-        { off: '55%', c: '#ca8a04' },
-        { off: '78%', c: '#a16207' },
-        { off: '100%', c: '#713f12' }
+        { off: '0%', c: '#fefce8' },
+        { off: '35%', c: '#fef9c3' },
+        { off: '100%', c: '#fde68a' }
     ]);
     // Root: gradasi pelangi horizontal
     const tubeRoot = defs.append('linearGradient')
@@ -1751,6 +1737,31 @@
         { off: '100%', c: '#000000', o: 0.32 }
     ].forEach(s => glassGloss.append('stop').attr('offset', s.off).attr('stop-color', s.c).attr('stop-opacity', s.o));
 
+    // Pola "rusuk silinder" berulang (spt sel-sel baterai pada foto): dipakai sbg overlay
+    // blend-mode di atas warna dasar tiap generasi agar terlihat seperti beberapa tabung kaca
+    // berjajar, bukan satu gradasi polos.
+    const ribTileGrad = defs.append('linearGradient')
+        .attr('id', 'grad-rib-tile')
+        .attr('x1', '0%').attr('y1', '0%')
+        .attr('x2', '100%').attr('y2', '0%');
+    [
+        { off: '0%', c: '#000000', o: 0.38 },
+        { off: '9%', c: '#000000', o: 0.12 },
+        { off: '26%', c: '#ffffff', o: 0.6 },
+        { off: '46%', c: '#ffffff', o: 0 },
+        { off: '72%', c: '#000000', o: 0.05 },
+        { off: '100%', c: '#000000', o: 0.38 }
+    ].forEach(s => ribTileGrad.append('stop').attr('offset', s.off).attr('stop-color', s.c).attr('stop-opacity', s.o));
+    const ribSegWidth = 24;
+    defs.append('pattern')
+        .attr('id', 'patt-rib-overlay')
+        .attr('patternUnits', 'userSpaceOnUse')
+        .attr('x', 0).attr('y', 0)
+        .attr('width', ribSegWidth).attr('height', 300)
+        .append('rect')
+        .attr('x', 0).attr('y', 0).attr('width', ribSegWidth).attr('height', 300)
+        .attr('fill', 'url(#grad-rib-tile)');
+
     // Gradient khusus root/founder: merah - oranye - kuning - hijau (spt indikator baterai)
     const battScale = defs.append('linearGradient')
         .attr('id', 'grad-battery-scale')
@@ -1766,17 +1777,17 @@
 
 
     const nodeGradients = [
-        { id: 'grad-root', c1: '#fffbeb', c2: '#fcd34d' },
-        { id: 'grad-wife', c1: '#fdf4ff', c2: '#e879f9' },
-        { id: 'grad-gen1', c1: '#ffe4e6', c2: '#fb7185' },
-        { id: 'grad-gen2', c1: '#ffedd5', c2: '#fb923c' },
-        { id: 'grad-gen3', c1: '#fef9c3', c2: '#facc15' },
-        { id: 'grad-gen4', c1: '#dcfce7', c2: '#4ade80' },
-        { id: 'grad-gen5', c1: '#ccfbf1', c2: '#2dd4bf' },
-        { id: 'grad-gen6', c1: '#dbeafe', c2: '#60a5fa' },
-        { id: 'grad-gen7', c1: '#e0e7ff', c2: '#818cf8' },
-        { id: 'grad-gen8', c1: '#f3e8ff', c2: '#c084fc' },
-        { id: 'grad-founder', c1: '#fef3c7', c2: '#eab308' }
+        { id: 'grad-root', c1: '#fffbeb', c2: '#fef3c7' },
+        { id: 'grad-wife', c1: '#fdf2f8', c2: '#fce7f3' },
+        { id: 'grad-gen1', c1: '#fff1f2', c2: '#ffe4e6' },
+        { id: 'grad-gen2', c1: '#fff7ed', c2: '#ffedd5' },
+        { id: 'grad-gen3', c1: '#fefce8', c2: '#fef9c3' },
+        { id: 'grad-gen4', c1: '#f0fdf4', c2: '#dcfce7' },
+        { id: 'grad-gen5', c1: '#f0fdfa', c2: '#ccfbf1' },
+        { id: 'grad-gen6', c1: '#eff6ff', c2: '#dbeafe' },
+        { id: 'grad-gen7', c1: '#eef2ff', c2: '#e0e7ff' },
+        { id: 'grad-gen8', c1: '#faf5ff', c2: '#f3e8ff' },
+        { id: 'grad-founder', c1: '#fffbeb', c2: '#fef3c7' }
     ];
     nodeGradients.forEach(g => {
         const lg = defs.append('linearGradient')
@@ -3514,7 +3525,7 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        const palette = ['#3b82f6', '#db2777', '#4f46e5', '#16a34a', '#9333ea', '#ca8a04', '#f472b6', '#60a5fa'];
+        const palette = ['#93c5fd', '#f9a8d4', '#a5b4fc', '#86efac', '#c4b5fd', '#fde68a', '#fbcfe8', '#bfdbfe'];
 
         let mouseX = w / 2,
             mouseY = h / 2;
@@ -3567,9 +3578,9 @@
 
             if (hasMoved) {
                 const glow = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 30);
-                glow.addColorStop(0, 'rgba(59,130,246,0.3)');
-                glow.addColorStop(0.5, 'rgba(147,51,234,0.12)');
-                glow.addColorStop(1, 'rgba(59,130,246,0)');
+                glow.addColorStop(0, 'rgba(147,197,253,0.25)');
+                glow.addColorStop(0.5, 'rgba(196,181,253,0.15)');
+                glow.addColorStop(1, 'rgba(253,251,247,0)');
                 ctx.fillStyle = glow;
                 ctx.beginPath();
                 ctx.arc(mouseX, mouseY, 30, 0, Math.PI * 2);
