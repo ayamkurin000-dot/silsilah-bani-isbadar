@@ -2474,8 +2474,7 @@
     }
 
     function diagonal(s, d) {
-        let w1 = cardWidth;
-        if (s.data && s.data.name === 'ISBADAR bin BURNAWI') w1 = founderCardWidth;
+        const w1 = s.data ? cardDims(s).w : cardWidth;
         return `M ${s.y + w1} ${s.x}
                     C ${(s.y + w1 + d.y) / 2} ${s.x},
                       ${(s.y + w1 + d.y) / 2} ${d.x},
