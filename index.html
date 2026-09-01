@@ -681,7 +681,7 @@
         .node-root .node-fill { fill: #fcd34d; } /* kuning amber - bukan hijau */
         .node-wife .node-fill { fill: #f9a8d4; } /* pink */
         .node-gen1 .node-fill { fill: #fda4af; } /* rose */
-        .node-gen2 .node-fill { fill: #16a34a; } /* HIJAU SOLID untuk ARWANI */
+        .node-gen2 .node-fill { fill: url(#grad-gen2-split); } /* HIJAU MUDA SEPARO - MERAH SEPARO untuk ARWANI */
         .node-gen3 .node-fill { fill: #60a5fa; } /* biru */
         .node-gen4 .node-fill { fill: #a78bfa; } /* ungu */
         .node-gen5 .node-fill { fill: #fb923c; } /* oranye */
@@ -1674,6 +1674,17 @@
         { off: '60%', c: '#eab308' },
         { off: '100%', c: '#22c55e' }
     ].forEach(s => battScale.append('stop').attr('offset', s.off).attr('stop-color', s.c));
+
+    // Gradient khusus gen2: separo hijau muda - separo merah
+    const gen2Split = defs.append('linearGradient')
+        .attr('id', 'grad-gen2-split')
+        .attr('x1', '0%').attr('y1', '0%')
+        .attr('x2', '100%').attr('y2', '0%');
+    gen2Split.append('stop').attr('offset', '0%').attr('stop-color', '#86efac');
+    gen2Split.append('stop').attr('offset', '50%').attr('stop-color', '#86efac');
+    gen2Split.append('stop').attr('offset', '50%').attr('stop-color', '#ef4444');
+    gen2Split.append('stop').attr('offset', '100%').attr('stop-color', '#ef4444');
+
 
     const nodeGradients = [
         { id: 'grad-root', c1: '#fffbeb', c2: '#fcd34d' },
