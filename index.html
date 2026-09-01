@@ -673,7 +673,24 @@
         .node-shape {
             fill: #ffffff;
         }
+        .node-fill {
+            pointer-events: none;
+            stroke: none;
+        }
+        .node-root .node-fill { fill: #86efac; }
+        .node-wife .node-fill { fill: #f9a8d4; }
+        .node-gen1 .node-fill { fill: #fda4af; }
+        .node-gen2 .node-fill { fill: #fdba74; }
+        .node-gen3 .node-fill { fill: #fde047; }
+        .node-gen4 .node-fill { fill: #86efac; }
+        .node-gen5 .node-fill { fill: #5eead4; }
+        .node-gen6 .node-fill { fill: #7dd3fc; }
+        .node-gen7 .node-fill { fill: #c4b5fd; }
+        .node-gen8 .node-fill { fill: #93c5fd; }
+        .node-founder .node-fill { fill: url(#grad-battery-scale); }
+
         .battery-bars {
+            display: none;
             pointer-events: none;
         }
         .battery-bar {
@@ -1526,6 +1543,26 @@
             `L 0,${y0 + r} Q 0,${y0} ${r},${y0} Z`;
     }
 
+    const FILL_GAP = 6;
+    function innerBatteryPath(w, h) {
+        const gap = FILL_GAP;
+        const wi = Math.max(12, w - gap*2);
+        const hi = Math.max(12, h - gap*2);
+        const r = Math.min(8, hi / 2, wi / 2);
+        const nubH = Math.min(hi * 0.34, 22);
+        const nubW = 6;
+        const nubR = 2;
+        const y0 = -hi / 2, y1 = hi / 2;
+        return `M ${r},${y0} L ${wi - r},${y0} Q ${wi},${y0} ${wi},${y0 + r} ` +
+            `L ${wi},${-nubH / 2 - nubR} Q ${wi},${-nubH / 2} ${wi + nubR},${-nubH / 2} ` +
+            `L ${wi + nubW - nubR},${-nubH / 2} Q ${wi + nubW},${-nubH / 2} ${wi + nubW},${-nubH / 2 + nubR} ` +
+            `L ${wi + nubW},${nubH / 2 - nubR} Q ${wi + nubW},${nubH / 2} ${wi + nubW - nubR},${nubH / 2} ` +
+            `L ${wi + nubR},${nubH / 2} Q ${wi},${nubH / 2} ${wi},${nubH / 2 + nubR} ` +
+            `L ${wi},${y1 - r} Q ${wi},${y1} ${wi - r},${y1} ` +
+            `L ${r},${y1} Q 0,${y1} 0,${y1 - r} ` +
+            `L 0,${y0 + r} Q 0,${y0} ${r},${y0} Z`;
+    }
+
     function batteryBars(w, h) {
         if (!w || !h) return [];
         const count = w >= 300 ? 6 : 4;
@@ -1945,12 +1982,21 @@
                 }
             });
 
-        // Shape node
+        // Shape node - outer frame (white + black border)
         nodeEnter.append('path')
             .attr('class', 'node-shape')
             .attr('d', d => {
                 const { w, h } = cardDims(d);
                 return batteryPath(w, h);
+            });
+
+        // Inner solid fill dengan jarak gap dari bingkai
+        nodeEnter.append('path')
+            .attr('class', 'node-fill')
+            .attr('transform', d => `translate(${FILL_GAP},0)`)
+            .attr('d', d => {
+                const { w, h } = cardDims(d);
+                return innerBatteryPath(w, h);
             });
 
         // ========== BADGE BUNGA BESAR UNTUK NODE "AMIRUL MUKMININ" (pasangan belum berketurunan) ==========
