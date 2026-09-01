@@ -772,11 +772,19 @@
             display: none;
         }
         .node-farath .node-shape {
-            fill: #ffffff;
+            fill: #ffffff !important;
+            stroke: #e5e7eb !important;
+            stroke-width: 1.2px !important;
+            filter: none !important;
         }
         .node-farath .battery-bar,
-        .node-farath .battery-bar-stripe {
-            display: none;
+        .node-farath .battery-bar-stripe,
+        .node-farath .node-gloss,
+        .node-farath .glass-gloss {
+            display: none !important;
+        }
+        .node-farath {
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.08)) !important;
         }
         .node-founder text.name-life {
             font-size: 18px;
@@ -860,7 +868,17 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
-    </style>
+    
+        .special-flower-badge, .deceased-flower-badge {
+            /* always in front */
+            isolation: isolate;
+        }
+        .deceased-flower-badge {
+            /* merah lebih pop in front */
+            filter: drop-shadow(0 3px 7px rgba(185,28,28,0.45)) !important;
+        }
+
+        </style>
 </head>
 <body>
     <div id="header">
@@ -2044,7 +2062,7 @@
             .attr('class', d => {
                 let cls = `node node-${d.data.type || 'gen3'}`;
                 if (d.data.name === 'ISBADAR bin BURNAWI') cls += ' node-founder';
-                if (d.data.name && d.data.name.toUpperCase().includes('FARATH')) cls += ' node-farath';
+                if ((d.data.name && d.data.name.toUpperCase().includes('FARATH')) || (d.data.extraName && d.data.extraName.toUpperCase().includes('FARATH'))) cls += ' node-farath';
                 return cls;
             })
             .attr("transform", d => `translate(${source.y0},${source.x0})`)
@@ -2092,32 +2110,8 @@
                 return batteryPath(w, h);
             });
 
-        // ========== BADGE BUNGA BESAR UNTUK NODE "AMIRUL MUKMININ" (pasangan belum berketurunan) ==========
-        nodeEnter.filter(d => d.data.specialBadge === 'flower')
-            .append('use')
-            .attr('href', '#big-flower-badge')
-            .attr('class', 'special-flower-badge')
-            .attr('transform', d => {
-                const { w, h } = cardDims(d);
-                return `translate(${w - 2},${-h / 2 - 2})`;
-            })
-            .style('pointer-events', 'none')
-            .style('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))');
-
-        // ========== BADGE BUNGA MERAH BESAR: HANYA UNTUK ANGGOTA BANI/KETURUNAN YANG SUDAH MENINGGAL ==========
-        // (bukan untuk pasangan/istri-suami yang meninggal saja — itu cukup bunga kecil di sebelah nama pasangan)
-        // Termasuk juga node "FARATH" (anak yang wafat sebelum dewasa / meninggal dunia)
-        nodeEnter.filter(d => d.data.deceased || (d.data.name && d.data.name.toUpperCase().includes('FARATH')))
-            .append('use')
-            .attr('href', '#big-flower-badge-red')
-            .attr('class', 'deceased-flower-badge')
-            .attr('transform', d => {
-                const { w, h } = cardDims(d);
-                return `translate(${w - 2},${-h / 2 - 2})`;
-            })
-            .style('pointer-events', 'none')
-            .style('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.35))');
-
+        
+        
 
 
         // Bar indikator baterai (aksen warna per generasi, transparan di belakang teks)
@@ -2173,6 +2167,34 @@
                         .attr('pointer-events', 'none');
                 }
             });
+
+        
+        // ========== BADGE BUNGA BESAR (AMIRUL MUKMININ) - IN FRONT OF SHAPE ==========
+        nodeEnter.filter(d => d.data.specialBadge === 'flower')
+            .append('use')
+            .attr('href', '#big-flower-badge')
+            .attr('class', 'special-flower-badge')
+            .attr('transform', d => {
+                const { w, h } = cardDims(d);
+                return `translate(${w - 2},${-h / 2 - 2}) scale(1.1)`;
+            })
+            .style('pointer-events', 'none')
+            .style('filter', 'drop-shadow(0 3px 6px rgba(0,0,0,0.35))')
+            .raise();
+
+        // ========== BADGE BUNGA MERAH (DECEASED / FARATH) - IN FRONT OF SHAPE ==========
+        nodeEnter.filter(d => d.data.deceased || (d.data.name && d.data.name.toUpperCase().includes('FARATH')) || (d.data.extraName && d.data.extraName.toUpperCase().includes('FARATH')))
+            .append('use')
+            .attr('href', '#big-flower-badge-red')
+            .attr('class', 'deceased-flower-badge')
+            .attr('transform', d => {
+                const { w, h } = cardDims(d);
+                return `translate(${w - 2},${-h / 2 - 2}) scale(1.15)`;
+            })
+            .style('pointer-events', 'none')
+            .style('filter', 'drop-shadow(0 3px 7px rgba(185,28,28,0.45))')
+            .raise();
+
 
         // ========== GARIS PEMBATAS UNTUK ROOT ==========
         nodeEnter.filter(d => d.data.name === 'ISBADAR bin BURNAWI')
