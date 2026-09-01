@@ -2265,8 +2265,7 @@
         const toggleIndicator = nodeEnter.append('g')
             .attr('class', 'toggle-indicator')
             .attr('transform', d => {
-                let w = cardWidth;
-                if (d.data.name === 'ISBADAR bin BURNAWI') w = founderCardWidth;
+                const { w } = cardDims(d);
                 return `translate(${w + 10},0)`;
             })
             .style('display', d => (d.children || d._children) ? null : 'none');
