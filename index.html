@@ -735,6 +735,8 @@
         /* ===== Shape baterai full-frame bergradasi pipa 3D: root + gen1-gen5 ===== */
         .node-root .battery-bars,
         .node-root .battery-bar,
+        .node-wife .battery-bars,
+        .node-wife .battery-bar,
         .node-gen1 .battery-bars,
         .node-gen1 .battery-bar,
         .node-gen2 .battery-bars,
@@ -748,12 +750,14 @@
             display: block !important;
         }
         .node-root .battery-bar { fill: url(#grad-tube-root) !important; stroke: #444444; stroke-width: 0.75px; }
+        .node-wife .battery-bar { fill: url(#grad-tube-wife) !important; stroke: #9d174d; stroke-width: 0.75px; }
         .node-gen1 .battery-bar { fill: url(#grad-tube-gen1) !important; stroke: #0c3d66; stroke-width: 0.75px; }
         .node-gen2 .battery-bar { fill: url(#grad-tube-gen2) !important; stroke: #14532d; stroke-width: 0.75px; }
         .node-gen3 .battery-bar { fill: url(#grad-tube-gen3) !important; stroke: #831843; stroke-width: 0.75px; }
         .node-gen4 .battery-bar { fill: url(#grad-tube-gen4) !important; stroke: #4c1d95; stroke-width: 0.75px; }
         .node-gen5 .battery-bar { fill: url(#grad-tube-gen5) !important; stroke: #713f12; stroke-width: 0.75px; }
         .node-root .battery-bar-stripe,
+        .node-wife .battery-bar-stripe,
         .node-gen1 .battery-bar-stripe,
         .node-gen2 .battery-bar-stripe,
         .node-gen3 .battery-bar-stripe,
@@ -1157,8 +1161,26 @@
                         { "name": "ZULFA ULINUHA", "life": "2000 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
                         { "name": "ZAHWA ANIN NAJWA", "life": "2005 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
                     ] },
-                    { "name": "NIKMATUROHMAH", "life": "1965 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
-                    { "name": "ASFIHANI", "life": "1966 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
+                    { "name": "NIKMATURROHMAH", "life": "1965 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "SAEKONI", "life": "1962 - ....", "spouse": "", "spouse_life": "", "type": "wife", "partnerOrder": 1, "address": "", "extraName": "", "children": [
+                            { "name": "ZAKIATU SILFIA DENI", "life": "1988 - ....", "spouse": "HENDRA ARDYANSYAH", "spouse_life": "1986 - ....", "type": "gen3", "address": "", "extraName": "", "children": [
+                                { "name": "GALLEA LAKEISHA", "life": "2014 - ....", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] }
+                            ] },
+                            { "name": "MOCH. SAYIDDANI FAUZA", "life": "1991 - ....", "spouse": "DESSY NURUL NIKMAH", "spouse_life": "1991 - ....", "type": "gen3", "address": "", "extraName": "", "children": [
+                                { "name": "SAYYID ADAM BEY KHALFANI", "life": "2019 - ....", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] },
+                                { "name": "CAIRO BANAFSHA RUMI", "life": "2020 - ....", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] },
+                                { "name": "SAYYID ASLAN MISHARY AHMAD", "life": "2022 - ....", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "children": [] }
+                            ] }
+                        ] },
+                        { "name": "ALI FAHAD", "life": "1964 - ....", "spouse": "", "spouse_life": "", "type": "wife", "partnerOrder": 2, "address": "", "extraName": "", "children": [
+                            { "name": "MOCH. FAISOL AL HIZAMI", "life": "2004 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                        ] }
+                    ] },
+                    { "name": "ASFIHANI", "life": "1968 - ....", "spouse": "UMI ZUBAIDAH", "spouse_life": "1970 - ....", "type": "gen2", "address": "", "extraName": "", "children": [
+                        { "name": "IBNU MOCH. ARDANI", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "MARIA ULFA DWI SURYANDARI", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "ABIL BAHRUL MUTTAQIN", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
+                    ] },
                     { "name": "AGUS WAHYUDI", "life": "1968 - ....", "spouse": "SITI", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "deceased": true, "children": [
                         { "name": "ADEK PUTRI DEWI ROHMAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
                     ] },
@@ -1578,6 +1600,12 @@
     const rootCardWidth = 260;
     const rootCardHeight = 68;
     const extraNameHeight = 18;
+    // ===== Ukuran & jarak khusus kotak "ISTERI/SUAMI" (pasangan ke-2 dst) =====
+    // Dibuat lebih kecil dari kartu utama supaya renggang & tidak menumpuk kotak lain.
+    const wifeCardWidth = Math.round(cardWidth * 0.72);   // ~173
+    const wifeCardHeight = Math.round(cardHeight * 0.72); // ~43
+    const wifeGapX = 60; // jarak renggang horizontal dari kotak utama (suami/isteri) - digeser lebih ke kanan
+    const wifeGapY = 10; // jarak renggang vertikal antar kotak isteri/suami yang bertumpuk
 
     function batteryPath(w, h) {
         if (!w || !h) return 'M0,0 Z';
@@ -1618,6 +1646,9 @@
         if (d.data.name === 'ISBADAR bin BURNAWI') {
             w = founderCardWidth;
             h = founderCardHeight;
+        } else if (d.data.type === 'wife') {
+            w = wifeCardWidth;
+            h = wifeCardHeight + (d.data.extraName ? extraNameHeight : 0) + (d.data.address ? extraNameHeight : 0);
         }
         return { w, h };
     }
@@ -1727,6 +1758,11 @@
         { off: '0%', c: '#fefce8' },
         { off: '35%', c: '#fef9c3' },
         { off: '100%', c: '#fde68a' }
+    ]);
+    addTubeGradient('grad-tube-wife', [
+        { off: '0%', c: '#fdf2f8' },
+        { off: '35%', c: '#fce7f3' },
+        { off: '100%', c: '#fbcfe8' }
     ]);
     // Root: gradasi pelangi horizontal
     const tubeRoot = defs.append('linearGradient')
@@ -2043,9 +2079,13 @@
         nodes.forEach(d => {
             if (d.data.type === 'wife' && d.parent) {
                 const order = d.data.partnerOrder || 1;
+                const { w: parentW, h: parentH } = cardDims(d.parent);
+                const { w: wifeW, h: wifeH } = cardDims(d);
+                const side = (order % 2 === 1) ? -1 : 1;      // ganjil ke atas, genap ke bawah
+                const rank = Math.ceil(order / 2);            // urutan bertumpuk pada sisi yang sama (1,1,2,2,...)
                 const oldX = d.x, oldY = d.y;
-                d.y = d.parent.y + cardWidth / 2;                                    // geser kanan separo lebar kotak suami
-                d.x = d.parent.x + (order % 2 === 1 ? -cardHeight / 2 : cardHeight / 2); // isteri ganjil ke atas, genap ke bawah
+                d.y = d.parent.y + parentW / 2 + wifeW / 2 + wifeGapX; // geser kanan, renggang penuh dari kotak utama
+                d.x = d.parent.x + side * (parentH / 2 + wifeGapY + (wifeH + wifeGapY) * (rank - 1) + wifeH / 2); // renggang vertikal antar kotak
                 const dx = d.x - oldX, dy = d.y - oldY;
                 d.descendants().forEach(desc => {
                     if (desc === d) return;
@@ -2119,7 +2159,7 @@
             .attr('class', 'battery-bars')
             .each(function(d) {
                 const { w, h } = cardDims(d);
-                const tubeTypes = ['root', 'gen1', 'gen2', 'gen3', 'gen4', 'gen5'];
+                const tubeTypes = ['root', 'wife', 'gen1', 'gen2', 'gen3', 'gen4', 'gen5'];
                 const isTube = tubeTypes.includes(d.data.type);
                 const forceCount = isTube ? 1 : undefined;
                 const pad = isTube ? { x: 4, y: 4 } : undefined;
@@ -2284,17 +2324,17 @@
         nodeEnter.filter(d => d.data.name !== 'ISBADAR bin BURNAWI')
             .append('text')
             .attr('class', 'name-life')
-            .attr('x', TEXT_PAD_X)
+            .attr('x', d => d.data.type === 'wife' ? cardDims(d).w / 2 : TEXT_PAD_X)
             .attr('y', d => {
                 const order = d.data.partnerOrder;
                 const hasExtra = d.data.extraName ? true : false;
                 const hasAddress = d.data.address ? true : false;
                 const offset = (hasExtra ? extraNameHeight : 0) + (hasAddress ? extraNameHeight : 0);
-                if (order) return hasExtra || hasAddress ? -6 - offset/2 : -6;
+                if (order) return hasExtra || hasAddress ? -6 - offset/2 : 0;
                 if (hasExtra || hasAddress) return -6 - offset/2;
                 return hasSpouseLine(d) ? -6 : 2;
             })
-            .attr('text-anchor', 'start')
+            .attr('text-anchor', d => d.data.type === 'wife' ? 'middle' : 'start')
             .attr('dominant-baseline', 'middle')
             .style('text-transform', 'uppercase')
             .style('font-weight', '700')
@@ -2305,7 +2345,8 @@
                 return `${d.data.name}${lifeStr}`;
             })
             .each(function(d) {
-                const maxWidth = cardWidth - TEXT_PAD_X * 2;
+                const { w } = cardDims(d);
+                const maxWidth = w - TEXT_PAD_X * 2;
                 autoFitText(d3.select(this), maxWidth, 10, 16);
             });
 
