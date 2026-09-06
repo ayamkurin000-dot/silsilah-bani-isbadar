@@ -2281,7 +2281,7 @@
             .attr('text-anchor', 'middle')
             .style('font-size', '18px')
             .style('font-weight', '700')
-            .style('fill', '#0f172a')
+            .style('fill', '#000000')
             .style('text-transform', 'uppercase')
             .text(d => d.data.spouse || '');
 
@@ -2328,7 +2328,7 @@
             .style('text-transform', 'uppercase')
             .style('font-weight', '900')
             .style('font-size', '20px')
-            .style('fill', '#0f172a')
+            .style('fill', '#000000')
             .text(d => d.data.name);
 
         // ========== TAHUN UNTUK ROOT ==========
@@ -2340,7 +2340,7 @@
             .attr('text-anchor', 'middle')
             .style('font-size', '14px')
             .style('font-weight', '600')
-            .style('fill', '#475569')
+            .style('fill', '#000000')
             .text(d => d.data.life || '');
 
         // ========== NAMA UNTUK NODE LAINNYA ==========
@@ -2362,7 +2362,7 @@
             .style('text-transform', 'uppercase')
             .style('font-weight', '700')
             .style('font-size', '14px')
-            .style('fill', '#0f172a')
+            .style('fill', '#000000')
             .text(d => {
                 let lifeStr = d.data.life ? ` (${d.data.life})` : '';
                 return `${d.data.name}${lifeStr}`;
@@ -2374,6 +2374,8 @@
             });
 
         // ========== EXTRA NAME UNTUK SEMUA NODE ==========
+        const isChildOrderLabel = d => /^anak ke-/i.test((d.data.extraName || '').trim());
+
         nodeEnter.append('text')
             .attr('class', 'extra-name')
             .attr('x', TEXT_PAD_X)
@@ -2387,9 +2389,9 @@
             })
             .attr('text-anchor', 'start')
             .style('text-transform', 'uppercase')
-            .style('font-weight', '700')
-            .style('font-size', '13px')
-            .style('fill', '#0f172a')
+            .style('font-weight', d => isChildOrderLabel(d) ? '600' : '700')
+            .style('font-size', d => isChildOrderLabel(d) ? '8px' : '13px')
+            .style('fill', '#000000')
             .text(d => {
                 if (d.data.name === 'ISBADAR bin BURNAWI') return '';
                 return d.data.extraName || '';
@@ -2397,7 +2399,11 @@
             .each(function(d) {
                 if (d.data.extraName && d.data.name !== 'ISBADAR bin BURNAWI') {
                     const maxWidth = cardWidth - TEXT_PAD_X * 2;
-                    autoFitText(d3.select(this), maxWidth, 9, 14);
+                    if (isChildOrderLabel(d)) {
+                        autoFitText(d3.select(this), maxWidth, 6, 8);
+                    } else {
+                        autoFitText(d3.select(this), maxWidth, 9, 14);
+                    }
                 }
             });
 
@@ -2416,7 +2422,7 @@
             .attr('text-anchor', 'start')
             .style('font-weight', '400')
             .style('font-size', '9px')
-            .style('fill', '#64748b')
+            .style('fill', '#000000')
             .style('font-style', 'italic')
             .text(d => d.data.address || '');
 
@@ -2436,9 +2442,9 @@
             })
             .attr('text-anchor', 'start')
             .style('text-transform', 'uppercase')
-            .style('font-size', '10px')
+            .style('font-size', '12px')
             .style('font-weight', '500')
-            .style('fill', '#475569')
+            .style('fill', '#000000')
             .text(d => {
                 if (!hasSpouseLine(d)) return '';
                 let sLife = d.data.spouse_life ? ` (${d.data.spouse_life})` : '';
