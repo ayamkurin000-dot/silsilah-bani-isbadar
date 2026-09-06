@@ -1109,6 +1109,20 @@
     // DATA SILSILAH BANI ISBADAR - DARI EXCEL
     // =====================================================================
 
+    // Format teks tahun: jika hanya tahun lahir yang diketahui (akhir "...." atau kosong),
+    // tampilkan hanya tahun lahirnya saja tanpa tanda "-....".
+    // Jika hanya tahun wafat yang diketahui (awal "...." atau kosong), tetap tampilkan "....-xxxx".
+    function formatLifeYears(life) {
+        if (!life) return '';
+        const parts = life.split('-').map(s => s.trim());
+        if (parts.length !== 2) return life.trim();
+        const [start, end] = parts;
+        if (!end || end === '....') {
+            return start;
+        }
+        return `${start}-${end}`;
+    }
+
     const treeData = {
         "name": "ISBADAR bin BURNAWI",
         "life": "1901 - 1995",
@@ -2341,7 +2355,7 @@
             .style('font-size', '14px')
             .style('font-weight', '600')
             .style('fill', '#000000')
-            .text(d => d.data.life || '');
+            .text(d => formatLifeYears(d.data.life));
 
         // ========== NAMA UNTUK NODE LAINNYA ==========
         nodeEnter.filter(d => d.data.name !== 'ISBADAR bin BURNAWI')
@@ -2364,7 +2378,7 @@
             .style('font-size', '14px')
             .style('fill', '#000000')
             .text(d => {
-                let lifeStr = d.data.life ? ` (${d.data.life})` : '';
+                let lifeStr = d.data.life ? ` (${formatLifeYears(d.data.life)})` : '';
                 return `${d.data.name}${lifeStr}`;
             })
             .each(function(d) {
@@ -2447,7 +2461,7 @@
             .style('fill', '#000000')
             .text(d => {
                 if (!hasSpouseLine(d)) return '';
-                let sLife = d.data.spouse_life ? ` (${d.data.spouse_life})` : '';
+                let sLife = d.data.spouse_life ? ` (${formatLifeYears(d.data.spouse_life)})` : '';
                 let flowerStr = d.data.spouseDeceased ? '\uD83C\uDF39 ' : '';
                 return `${flowerStr}${d.data.spouse}${sLife}`;
             });
