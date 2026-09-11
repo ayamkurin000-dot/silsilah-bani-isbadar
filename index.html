@@ -223,7 +223,33 @@
             .node:hover .node-shape {
                 filter: none !important;
             }
-            #cursor-fx { display: none !important; }
+            
+        .node .node-shape-real {
+            will-change: transform;
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+        .node:hover .node-shape-real {
+            transform: scale(1.03);
+            filter: drop-shadow(0 8px 18px rgba(15,23,42,0.32)) brightness(1.05);
+        }
+        .node-root .node-shape {
+            stroke-width: 3.5px;
+        }
+
+        #cursor-fx { display: none !important; }
+        }
+
+        
+        .node .node-shape-real {
+            will-change: transform;
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+        .node:hover .node-shape-real {
+            transform: scale(1.03);
+            filter: drop-shadow(0 8px 18px rgba(15,23,42,0.32)) brightness(1.05);
+        }
+        .node-root .node-shape {
+            stroke-width: 3.5px;
         }
 
         #cursor-fx {
@@ -804,9 +830,10 @@
             fill: #14532d;
         }
         .node-founder .separator-line {
-            stroke: #15803d;
-            stroke-width: 1.5px;
-            stroke-dasharray: 4,4;
+            stroke: #000000;
+            stroke-width: 0.8px;
+            stroke-dasharray: none;
+            opacity: 1;
         }
         .node.search-highlight .node-shape {
             stroke: #f59e0b !important;
@@ -1127,7 +1154,7 @@
         "name": "ISBADAR bin BURNAWI",
         "life": "1901 - 1995",
         "spouse": "UMI KULSUM binti H. AHSIN",
-        "spouse_life": "19xx-2006",
+        "spouse_life": "19xx - 2006",
         "type": "root",
         "extraName": "BANI ISBADAR",
         "children": [
@@ -1634,7 +1661,7 @@
     const cardWidth = 240;
     const cardHeight = 60;
     const founderCardWidth = 320;  // DIPERBESAR untuk 2 baris teks
-    const founderCardHeight = 100; // DIPERBESAR untuk 2 baris teks
+    const founderCardHeight = 120; // DIPERBESAR untuk 3 baris
     const rootCardWidth = 260;
     const rootCardHeight = 68;
     const extraNameHeight = 18;
@@ -1677,6 +1704,50 @@
         }
         return bars;
     }
+
+    // ====== REALISTIC GLOSSY BATTERY - TANPA GELANG & TANPA KOTAK BAWAH (final polos) ======
+    function drawRealisticBattery(g, w, h, type){
+        const r = Math.min(22, Math.round(h*0.42));
+        const nubBaseW = 8;
+        const nubBaseH = h*0.68;
+        const nubW = 18;
+        const nubH = h*0.48;
+
+        // shadow halus
+        g.append('rect')
+            .attr('x', 1.5).attr('y', -h/2+2)
+            .attr('width', w).attr('height', h).attr('rx', r)
+            .attr('fill', '#000').attr('opacity', 0.09);
+
+        // body utama glossy POLOS - gradasi full
+        g.append('rect')
+            .attr('class', 'real-body')
+            .attr('x', 0).attr('y', -h/2).attr('width', w).attr('height', h).attr('rx', r)
+            .attr('fill', `url(#grad-real-${type})`)
+            .attr('stroke', '#1e293b').attr('stroke-width', 0.9).attr('stroke-opacity', 0.18);
+
+        // highlight atas saja - bawah dihapus
+        g.append('rect')
+            .attr('x', r*0.6).attr('y', -h/2+2.5)
+            .attr('width', w - r*1.2).attr('height', h*0.36).attr('rx', r*0.5)
+            .attr('fill', `url(#gloss-${type})`).attr('pointer-events','none');
+
+        // metal base
+        g.append('rect')
+            .attr('x', w).attr('y', -nubBaseH/2)
+            .attr('width', nubBaseW).attr('height', nubBaseH).attr('rx', 2.2)
+            .attr('fill','url(#grad-metal-base)').attr('stroke','#64748b').attr('stroke-width',0.6);
+
+        // nub terminal
+        const nubG = g.append('g').attr('transform',`translate(${w+nubBaseW},0)`);
+        nubG.append('rect')
+            .attr('x',0).attr('y',-nubH/2).attr('width',nubW).attr('height',nubH).attr('rx',5.5)
+            .attr('fill','url(#grad-metal-nub)').attr('stroke','#334155').attr('stroke-width',0.7);
+        nubG.append('rect')
+            .attr('x',2.5).attr('y',-nubH/2+2.5).attr('width',nubW-5).attr('height',nubH*0.38).attr('rx',2.5)
+            .attr('fill','#ffffff').attr('opacity',0.58).attr('pointer-events','none');
+    }
+
 
     function cardDims(d) {
         let w = cardWidth;
@@ -1802,6 +1873,63 @@
         { off: '35%', c: '#fce7f3' },
         { off: '100%', c: '#fbcfe8' }
     ]);
+
+    // ====== NEW GRADIENTS FOR REALISTIC BATTERY (sesuai foto) ======
+    const GEN_REAL = {
+        gen1: { light:'#eff6ff', mid:'#bfdbfe', mid2:'#93c5fd', dark:'#60a5fa' },
+        gen2: { light:'#f0fdf4', mid:'#bbf7d0', mid2:'#86efac', dark:'#4ade80' },
+        gen3: { light:'#fdf2f8', mid:'#fbcfe8', mid2:'#f9a8d4', dark:'#f472b6' },
+        gen4: { light:'#f5f3ff', mid:'#ddd6fe', mid2:'#c4b5fd', dark:'#a78bfa' },
+        gen5: { light:'#fefce8', mid:'#fde68a', mid2:'#fcd34d', dark:'#f59e0b' },
+        wife: { light:'#fdf2f8', mid:'#fce7f3', mid2:'#f9a8d4', dark:'#ec4899' },
+    };
+    Object.entries(GEN_REAL).forEach(([type, col])=>{
+        const lg = defs.append('linearGradient').attr('id','grad-real-'+type)
+            .attr('x1','0%').attr('y1','0%').attr('x2','0%').attr('y2','100%');
+        lg.append('stop').attr('offset','0%').attr('stop-color',col.light);
+        lg.append('stop').attr('offset','22%').attr('stop-color',col.mid);
+        lg.append('stop').attr('offset','58%').attr('stop-color',col.mid2);
+        lg.append('stop').attr('offset','88%').attr('stop-color',col.dark);
+        lg.append('stop').attr('offset','100%').attr('stop-color', d3.color(col.dark).darker(0.5));
+
+        const gloss = defs.append('linearGradient').attr('id','gloss-'+type)
+            .attr('x1','0%').attr('y1','0%').attr('x2','0%').attr('y2','100%');
+        gloss.append('stop').attr('offset','0%').attr('stop-color','#ffffff').attr('stop-opacity',0.88);
+        gloss.append('stop').attr('offset','32%').attr('stop-color','#ffffff').attr('stop-opacity',0.28);
+        gloss.append('stop').attr('offset','68%').attr('stop-color','#ffffff').attr('stop-opacity',0);
+    });
+    // ROOT KHUSUS PELANGI - warna awal yang kamu suka, kombinasi baru glossy horizontal
+    const rootRainbow = defs.append('linearGradient')
+        .attr('id','grad-real-root')
+        .attr('x1','0%').attr('y1','0%')
+        .attr('x2','100%').attr('y2','0%');
+    [
+        {off:'0%', c:'#ef4444'},
+        {off:'16%', c:'#f97316'},
+        {off:'32%', c:'#eab308'},
+        {off:'48%', c:'#22c55e'},
+        {off:'64%', c:'#06b6d4'},
+        {off:'80%', c:'#3b82f6'},
+        {off:'100%', c:'#a855f7'}
+    ].forEach(s=> rootRainbow.append('stop').attr('offset',s.off).attr('stop-color',s.c));
+    const rootGloss = defs.append('linearGradient').attr('id','gloss-root')
+        .attr('x1','0%').attr('y1','0%').attr('x2','0%').attr('y2','100%');
+    rootGloss.append('stop').attr('offset','0%').attr('stop-color','#ffffff').attr('stop-opacity',0.85);
+    rootGloss.append('stop').attr('offset','28%').attr('stop-color','#ffffff').attr('stop-opacity',0.32);
+    rootGloss.append('stop').attr('offset','65%').attr('stop-color','#ffffff').attr('stop-opacity',0);
+
+    // metal base
+    const metalBase = defs.append('linearGradient').attr('id','grad-metal-base')
+        .attr('x1','0%').attr('y1','0%').attr('x2','100%').attr('y2','0%');
+    [{off:'0%',c:'#475569'},{off:'20%',c:'#94a3b8'},{off:'45%',c:'#e2e8f0'},{off:'70%',c:'#94a3b8'},{off:'100%',c:'#334155'}]
+      .forEach(s=> metalBase.append('stop').attr('offset',s.off).attr('stop-color',s.c));
+
+    // metal nub
+    const metalNub = defs.append('linearGradient').attr('id','grad-metal-nub')
+        .attr('x1','0%').attr('y1','0%').attr('x2','100%').attr('y2','0%');
+    [{off:'0%',c:'#1e293b'},{off:'18%',c:'#64748b'},{off:'42%',c:'#f1f5f9'},{off:'68%',c:'#94a3b8'},{off:'100%',c:'#0f172a'}]
+      .forEach(s=> metalNub.append('stop').attr('offset',s.off).attr('stop-color',s.c));
+
     // Root: gradasi pelangi horizontal
     const tubeRoot = defs.append('linearGradient')
         .attr('id', 'grad-tube-root')
@@ -2180,73 +2308,21 @@
                 }
             });
 
-        // Shape node
-        nodeEnter.append('path')
-            .attr('class', 'node-shape')
-            .attr('d', d => {
-                const { w, h } = cardDims(d);
-                return batteryPath(w, h);
-            });
-
-        
-        
-
-
-        // Bar indikator baterai (aksen warna per generasi, transparan di belakang teks)
+                        // Shape node - SEMUA pakai model glossy realistic TANPA GELANG & TANPA KOTAK BAWAH (root juga sama)
         nodeEnter.append('g')
-            .attr('class', 'battery-bars')
-            .each(function(d) {
+            .attr('class', 'node-shape-real')
+            .each(function(d){
                 const { w, h } = cardDims(d);
-                const tubeTypes = ['root', 'wife', 'gen1', 'gen2', 'gen3', 'gen4', 'gen5'];
-                const isTube = tubeTypes.includes(d.data.type);
-                const forceCount = isTube ? 1 : undefined;
-                const pad = isTube ? { x: 4, y: 4 } : undefined;
-                const shapeR = Math.min(14, h / 2, w / 2);
-                const barRx = isTube ? Math.max(shapeR - 4, 0) : 4;
-                const bars = batteryBars(w, h, forceCount, pad);
-                const g = d3.select(this);
-                g.selectAll('.battery-bar')
-                    .data(bars)
-                    .enter()
-                    .append('rect')
-                    .attr('class', 'battery-bar')
-                    .attr('x', b => b.x)
-                    .attr('y', b => b.y)
-                    .attr('width', b => b.w)
-                    .attr('height', b => b.h)
-                    .attr('rx', barRx);
-                // Overlay garis diagonal putih di atas tiap bar (motif seperti indikator baterai)
-                g.selectAll('.battery-bar-stripe')
-                    .data(bars)
-                    .enter()
-                    .append('rect')
-                    .attr('class', 'battery-bar-stripe')
-                    .attr('x', b => b.x)
-                    .attr('y', b => b.y)
-                    .attr('width', b => b.w)
-                    .attr('height', b => b.h)
-                    .attr('rx', barRx)
-                    .attr('fill', 'url(#diag-stripes)')
-                    .attr('pointer-events', 'none');
-                // Overlay kilap kaca vertikal khusus root (warna dasarnya pelangi horizontal,
-                // overlay ini memberi kesan terang di atas - gelap di bawah seperti pipa 3D)
-                if (d.data.type === 'root') {
-                    g.selectAll('.battery-bar-gloss')
-                        .data(bars)
-                        .enter()
-                        .append('rect')
-                        .attr('class', 'battery-bar-gloss')
-                        .attr('x', b => b.x)
-                        .attr('y', b => b.y)
-                        .attr('width', b => b.w)
-                        .attr('height', b => b.h)
-                        .attr('rx', barRx)
-                        .attr('fill', 'url(#grad-glass-gloss)')
-                        .attr('pointer-events', 'none');
-                }
+                let type = d.data.type;
+                if (d.data.name === 'ISBADAR bin BURNAWI' || type === 'root') type = 'root';
+                else if (!['gen1','gen2','gen3','gen4','gen5','wife','root'].includes(type)) type = 'gen3';
+                drawRealisticBattery(d3.select(this), w, h, type);
             });
 
         
+        
+
+
         // ========== BADGE BUNGA BESAR (AMIRUL MUKMININ) - IN FRONT OF SHAPE ==========
         nodeEnter.filter(d => d.data.specialBadge === 'flower')
             .append('use')
@@ -2278,26 +2354,51 @@
         nodeEnter.filter(d => d.data.name === 'ISBADAR bin BURNAWI')
             .append('line')
             .attr('class', 'separator-line')
-            .attr('x1', 20)
-            .attr('x2', founderCardWidth - 20)
-            .attr('y1', 10)
-            .attr('y2', 10)
-            .style('stroke', '#15803d')
-            .style('stroke-width', 2)
-            .style('stroke-dasharray', '6,4');
+            .attr('x1', 0)
+            .attr('x2', founderCardWidth)
+            .attr('y1', 0)
+            .attr('y2', 0)
+            .style('stroke', '#000000')
+            .style('stroke-width', 0.8)
+            .style('stroke-dasharray', 'none')
+            .style('opacity', 1);
 
-        // ========== NAMA ISTRI UNTUK ROOT (di bawah garis) ==========
+                // ========== NAMA ISTRI UNTUK ROOT (di bawah garis) ==========
         nodeEnter.filter(d => d.data.name === 'ISBADAR bin BURNAWI')
             .append('text')
             .attr('class', 'spouse-name-root')
             .attr('x', founderCardWidth / 2)
-            .attr('y', 30)
+            .attr('y', 20)
             .attr('text-anchor', 'middle')
-            .style('font-size', '18px')
+            .style('font-size', '17px')
             .style('font-weight', '700')
             .style('fill', '#000000')
             .style('text-transform', 'uppercase')
             .text(d => d.data.spouse || '');
+
+        // ========== TAHUN ISTRI - UMI KULSUM 19xx-2006 - warna sama seperti tahun ISBADAR ==========
+        nodeEnter.filter(d => d.data.name === 'ISBADAR bin BURNAWI')
+            .append('text')
+            .attr('class', 'spouse-life-root')
+            .attr('x', founderCardWidth / 2)
+            .attr('y',  40)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '14px')
+            .style('font-weight', '600')
+            .style('fill', '#000000')
+            .text(d => (d.data.spouse_life || '19xx - 2006'));
+
+        // ========== TAHUN ISTRI - UMI KULSUM 19xx-2006 - warna sama seperti tahun ISBADAR ==========
+        nodeEnter.filter(d => d.data.name === 'ISBADAR bin BURNAWI')
+            .append('text')
+            .attr('class', 'spouse-life-root')
+            .attr('x', founderCardWidth / 2)
+            .attr('y',  40)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '14px')
+            .style('font-weight', '600')
+            .style('fill', '#000000')
+            .text(d => (d.data.spouse_life || '19xx - 2006'));
 
         // Indicator "+"
         const toggleIndicator = nodeEnter.append('g')
@@ -2336,7 +2437,7 @@
             .append('text')
             .attr('class', 'name-life')
             .attr('x', founderCardWidth / 2)
-            .attr('y', -22)
+            .attr('y', -32)
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'middle')
             .style('text-transform', 'uppercase')
@@ -2350,7 +2451,7 @@
             .append('text')
             .attr('class', 'spouse-info')
             .attr('x', founderCardWidth / 2)
-            .attr('y', 0)
+            .attr('y', -12)
             .attr('text-anchor', 'middle')
             .style('font-size', '14px')
             .style('font-weight', '600')
