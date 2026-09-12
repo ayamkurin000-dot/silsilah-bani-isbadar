@@ -2123,7 +2123,7 @@
     function positionRootTapHint() {
         const hintEl = document.getElementById('root-tap-hint');
         if (!hintEl || hintEl.dataset.dismissed === '1') return;
-        const founderShape = document.querySelector('.node-founder .node-shape');
+        const founderShape = document.querySelector('.node-founder .node-shape, .node-founder .node-shape-real');
         if (!founderShape) return;
         const rect = founderShape.getBoundingClientRect();
         hintEl.style.left = (rect.left + rect.width / 2) + 'px';
@@ -2150,7 +2150,7 @@
     function positionRootPhotoFrame() {
         const frameEl = document.getElementById('root-photo-frame');
         if (!frameEl || frameEl.dataset.dismissed === '1') return;
-        const founderShape = document.querySelector('.node-founder .node-shape');
+        const founderShape = document.querySelector('.node-founder .node-shape, .node-founder .node-shape-real');
         if (!founderShape) return;
         const rect = founderShape.getBoundingClientRect();
         // Ditempatkan di tengah, menumpuk di atas shape ISBADAR (sebagian menutupi tepi atas shape)
