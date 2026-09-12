@@ -1367,7 +1367,7 @@
                 "children": [
                     { "name": "ANAS MIFTAHUL HUDA", "life": "1961 - ....", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
                     { "name": "ZAENAL FATONI", "life": "1963 - ....", "spouse": "MURTAFI'AH", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "deceased": true, "children": [
-                        { "name": "REZA ALIFI", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
+                        { "name": "REZA MUKHLIS ALIFI", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
                         { "name": "SASA", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
                     ] },
                     { "name": "SITI KHOLIFAH", "life": "1966 - ....", "spouse": "JOKO SUPRABOWO", "spouse_life": "1967 - ....", "type": "gen2", "address": "", "extraName": "", "children": [
@@ -1749,16 +1749,38 @@
     }
 
 
+    // ===== Deteksi node FARATH (nama atau extraName mengandung kata "FARATH") =====
+    function isFarathNode(d) {
+        return !!((d.data.name && d.data.name.toUpperCase().includes('FARATH')) ||
+                  (d.data.extraName && d.data.extraName.toUpperCase().includes('FARATH')));
+    }
+
+    // ===== Ukuran shape FARATH: ramping (lebih tipis) & khusus 1 baris teks =====
+    const farathCardWidth = 220;
+    const farathCardHeight = 40;
+
+    // ===== Ukuran MINIMAL untuk semua generasi (selain root & farath) =====
+    // Mengikuti ukuran shape "H. SAHUDI" (cardHeight + extraNameHeight, karena punya label "ANAK KE-8")
+    const minGenCardWidth = cardWidth;
+    const minGenCardHeight = cardHeight + extraNameHeight;
+
     function cardDims(d) {
+        if (d.data.name === 'ISBADAR bin BURNAWI') {
+            return { w: founderCardWidth, h: founderCardHeight };
+        }
+        if (isFarathNode(d)) {
+            return { w: farathCardWidth, h: farathCardHeight };
+        }
+        if (d.data.type === 'wife') {
+            let w = wifeCardWidth;
+            let h = wifeCardHeight + (d.data.extraName ? extraNameHeight : 0) + (d.data.address ? extraNameHeight : 0);
+            return { w, h };
+        }
         let w = cardWidth;
         let h = cardHeight + (d.data.extraName ? extraNameHeight : 0) + (d.data.address ? extraNameHeight : 0);
-        if (d.data.name === 'ISBADAR bin BURNAWI') {
-            w = founderCardWidth;
-            h = founderCardHeight;
-        } else if (d.data.type === 'wife') {
-            w = wifeCardWidth;
-            h = wifeCardHeight + (d.data.extraName ? extraNameHeight : 0) + (d.data.address ? extraNameHeight : 0);
-        }
+        // Minimal sebesar shape H. SAHUDI, boleh lebih besar jika kontennya butuh lebih banyak ruang
+        w = Math.max(w, minGenCardWidth);
+        h = Math.max(h, minGenCardHeight);
         return { w, h };
     }
 
@@ -1882,6 +1904,8 @@
         gen4: { light:'#f5f3ff', mid:'#ddd6fe', mid2:'#c4b5fd', dark:'#a78bfa' },
         gen5: { light:'#fefce8', mid:'#fde68a', mid2:'#fcd34d', dark:'#f59e0b' },
         wife: { light:'#fdf2f8', mid:'#fce7f3', mid2:'#f9a8d4', dark:'#ec4899' },
+        // FARATH: gradasi serba putih, mengikuti style shape lain tapi versi putih
+        farath: { light:'#ffffff', mid:'#fbfbfc', mid2:'#f3f4f6', dark:'#e5e7eb' },
     };
     Object.entries(GEN_REAL).forEach(([type, col])=>{
         const lg = defs.append('linearGradient').attr('id','grad-real-'+type)
@@ -2316,6 +2340,7 @@
                 let type = d.data.type;
                 if (d.data.name === 'ISBADAR bin BURNAWI' || type === 'root') type = 'root';
                 else if (!['gen1','gen2','gen3','gen4','gen5','wife','root'].includes(type)) type = 'gen3';
+                if (isFarathNode(d)) type = 'farath';
                 drawRealisticBattery(d3.select(this), w, h, type);
             });
 
@@ -2464,6 +2489,7 @@
             .attr('class', 'name-life')
             .attr('x', d => d.data.type === 'wife' ? cardDims(d).w / 2 : TEXT_PAD_X)
             .attr('y', d => {
+                if (isFarathNode(d)) return 2; // FARATH selalu 1 baris, teks di tengah shape
                 const order = d.data.partnerOrder;
                 const hasExtra = d.data.extraName ? true : false;
                 const hasAddress = d.data.address ? true : false;
@@ -2480,6 +2506,11 @@
             .style('fill', '#000000')
             .text(d => {
                 let lifeStr = d.data.life ? ` (${formatLifeYears(d.data.life)})` : '';
+                if (isFarathNode(d)) {
+                    // Gabungkan semua info jadi 1 baris untuk shape FARATH
+                    let extra = d.data.extraName ? ` - ${d.data.extraName}` : '';
+                    return `${d.data.name}${lifeStr}${extra}`;
+                }
                 return `${d.data.name}${lifeStr}`;
             })
             .each(function(d) {
@@ -2495,6 +2526,7 @@
             .attr('class', 'extra-name')
             .attr('x', TEXT_PAD_X)
             .attr('y', d => {
+                if (isFarathNode(d)) return 0; // FARATH: info digabung ke baris nama, jadi baris ini kosong
                 if (d.data.extraName && d.data.name !== 'ISBADAR bin BURNAWI') {
                     const hasAddress = d.data.address ? true : false;
                     const baseY = 2;
@@ -2509,10 +2541,11 @@
             .style('fill', '#000000')
             .text(d => {
                 if (d.data.name === 'ISBADAR bin BURNAWI') return '';
+                if (isFarathNode(d)) return ''; // sudah digabung ke baris nama
                 return d.data.extraName || '';
             })
             .each(function(d) {
-                if (d.data.extraName && d.data.name !== 'ISBADAR bin BURNAWI') {
+                if (d.data.extraName && d.data.name !== 'ISBADAR bin BURNAWI' && !isFarathNode(d)) {
                     const maxWidth = cardWidth - TEXT_PAD_X * 2;
                     if (isChildOrderLabel(d)) {
                         autoFitText(d3.select(this), maxWidth, 6, 8);
@@ -2527,6 +2560,7 @@
             .attr('class', 'address-info')
             .attr('x', TEXT_PAD_X)
             .attr('y', d => {
+                if (isFarathNode(d)) return 0;
                 if (d.data.address && d.data.name !== 'ISBADAR bin BURNAWI') {
                     const hasExtra = d.data.extraName ? true : false;
                     const baseY = 16;
@@ -2539,7 +2573,7 @@
             .style('font-size', '9px')
             .style('fill', '#000000')
             .style('font-style', 'italic')
-            .text(d => d.data.address || '');
+            .text(d => isFarathNode(d) ? '' : (d.data.address || ''));
 
         // ========== SPOUSE INFO UNTUK NODE LAINNYA ==========
         nodeEnter.filter(d => d.data.name !== 'ISBADAR bin BURNAWI')
@@ -2547,6 +2581,7 @@
             .attr('class', 'spouse-info')
             .attr('x', TEXT_PAD_X)
             .attr('y', d => {
+                if (isFarathNode(d)) return 0;
                 const wifeOrder = d.data.partnerOrder;
                 const hasExtra = d.data.extraName ? true : false;
                 const hasAddress = d.data.address ? true : false;
@@ -2561,6 +2596,7 @@
             .style('font-weight', '500')
             .style('fill', '#000000')
             .text(d => {
+                if (isFarathNode(d)) return '';
                 if (!hasSpouseLine(d)) return '';
                 let sLife = d.data.spouse_life ? ` (${formatLifeYears(d.data.spouse_life)})` : '';
                 let flowerStr = d.data.spouseDeceased ? '\uD83C\uDF39 ' : '';
