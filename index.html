@@ -308,7 +308,17 @@
             margin-bottom: 2px;
         }
         #gen-legend-toggle {
-            display: none;
+            display: inline;
+            float: right;
+            font-weight: 400;
+            color: #2563eb;
+            margin-left: 8px;
+        }
+        #gen-legend.collapsed {
+            max-height: 30px;
+            overflow: hidden;
+            padding-top: 8px;
+            padding-bottom: 8px;
         }
         @media (max-width: 640px) {
             #gen-legend {
@@ -2046,11 +2056,14 @@
 
     const zoom = d3.zoom()
         .scaleExtent([0.2, 2])
+        .on("start", () => { minimizeGenLegend(); })
         .on("zoom", (event) => {
             gContainer.attr("transform", event.transform);
         });
 
     svg.call(zoom);
+    // Jaga-jaga untuk tap singkat yang tidak memicu event zoom "start" (mis. klik cepat tanpa geser)
+    svg.on("pointerdown.genlegend", () => { minimizeGenLegend(); });
 
     const tree = d3.tree().nodeSize([cardHeight + extraNameHeight + 25, cardWidth + 100]);
 
@@ -2297,6 +2310,7 @@
             })
             .attr("transform", d => `translate(${source.y0},${source.x0})`)
             .on('click', function(event, d) {
+                minimizeGenLegend();
                 const nodeSel = d3.select(this);
                 nodeSel.classed('pressed', false);
                 nodeSel.node().getBoundingClientRect();
@@ -2665,6 +2679,16 @@
         const toggleIcon = document.getElementById('gen-legend-toggle');
         el.classList.toggle('collapsed');
         toggleIcon.textContent = el.classList.contains('collapsed') ? '▼' : '▲';
+    }
+
+    // ===== Auto-minimize jendela "GENERASI KE ATAS/BAWAH" saat user berinteraksi dengan bagan =====
+    // (ketuk/tap, geser/pan, zoom, dsb) supaya bagan silsilah jadi lebih terbuka/lega.
+    function minimizeGenLegend() {
+        const el = document.getElementById('gen-legend');
+        if (!el || el.classList.contains('collapsed')) return;
+        const toggleIcon = document.getElementById('gen-legend-toggle');
+        el.classList.add('collapsed');
+        if (toggleIcon) toggleIcon.textContent = '▼';
     }
 
     let currentSide = localStorage.getItem('bani_isbadar_side') || 'generasi';
