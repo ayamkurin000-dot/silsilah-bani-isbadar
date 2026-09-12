@@ -2056,7 +2056,7 @@
 
     const zoom = d3.zoom()
         .scaleExtent([0.2, 2])
-        .on("start", () => { minimizeGenLegend(); })
+        .on("start", (event) => { if (event.sourceEvent) minimizeGenLegend(); })
         .on("zoom", (event) => {
             gContainer.attr("transform", event.transform);
         });
@@ -2375,8 +2375,8 @@
             .style('filter', 'drop-shadow(0 3px 6px rgba(0,0,0,0.35))')
             .raise();
 
-        // ========== BADGE BUNGA MERAH (DECEASED / FARATH) - IN FRONT OF SHAPE ==========
-        nodeEnter.filter(d => d.data.deceased || (d.data.name && d.data.name.toUpperCase().includes('FARATH')) || (d.data.extraName && d.data.extraName.toUpperCase().includes('FARATH')))
+        // ========== BADGE BUNGA MERAH (DECEASED, non-FARATH) - IN FRONT OF SHAPE ==========
+        nodeEnter.filter(d => d.data.deceased && !isFarathNode(d))
             .append('use')
             .attr('href', '#big-flower-badge-red')
             .attr('class', 'deceased-flower-badge')
@@ -2386,6 +2386,21 @@
             })
             .style('pointer-events', 'none')
             .style('filter', 'drop-shadow(0 3px 7px rgba(185,28,28,0.45))')
+            .raise();
+
+        // ========== TANDA HATI ❤️ UNTUK NODE FARATH (pengganti badge bunga) ==========
+        nodeEnter.filter(d => isFarathNode(d))
+            .append('text')
+            .attr('class', 'farath-heart-badge')
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .style('font-size', '20px')
+            .style('pointer-events', 'none')
+            .attr('transform', d => {
+                const { w, h } = cardDims(d);
+                return `translate(${w - 2},${-h / 2 - 2})`;
+            })
+            .text('❤️')
             .raise();
 
 
