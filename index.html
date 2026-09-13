@@ -20,8 +20,19 @@
             color: #1e293b;
             overflow: hidden;
             background-color: #f8eeda;
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 200vw;
+            height: 200vh;
+            transform: translate(-50%, -50%) rotate(45deg);
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg stroke='%23a08760' stroke-width='1.5' stroke-linejoin='round'%3E%3Crect x='4' y='2' width='13' height='36' fill='%23f3e2c8'/%3E%3Crect x='23' y='2' width='13' height='36' fill='%23ead0ac'/%3E%3Crect x='44' y='4' width='34' height='13' fill='%23f3e2c8'/%3E%3Crect x='44' y='23' width='34' height='13' fill='%23ead0ac'/%3E%3Crect x='2' y='44' width='34' height='13' fill='%23ead0ac'/%3E%3Crect x='2' y='63' width='34' height='13' fill='%23f3e2c8'/%3E%3Crect x='44' y='42' width='13' height='36' fill='%23ead0ac'/%3E%3Crect x='63' y='42' width='13' height='36' fill='%23f3e2c8'/%3E%3C/g%3E%3C/svg%3E");
             background-size: 80px 80px;
+            z-index: -1;
         }
         #header {
             position: fixed;
