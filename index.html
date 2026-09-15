@@ -3921,10 +3921,10 @@
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #0f766e, #115e59);
+  background: linear-gradient(135deg, #81c784, #66bb6a);
   color: white;
-  border: none;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  border: 2px solid #ffffff;
+  box-shadow: 0 8px 24px rgba(76, 175, 80, 0.35), 0 2px 8px rgba(0,0,0,0.12);
   font-size: 24px;
   cursor: pointer;
   display: flex;
@@ -3938,10 +3938,10 @@
   width: 92vw;
   max-width: 400px;
   max-height: 75vh;
-  background: #fffdf7;
+  background: #fefcf6;
   border-radius: 18px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.25);
-  border: 1px solid #e7d5b0;
+  box-shadow: 0 16px 40px rgba(90, 70, 40, 0.22), 0 4px 12px rgba(0,0,0,0.08);
+  border: 1.5px solid #d8c9a8;
   overflow: hidden;
   display: none;
   flex-direction: column;
@@ -3949,9 +3949,9 @@
 }
 #rekapGen1Panel.open { display: flex; }
 #rekapGen1Header {
-  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  background: linear-gradient(135deg, #e8f5e9 0%, #dcedc8 45%, #f3e2c8 100%);
   padding: 12px 14px;
-  border-bottom: 1px solid #e7d5b0;
+  border-bottom: 1.5px solid #c5d9b2;
   display:flex;
   justify-content: space-between;
   align-items: center;
@@ -3961,7 +3961,7 @@
 #rekapGen1Header h4 { 
   font-size: clamp(10px, 3.2vw, 12.5px); 
   font-weight: 800; 
-  color:#78350f; 
+  color:#2e5939; 
   margin:0; 
   white-space: nowrap; 
   overflow: hidden;
@@ -3969,51 +3969,56 @@
   max-width: 100%;
   line-height: 1.2;
   text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 #rekapGen1Header small { 
-  font-size: 10px; 
-  color:#92400e; 
+  font-size: 9.5px; 
+  color:#6b7f5e; 
   display:block; 
   line-height:1.3;
   white-space: normal;
+  font-weight: 500;
 }
-#rekapGen1TableWrap { overflow: auto; flex:1; -webkit-overflow-scrolling: touch; }
+#rekapGen1TableWrap { overflow: auto; flex:1; -webkit-overflow-scrolling: touch; background: #ffffff; }
 #rekapGen1Table { width:100%; min-width: 400px; border-collapse: collapse; font-size: 11px; }
 #rekapGen1Table th {
   position: sticky; top:0;
-  background: #fffbeb;
-  font-size: 9px; text-transform: uppercase; letter-spacing: .4px;
-  color: #92400e; padding: 6px 3px; text-align:center;
-  border-bottom: 1px solid #fde68a;
+  background: #e8f5e9;
+  font-size: 9px; text-transform: uppercase; letter-spacing: .5px;
+  color: #2e5939; padding: 7px 3px; text-align:center;
+  border-bottom: 1.5px solid #c5d9b2;
   z-index: 2;
   white-space: nowrap;
+  font-weight: 800;
 }
-#rekapGen1Table td { padding: 6px 3px; border-bottom: 1px solid #fef3c7; text-align:center; font-size: 11px; }
-#rekapGen1Table tr:nth-child(even) { background: #fffbeb; }
-#rekapGen1Table .rank { font-weight:800; color:#0f766e; text-align:center; }
-/* Kolom # dipersempit */
+#rekapGen1Table td { padding: 6px 3px; border-bottom: 1px solid #e8dcc3; text-align:center; font-size: 11px; color:#3d4a3a; }
+#rekapGen1Table tr:nth-child(even) { background: #f5f9ef; }
+#rekapGen1Table tr:nth-child(odd) { background: #ffffff; }
+#rekapGen1Table tr:hover { background: #eef6e6 !important; }
+#rekapGen1Table .rank { font-weight:800; color:#4a7a4a; text-align:center; }
 #rekapGen1Table th:nth-child(1), #rekapGen1Table td:nth-child(1) {
-  position: sticky; left:0; z-index: 4; background: #fef3c7;
+  position: sticky; left:0; z-index: 4; background: #f8eeda;
   min-width: 22px; max-width: 26px; width: 24px;
-  padding: 6px 2px; font-size: 10px;
+  padding: 6px 2px; font-size: 10px; color:#7a5a32;
+  border-right: 1px solid #d8c9a8;
 }
-/* Kolom Nama Anak dipersempit - HP muat tanpa scroll sampai Buyut */
 #rekapGen1Table th:nth-child(2), #rekapGen1Table td:nth-child(2) {
-  position: sticky; left:24px; z-index: 4; background: #ffffff; border-right: 1.5px solid #fde68a;
+  position: sticky; left:24px; z-index: 4; background: #ffffff; border-right: 1.5px solid #d8c9a8;
   min-width: 76px; max-width: 88px; width: 82px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  font-size: 10.5px; text-align:left; padding: 6px 4px;
+  font-size: 10.5px; text-align:left; padding: 6px 4px; color:#2e3d2a; font-weight:600;
 }
-#rekapGen1Table td:nth-child(2) b { white-space: nowrap; font-size: inherit; }
-#rekapGen1Table thead th:nth-child(2) { background: #fffbeb; }
-#rekapGen1Table tr:nth-child(even) td:nth-child(2) { background: #fffbeb; }
-#rekapGen1Table tr:nth-child(even) td:nth-child(1) { background: #fef3c7; }
-/* Kolom angka dipersempit semua */
+#rekapGen1Table thead th:nth-child(2) { background: #e8f5e9; }
+#rekapGen1Table tr:nth-child(even) td:nth-child(2) { background: #f5f9ef; }
+#rekapGen1Table tr:nth-child(even) td:nth-child(1) { background: #f0e6cc; }
 #rekapGen1Table th:nth-child(n+3), #rekapGen1Table td:nth-child(n+3) {
   min-width: 36px; max-width: 46px; width: 40px; padding: 6px 2px;
 }
-#rekapGen1Table th:last-child, #rekapGen1Table td:last-child { min-width: 38px; background:#fef3c7; font-weight:800; }
-#rekapGen1Footer { padding: 8px 10px; background:#fffbeb; font-size:10px; color:#78350f; border-top:1px solid #fde68a; line-height:1.3; }
+#rekapGen1Table th:last-child, #rekapGen1Table td:last-child { 
+  min-width: 38px; background:#dcedc8; font-weight:800; color:#2e5939; border-left: 1px solid #c5d9b2;
+}
+#rekapGen1Table tr:nth-child(even) td:last-child { background:#c8dbb2; }
+#rekapGen1Footer { padding: 8px 10px; background: linear-gradient(90deg, #e8f5e9, #f3e2c8); font-size:10px; color:#4a5a3a; border-top:1.5px solid #c5d9b2; line-height:1.3; font-weight:600; }
 @media (max-width: 380px) {
   #rekapGen1Table { min-width: 360px; }
   #rekapGen1Table th:nth-child(2), #rekapGen1Table td:nth-child(2) { min-width: 68px; max-width: 78px; width: 72px; font-size: 10px; }
@@ -4063,7 +4068,7 @@
 <script>
 (function(){
     function hitungRekap(data){
-    // Urutan asli silsilah (tidak di-sort), kamus: Anak, Cucu, Buyut, Canggah, Wareng
+    // Urutan asli silsilah (tidak di-sort), kamus: Anak, Cucu, Buyut, Canggah, Wareng - sampai Wareng sesuai root
     const gen1 = data.children || [];
     let rows = gen1.map(c=>{
       const gen2 = c.children || [];
