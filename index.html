@@ -3977,16 +3977,18 @@
   line-height:1.3;
   white-space: normal;
 }
-#rekapGen1TableWrap { overflow-y: auto; flex:1; }
-#rekapGen1Table { width:100%; border-collapse: collapse; font-size: 12px; }
+#rekapGen1TableWrap { overflow: auto; flex:1; -webkit-overflow-scrolling: touch; }
+#rekapGen1Table { width:100%; min-width: 680px; border-collapse: collapse; font-size: 12px; }
 #rekapGen1Table th {
   position: sticky; top:0;
   background: #fffbeb;
   font-size: 10px; text-transform: uppercase; letter-spacing: .5px;
-  color: #92400e; padding: 8px 6px; text-align:left;
+  color: #92400e; padding: 8px 6px; text-align:center;
   border-bottom: 1px solid #fde68a;
+  z-index: 2;
+  white-space: nowrap;
 }
-#rekapGen1Table td { padding: 8px 6px; border-bottom: 1px solid #fef3c7; }
+#rekapGen1Table td { padding: 8px 6px; border-bottom: 1px solid #fef3c7; text-align:center; }
 #rekapGen1Table tr:nth-child(even) { background: #fffbeb; }
 #rekapGen1Table .rank { font-weight:800; color:#0f766e; text-align:center; }
 #rekapGen1Table td:nth-child(2) {
@@ -3995,11 +3997,22 @@
   text-overflow: ellipsis;
   max-width: 130px;
   font-size: clamp(10px, 2.9vw, 12px);
+  text-align:left;
 }
 #rekapGen1Table td:nth-child(2) b {
   white-space: nowrap;
   font-size: inherit;
 }
+/* sticky kiri untuk nomor dan nama */
+#rekapGen1Table th:nth-child(1), #rekapGen1Table td:nth-child(1) {
+  position: sticky; left:0; z-index: 4; background: #fef3c7; min-width:32px;
+}
+#rekapGen1Table th:nth-child(2), #rekapGen1Table td:nth-child(2) {
+  position: sticky; left:32px; z-index: 4; background: #ffffff; border-right: 1px solid #fde68a;
+}
+#rekapGen1Table thead th:nth-child(2) { background: #fffbeb; }
+#rekapGen1Table tr:nth-child(even) td:nth-child(2) { background: #fffbeb; }
+#rekapGen1Table tr:nth-child(even) td:nth-child(1) { background: #fef3c7; }
 #rekapGen1Footer { padding: 10px 12px; background:#fffbeb; font-size:11px; color:#78350f; border-top:1px solid #fde68a; line-height:1.4; }
 @media (max-width: 380px) {
   #rekapGen1Table td:nth-child(2) { max-width: 95px; }
@@ -4007,7 +4020,7 @@
 }
 @media (min-width: 768px) {
   #rekapGen1Fab { right: 24px; bottom: 24px; }
-  #rekapGen1Panel { right: 24px; bottom: 88px; max-width: 440px; }
+  #rekapGen1Panel { right: 24px; bottom: 88px; max-width: 580px; width: 580px; }
 }
 </style>
 
@@ -4030,7 +4043,9 @@
           <th>Nama Anak</th>
           <th>Anak</th>
           <th>Cucu</th>
-          <th>Cicit</th>
+          <th>Buyut</th>
+          <th>Canggah</th>
+          <th>Wareng</th>
           <th>Jumlah</th>
         </tr>
       </thead>
@@ -4043,19 +4058,32 @@
 <script>
 (function(){
   function hitungRekap(data){
+    // Kamus disamakan dengan root: Anak, Cucu, Buyut, Canggah, Wareng
+    // Anak = gen2 (cucu Isbadar), Cucu = gen3 (buyut Isbadar), Buyut/Cicit = gen4 (canggah Isbadar), Canggah = gen5 (wareng Isbadar), Wareng = gen6 (gantung siwur Isbadar)
+    // Kalau root mentok di Wareng, tabel juga mentok di Wareng -> tidak hitung gantung siwur lagi
     const gen1 = data.children || [];
     let rows = gen1.map(c=>{
       const gen2 = c.children || [];
       const jmlAnak = gen2.length;
-      let jmlCucu = 0, jmlCicit = 0;
+      let jmlCucu = 0, jmlCicit = 0, jmlCanggah = 0, jmlWareng = 0;
       gen2.forEach(g2=>{
         const g3 = g2.children || [];
         jmlCucu += g3.length;
         g3.forEach(g3n=>{
-          jmlCicit += (g3n.children || []).length;
+          const g4 = g3n.children || [];
+          jmlCicit += g4.length;
+          g4.forEach(g4n=>{
+            const g5 = g4n.children || [];
+            jmlCanggah += g5.length;
+            g5.forEach(g5n=>{
+              const g6 = g5n.children || [];
+              jmlWareng += g6.length;
+            });
+          });
         });
       });
-      return { nama: c.name, anak: jmlAnak, cucu: jmlCucu, cicit: jmlCicit, total: jmlAnak+jmlCucu+jmlCicit };
+      const total = jmlAnak + jmlCucu + jmlCicit + jmlCanggah + jmlWareng;
+      return { nama: c.name, anak: jmlAnak, cucu: jmlCucu, cicit: jmlCicit, canggah: jmlCanggah, wareng: jmlWareng, total };
     });
     rows.sort((a,b)=> b.total - a.total);
     return rows;
@@ -4096,6 +4124,8 @@
           <td style="text-align:center;font-weight:700;">${r.anak}</td>
           <td style="text-align:center;font-weight:700;">${r.cucu}</td>
           <td style="text-align:center;font-weight:700;">${r.cicit}</td>
+          <td style="text-align:center;font-weight:700;color:#065f46;">${r.canggah}</td>
+          <td style="text-align:center;font-weight:700;color:#7c3aed;">${r.wareng}</td>
           <td style="text-align:center;font-weight:800;background:#fef3c7;">${r.total}</td>
         </tr>
       `).join('');
