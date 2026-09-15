@@ -4030,14 +4030,14 @@
 <div id="rekapGen1Panel">
   <div id="rekapGen1Header">
     <div>
-      <h4>URUTAN BERDASARKAN JUMLAH KETURUNAN</h4>
+      <h4>JUMLAH KETURUNAN DARI MASING-MASING ANAK</h4>
       <small><b>Selisih jumlah</b> bisa saja disebabkan karena ada anggota keluarga yang <b>belum masuk</b></small>
     </div>
     <button id="rekapGen1Close" style="background:#fff; border:1px solid #e7d5b0; border-radius:8px; padding:4px 8px; cursor:pointer; flex-shrink:0;">✕</button>
   </div>
   <div id="rekapGen1TableWrap">
     <table id="rekapGen1Table">
-      <thead>
+            <thead>
         <tr>
           <th>#</th>
           <th>Nama Anak</th>
@@ -4057,21 +4057,20 @@
 
 <script>
 (function(){
-  function hitungRekap(data){
-    // Kamus disamakan dengan root: Anak, Cucu, Buyut, Canggah, Wareng
-    // Anak = gen2 (cucu Isbadar), Cucu = gen3 (buyut Isbadar), Buyut/Cicit = gen4 (canggah Isbadar), Canggah = gen5 (wareng Isbadar), Wareng = gen6 (gantung siwur Isbadar)
-    // Kalau root mentok di Wareng, tabel juga mentok di Wareng -> tidak hitung gantung siwur lagi
+    function hitungRekap(data){
+    // Urutan sesuai silsilah asli (urutan lahir di treeData), tidak di-sort ranking lagi
+    // Kamus kolom disamakan dengan root: Anak, Cucu, Buyut, Canggah, Wareng
     const gen1 = data.children || [];
     let rows = gen1.map(c=>{
       const gen2 = c.children || [];
       const jmlAnak = gen2.length;
-      let jmlCucu = 0, jmlCicit = 0, jmlCanggah = 0, jmlWareng = 0;
+      let jmlCucu = 0, jmlBuyut = 0, jmlCanggah = 0, jmlWareng = 0;
       gen2.forEach(g2=>{
         const g3 = g2.children || [];
         jmlCucu += g3.length;
         g3.forEach(g3n=>{
           const g4 = g3n.children || [];
-          jmlCicit += g4.length;
+          jmlBuyut += g4.length;
           g4.forEach(g4n=>{
             const g5 = g4n.children || [];
             jmlCanggah += g5.length;
@@ -4082,10 +4081,10 @@
           });
         });
       });
-      const total = jmlAnak + jmlCucu + jmlCicit + jmlCanggah + jmlWareng;
-      return { nama: c.name, anak: jmlAnak, cucu: jmlCucu, cicit: jmlCicit, canggah: jmlCanggah, wareng: jmlWareng, total };
+      const total = jmlAnak + jmlCucu + jmlBuyut + jmlCanggah + jmlWareng;
+      return { nama: c.name, anak: jmlAnak, cucu: jmlCucu, buyut: jmlBuyut, canggah: jmlCanggah, wareng: jmlWareng, total };
     });
-    rows.sort((a,b)=> b.total - a.total);
+    // JANGAN di-sort, biarkan urutan asli sesuai data silsilah
     return rows;
   }
   function hitungRoot(data){
@@ -4116,14 +4115,14 @@
     try{
       if(typeof treeData === 'undefined') return;
       const rows = hitungRekap(treeData);
-      const tbody = document.getElementById('rekapGen1Body');
+            const tbody = document.getElementById('rekapGen1Body');
       tbody.innerHTML = rows.map((r,i)=>`
         <tr>
           <td class="rank">${i+1}</td>
           <td><b>${r.nama}</b></td>
           <td style="text-align:center;font-weight:700;">${r.anak}</td>
           <td style="text-align:center;font-weight:700;">${r.cucu}</td>
-          <td style="text-align:center;font-weight:700;">${r.cicit}</td>
+          <td style="text-align:center;font-weight:700;">${r.buyut}</td>
           <td style="text-align:center;font-weight:700;color:#065f46;">${r.canggah}</td>
           <td style="text-align:center;font-weight:700;color:#7c3aed;">${r.wareng}</td>
           <td style="text-align:center;font-weight:800;background:#fef3c7;">${r.total}</td>
