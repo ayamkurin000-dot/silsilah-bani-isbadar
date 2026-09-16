@@ -273,7 +273,7 @@
         #credit-tag {
             position: fixed;
             bottom: 10px;
-            right: 14px;
+            right: 8px;
             font-size: 0.6rem;
             color: #475569;
             background: #ffffff;
@@ -281,7 +281,7 @@
             border-radius: 6px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
             border: 1px solid #e2e8f0;
-            z-index: 10000;
+            z-index: 10002;
             pointer-events: none;
             user-select: none;
             letter-spacing: 0.2px;
@@ -364,7 +364,17 @@
             }
         }
         #panel-switcher button {
-            position: relative;
+            background: #f8fafc;
+            border: none;
+            padding: 5px 7px;
+            font-size: 0.55rem;
+            font-weight: 800;
+            color: #64748b;
+            cursor: pointer;
+            transition: 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
         }
         #panel-switcher button:first-child {
             border-radius: 6px 0 0 6px;
@@ -391,9 +401,10 @@
         }
         #panel-switcher {
             position: fixed;
+            left: 8px;
             bottom: 10px;
-            right: 165px;
-            z-index: 10000;
+            right: auto;
+            z-index: 10003;
             background: #ffffffee;
             border: 1px solid #e2e8f0;
             border-radius: 6px;
@@ -3915,7 +3926,7 @@
   left: 50%;
   bottom: 10px;
   transform: translateX(-50%);
-  z-index: 10001;
+  z-index: 10002;
   font-family: 'Segoe UI', sans-serif;
 }
 #rekapGen1Btn {
@@ -4027,7 +4038,7 @@
   #rekapGen1Panel { max-width: 96vw; left: 2vw; right: 2vw; }
 }
 @media (min-width: 768px) {
-  #rekapGen1Fab { left: 50%; bottom: 10px; transform: translateX(-50%); }
+  
   #rekapGen1Panel { right: 24px; bottom: 88px; max-width: 520px; width: 480px; }
   #rekapGen1Table { min-width: 460px; }
   #rekapGen1Table th:nth-child(2), #rekapGen1Table td:nth-child(2) { min-width: 110px; max-width: 130px; width: 120px; font-size: 12px; }
