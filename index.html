@@ -64,18 +64,21 @@
             flex-wrap: wrap;
         }
         .btn {
-            background: linear-gradient(135deg, #93c5fd, #a5b4fc);
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
             color: white;
             border: none;
             padding: 6px 14px;
             border-radius: 6px;
             font-size: 0.8rem;
             cursor: pointer;
-            font-weight: 600;
+            font-weight: 700;
             transition: 0.2s ease;
+            box-shadow: 0 3px 10px rgba(37, 99, 235, 0.35);
         }
         .btn:hover {
-            background: linear-gradient(135deg, #60a5fa, #818cf8);
+            background: linear-gradient(135deg, #38bdf8, #1d4ed8);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.5);
+            transform: translateY(-1px);
         }
         .btn:disabled,
         .btn[disabled] {
@@ -4056,10 +4059,10 @@
   width:92vw;
   max-width:420px;
   max-height:70vh;
-  background:#fefcf6;
+  background:linear-gradient(180deg, #ffffff 0%, #fff1f8 100%);
   border-radius:18px;
-  box-shadow:0 16px 40px rgba(90,70,40,0.22), 0 4px 12px rgba(0,0,0,0.08);
-  border:1.5px solid #d8c9a8;
+  box-shadow:0 16px 40px rgba(190,24,93,0.18), 0 4px 12px rgba(0,0,0,0.08);
+  border:1.5px solid #f9a8d4;
   overflow:hidden;
   display:none;
   flex-direction:column;
@@ -4067,35 +4070,35 @@
 }
 #rekapGen1Panel.open{display:flex;animation:rekapFade 0.22s ease}
 @keyframes rekapFade{from{opacity:0;transform:translate(-50%,10px) scale(0.98)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
-#rekapGen1Header{background:linear-gradient(135deg,#e0f2fe 0%, #bfdbfe 45%, #dbeafe 100%);padding:10px 12px;border-bottom:1.5px solid #93c5fd;display:flex;justify-content:space-between;align-items:center;gap:8px}
+#rekapGen1Header{background:linear-gradient(135deg,#fce7f3 0%, #fbcfe8 45%, #ffffff 100%);padding:10px 12px;border-bottom:1.5px solid #f9a8d4;display:flex;justify-content:space-between;align-items:center;gap:8px}
 #rekapGen1Header>div{min-width:0;flex:1;overflow:hidden}
-#rekapGen1Header h4{font-size:12px;font-weight:900;color:#1e40af;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2;text-transform:uppercase;letter-spacing:0.4px}
-#rekapGen1Header small{font-size:8.5px;color:#475569;display:block;line-height:1.25;white-space:normal;font-weight:500;margin-top:2px}
+#rekapGen1Header h4{font-size:12px;font-weight:900;color:#9d174d;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2;text-transform:uppercase;letter-spacing:0.4px}
+#rekapGen1Header small{font-size:8.5px;color:#831843;display:block;line-height:1.25;white-space:normal;font-weight:500;margin-top:2px}
 #rekapGen1Breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:2px}
-#rekapBackBtn{background:#ffffff;border:1px solid #93c5fd;border-radius:8px;padding:3px 7px;font-size:10px;font-weight:800;color:#1e40af;cursor:pointer;display:none}
+#rekapBackBtn{background:#ffffff;border:1px solid #f9a8d4;border-radius:8px;padding:3px 7px;font-size:10px;font-weight:800;color:#be185d;cursor:pointer;display:none}
 #rekapBackBtn.show{display:inline-flex}
-#rekapGen1TableWrap{overflow:auto;flex:1;-webkit-overflow-scrolling:touch;background:#ffffff}
+#rekapGen1TableWrap{overflow:auto;flex:1;-webkit-overflow-scrolling:touch;background:linear-gradient(180deg, #ffffff 0%, #fff5f9 100%)}
 #rekapGen1Table{width:100%;min-width:440px;border-collapse:collapse;font-size:11px}
-#rekapGen1Table th{position:sticky;top:0;background:#dbeafe;font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#1e40af;padding:7px 3px;text-align:center;border-bottom:1.5px solid #93c5fd;z-index:2;white-space:nowrap;font-weight:800}
-#rekapGen1Table td{padding:6px 3px;border-bottom:1px solid #e8dcc3;text-align:center;font-size:11px;color:#3d4a3a}
-#rekapGen1Table tr:nth-child(even){background:#eff6ff}
+#rekapGen1Table th{position:sticky;top:0;background:linear-gradient(180deg, #fce7f3 0%, #fde2e8 100%);font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#9d174d;padding:7px 3px;text-align:center;border-bottom:1.5px solid #f9a8d4;z-index:2;white-space:nowrap;font-weight:800}
+#rekapGen1Table td{padding:6px 3px;border-bottom:1px solid #fde2e8;text-align:center;font-size:11px;color:#4a2a3a}
+#rekapGen1Table tr:nth-child(even){background:#fdf2f8}
 #rekapGen1Table tr:nth-child(odd){background:#ffffff}
-#rekapGen1Table .rank{font-weight:800;color:#2563eb;text-align:center}
-#rekapGen1Table th:nth-child(1), #rekapGen1Table td:nth-child(1){position:sticky;left:0;z-index:4;background:#f8eeda;min-width:22px;max-width:26px;width:24px;padding:6px 2px;font-size:10px;color:#7a5a32;border-right:1px solid #d8c9a8}
-#rekapGen1Table tr:nth-child(even) td:nth-child(1){background:#f0e6cc !important}
-#rekapGen1Table th:nth-child(2), #rekapGen1Table td:nth-child(2){position:sticky;left:24px;z-index:4;min-width:76px;max-width:88px;width:82px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10.5px;text-align:left;padding:6px 4px;font-weight:650;border-right:1.5px solid #d8c9a8}
-#rekapGen1Table thead th:nth-child(2){background:#dbeafe}
+#rekapGen1Table .rank{font-weight:800;color:#ec4899;text-align:center}
+#rekapGen1Table th:nth-child(1), #rekapGen1Table td:nth-child(1){position:sticky;left:0;z-index:4;background:#fff0f5;min-width:22px;max-width:26px;width:24px;padding:6px 2px;font-size:10px;color:#9d174d;border-right:1px solid #f9a8d4}
+#rekapGen1Table tr:nth-child(even) td:nth-child(1){background:#fce7f3 !important}
+#rekapGen1Table th:nth-child(2), #rekapGen1Table td:nth-child(2){position:sticky;left:24px;z-index:4;min-width:76px;max-width:88px;width:82px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10.5px;text-align:left;padding:6px 4px;font-weight:650;border-right:1.5px solid #f9a8d4}
+#rekapGen1Table thead th:nth-child(2){background:linear-gradient(180deg, #fce7f3 0%, #fde2e8 100%)}
 #rekapGen1Table th:nth-child(n+3), #rekapGen1Table td:nth-child(n+3){min-width:36px;max-width:46px;width:40px;padding:6px 2px}
-/* WARNA TEKS - BIRU KALO ADA KETURUNAN BISA DIKLIK, HITAM KALO KOSONG - PERSIS MUKTI */
+/* WARNA TEKS - BIRU KALO ADA KETURUNAN BISA DIKLIK, HITAM KALO KOSONG - PINK THEME */
 #rekapGen1Table tr.clickable td:nth-child(2){background:#ffffff !important}
-#rekapGen1Table tr.clickable:nth-child(even) td:nth-child(2){background:#eff6ff !important}
-#rekapGen1Table tr.clickable td:nth-child(2) b{color:#2563eb !important} /* BIRU - siap diklik */
-#rekapGen1Table tr.clickable:hover td{background:#dbeafe !important}
-#rekapGen1Table tr.clickable:hover td:nth-child(2){background:#dbeafe !important}
+#rekapGen1Table tr.clickable:nth-child(even) td:nth-child(2){background:#fdf2f8 !important}
+#rekapGen1Table tr.clickable td:nth-child(2) b{color:#2563eb !important} /* BIRU - siap diklik tetap biru biar jelas */
+#rekapGen1Table tr.clickable:hover td{background:#fce7f3 !important}
+#rekapGen1Table tr.clickable:hover td:nth-child(2){background:#fce7f3 !important}
 #rekapGen1Table tr.clickable:hover td:nth-child(2) b{color:#1d4ed8 !important}
 #rekapGen1Table tr:not(.clickable) td:nth-child(2) b{color:#1e293b !important} /* HITAM - kosong */
-#rekapGen1Table td.hasChild::after{content:'›';float:right;color:#2563eb;font-weight:900;margin-left:3px}
-#rekapGen1Footer{padding:8px 10px;background:linear-gradient(90deg,#dbeafe,#bfdbfe);font-size:10px;color:#1e3a8a;border-top:1.5px solid #93c5fd;line-height:1.3;font-weight:600}
+#rekapGen1Table td.hasChild::after{content:'›';float:right;color:#ec4899;font-weight:900;margin-left:3px}
+#rekapGen1Footer{padding:8px 10px;background:linear-gradient(90deg,#fce7f3 0%, #ffffff 100%);font-size:10px;color:#831843;border-top:1.5px solid #f9a8d4;line-height:1.3;font-weight:600}
 @media(max-width:380px){
   #rekapGen1Panel{max-width:96vw;bottom:60px}
   #rekapGen1Table{min-width:380px}
@@ -4117,9 +4120,9 @@
     <div>
       <div id="rekapGen1Breadcrumb"><button id="rekapBackBtn">‹ Kembali</button></div>
       <h4 id="rekapTitle">JUMLAH KETURUNAN</h4>
-      <small><b style="color:#2563eb;">Biru = bisa diklik</b> • <b>Hitam = kosong</b> • Klik nama biru untuk lihat keturunannya</small>
+      <small><b style="color:#2563eb;">Biru = bisa diklik</b> • <b style="color:#1e293b;">Hitam = kosong</b> • Klik nama biru untuk lihat keturunannya</small>
     </div>
-    <button id="rekapGen1Close" style="background:#fff;border:1px solid #93c5fd;border-radius:8px;width:26px;height:26px;font-size:14px;font-weight:800;color:#1e40af;cursor:pointer;">✕</button>
+    <button id="rekapGen1Close" style="background:#fff;border:1px solid #f9a8d4;border-radius:8px;width:26px;height:26px;font-size:14px;font-weight:800;color:#be185d;cursor:pointer;">✕</button>
   </div>
   <div id="rekapGen1TableWrap"><table id="rekapGen1Table"><thead><tr><th>No</th><th>Nama Anak</th><th>Anak</th><th>Cucu</th><th>Buyut</th><th>Canggah</th><th>Wareng</th></tr></thead><tbody id="rekapGen1Body"></tbody></table></div>
   <div id="rekapGen1Footer">Memuat...</div>
@@ -4225,9 +4228,12 @@ function renderRekap(){
     if(rc.canggah>0) parts.push(rc.canggah+' Canggah');
     if(rc.wareng>0) parts.push(rc.wareng+' Wareng');
     if(rc.gantungSiwur>0) parts.push(rc.gantungSiwur+' Gantung Siwur');
+    const totalJiwa = (rc.anak||0)+(rc.cucu||0)+(rc.buyut||0)+(rc.canggah||0)+(rc.wareng||0)+(rc.gantungSiwur||0);
     const namaBersih = currentRoot.name.replace(/\(.*\)/,'').trim();
     const baniName = 'Keturunan ' + namaBersih;
-    document.getElementById('rekapGen1Footer').innerHTML = baniName + ' : ' + (parts.length?parts.join(', '):'Belum ada keturunan');
+    let footerText = baniName + ' : ' + (parts.length?parts.join(', '):'Belum ada keturunan');
+    if(totalJiwa>0) footerText += ', <b style="color:#9d174d;">Total '+totalJiwa+' Jiwa</b>';
+    document.getElementById('rekapGen1Footer').innerHTML = footerText;
   }catch(e){ console.error(e); }
 }
 const btn=document.getElementById('rekapGen1Btn');
