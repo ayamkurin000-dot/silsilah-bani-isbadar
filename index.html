@@ -908,6 +908,14 @@
             stroke-linecap: round;
         }
         @media (max-width: 640px) {
+            #panel-switcher {
+                top: auto !important;
+                bottom: 10px !important;
+                left: 8px !important;
+                right: auto !important;
+                width: auto !important;
+                font-size: 0.52rem !important;
+            }
             #credit-tag {
                 bottom: 10px !important;
                 right: 8px !important;
@@ -962,9 +970,11 @@
             <button class="btn" onclick="resetZoom()">RESET</button>
             <button class="btn" onclick="showFeatureDisabledNotice()">BUKA SEMUA</button>
             <button class="btn" onclick="showFeatureDisabledNotice()">TUTUP SEMUA</button>
-            <button class="btn" id="perf-btn" onclick="togglePerf()" style="background:#64748b;">⚡ EFEK: ON</button>
+            <button class="btn" id="lock-expand-btn" onclick="toggleLockExpand()" style="background:#64748b;">🔓 KUNCI: OFF</button>
         </div>
     </div>
+
+    <div id="lock-expand-toast" class="feature-disabled-toast">Mode kunci aktif: cabang lain tidak akan tertutup otomatis</div>
 
     <div id="feature-disabled-toast" class="feature-disabled-toast">Fitur ini dinonaktifkan</div>
 
@@ -2090,7 +2100,9 @@
     // Jaga-jaga untuk tap singkat yang tidak memicu event zoom "start" (mis. klik cepat tanpa geser)
     svg.on("pointerdown.genlegend", () => { minimizeGenLegend(); });
 
-    const tree = d3.tree().nodeSize([cardHeight + extraNameHeight + 25, cardWidth + 100]);
+    const tree = d3.tree()
+        .nodeSize([cardHeight + extraNameHeight + 4, cardWidth + 100])
+        .separation((a, b) => a.parent === b.parent ? 1 : 1.18);
 
     root = d3.hierarchy(treeData, d => d.children);
     root.x0 = height / 2;
@@ -2355,7 +2367,7 @@
                     d._children = d.children;
                     d.children = null;
                 } else if (d._children) {
-                    if (d.parent) {
+                    if (d.parent && lockExpandMode !== 'on') {
                         d.parent.children.forEach(sibling => {
                             if (sibling !== d) collapse(sibling);
                         });
@@ -3666,6 +3678,35 @@
         update(root);
     }
 
+    let lockExpandMode = localStorage.getItem('lockExpandMode') || 'off';
+    let lockExpandTimer;
+    function applyLockExpandBtnStyle() {
+        const btn = document.getElementById('lock-expand-btn');
+        if (!btn) return;
+        if (lockExpandMode === 'on') {
+            btn.textContent = '🔒 KUNCI: ON';
+            btn.style.background = '#16a34a';
+        } else {
+            btn.textContent = '🔓 KUNCI: OFF';
+            btn.style.background = '#64748b';
+        }
+    }
+    function toggleLockExpand() {
+        lockExpandMode = lockExpandMode === 'on' ? 'off' : 'on';
+        localStorage.setItem('lockExpandMode', lockExpandMode);
+        applyLockExpandBtnStyle();
+        const toast = document.getElementById('lock-expand-toast');
+        if (toast) {
+            toast.textContent = lockExpandMode === 'on' ?
+                'Mode kunci AKTIF: klik shape lain tidak akan menutup cabang yang sudah terbuka' :
+                'Mode kunci NONAKTIF: klik shape akan menutup cabang saudara seperti biasa';
+            toast.classList.add('show');
+            clearTimeout(lockExpandTimer);
+            lockExpandTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+        }
+    }
+    setTimeout(applyLockExpandBtnStyle, 400);
+
     let featureDisabledTimer = null;
     function showFeatureDisabledNotice(customMessage) {
         const toast = document.getElementById('feature-disabled-toast');
@@ -4055,8 +4096,8 @@
 #rekapGen1Panel{
   position:fixed;
   left:50%;
-  bottom:64px;
-  transform:translateX(-50%);
+  top:50%;
+  transform:translate(-50%,-50%);
   width:92vw;
   max-width:420px;
   max-height:70vh;
@@ -4070,48 +4111,103 @@
   z-index:10003;
 }
 #rekapGen1Panel.open{display:flex;animation:rekapFade 0.22s ease}
-@keyframes rekapFade{from{opacity:0;transform:translate(-50%,10px) scale(0.98)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes rekapFade{from{opacity:0;transform:translate(-50%,calc(-50% + 10px)) scale(0.98)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 #rekapGen1Header{background:linear-gradient(135deg,#fce7f3 0%, #fbcfe8 45%, #ffffff 100%);padding:10px 12px;border-bottom:1.5px solid #f9a8d4;display:flex;justify-content:space-between;align-items:center;gap:8px}
 #rekapGen1Header>div{min-width:0;flex:1;overflow:hidden}
 #rekapGen1Header h4{font-size:12px;font-weight:900;color:#9d174d;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2;text-transform:uppercase;letter-spacing:0.4px}
 #rekapGen1Header small{font-size:8.5px;color:#831843;display:block;line-height:1.25;white-space:normal;font-weight:500;margin-top:2px}
 #rekapGen1Breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:2px}
-#rekapBackBtn{background:#ffffff;border:1px solid #f9a8d4;border-radius:8px;padding:3px 7px;font-size:10px;font-weight:800;color:#be185d;cursor:pointer;display:none}
+#rekapBackBtn{background:#ffffff;border:1.5px solid #f9a8d4;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:800;color:#be185d;cursor:pointer;display:none}
 #rekapBackBtn.show{display:inline-flex}
-#rekapGen1TableWrap{overflow:auto;flex:1;-webkit-overflow-scrolling:touch;background:linear-gradient(180deg, #ffffff 0%, #fff5f9 100%)}
-#rekapGen1Table{width:100%;min-width:440px;border-collapse:collapse;font-size:11px}
-#rekapGen1Table th{position:sticky;top:0;background:linear-gradient(180deg, #fce7f3 0%, #fde2e8 100%);font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:#9d174d;padding:7px 3px;text-align:center;border-bottom:1.5px solid #f9a8d4;z-index:2;white-space:nowrap;font-weight:800}
-#rekapGen1Table td{padding:6px 3px;border-bottom:1px solid #fde2e8;text-align:center;font-size:11px;color:#4a2a3a}
-#rekapGen1Table tr:nth-child(even){background:#fdf2f8}
+#rekapGen1TableWrap{overflow:auto;flex:1;-webkit-overflow-scrolling:touch;background:#ffffff}
+#rekapGen1Table{
+  width:100%;
+  min-width:320px;
+  border-collapse:collapse;
+  font-size:11px;
+  border-spacing:0;
+  table-layout:fixed !important;
+}
+#rekapGen1Table th{position:sticky;top:0;background:#e8f5e9;font-size:8px;text-transform:uppercase;letter-spacing:.4px;color:#2e5939;padding:4px 2px;text-align:center;border-bottom:1px solid #c5d9b2;z-index:2;white-space:nowrap;font-weight:800;line-height:1.1}
+#rekapGen1Table td{padding:2px 1px;border-bottom:1px solid #e8dcc3;text-align:center;font-size:8.5px;color:#3d4a3a;height:22px;box-sizing:border-box;vertical-align:middle;line-height:1.1;overflow:hidden}
+#rekapGen1Table tr:nth-child(even){background:#f5f9ef}
 #rekapGen1Table tr:nth-child(odd){background:#ffffff}
-#rekapGen1Table .rank{font-weight:800;color:#ec4899;text-align:center}
-#rekapGen1Table th:nth-child(1), #rekapGen1Table td:nth-child(1){position:sticky;left:0;z-index:4;background:#fff0f5;min-width:22px;max-width:26px;width:24px;padding:6px 2px;font-size:10px;color:#9d174d;border-right:1px solid #f9a8d4}
-#rekapGen1Table tr:nth-child(even) td:nth-child(1){background:#fce7f3 !important}
-#rekapGen1Table th:nth-child(2), #rekapGen1Table td:nth-child(2){position:sticky;left:24px;z-index:4;min-width:76px;max-width:88px;width:82px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10.5px;text-align:left;padding:6px 4px;font-weight:650;border-right:1.5px solid #f9a8d4}
-#rekapGen1Table thead th:nth-child(2){background:linear-gradient(180deg, #fce7f3 0%, #fde2e8 100%)}
-#rekapGen1Table th:nth-child(n+3), #rekapGen1Table td:nth-child(n+3){min-width:36px;max-width:46px;width:40px;padding:6px 2px}
-/* WARNA TEKS - BIRU KALO ADA KETURUNAN BISA DIKLIK, HITAM KALO KOSONG - PINK THEME */
+#rekapGen1Table .rank{font-weight:800;color:#4a7a4a;text-align:center}
+#rekapGen1Table th:nth-child(1), #rekapGen1Table td:nth-child(1){
+  width:20px !important;min-width:20px !important;max-width:20px !important;
+  position:sticky;left:0;z-index:4;background:#f8eeda;
+  padding:2px 1px;font-size:8.5px;color:#7a5a32;
+  border-right:1px solid #d8c9a8;text-align:center;vertical-align:middle;height:22px;line-height:1.1;box-sizing:border-box;
+}
+#rekapGen1Table tr:nth-child(even) td:nth-child(1){background:#f0e6cc !important}
+#rekapGen1Table th:nth-child(2), #rekapGen1Table td:nth-child(2){
+  width:110px !important;min-width:110px !important;max-width:110px !important;
+  position:sticky;left:20px !important;z-index:4;
+  white-space:normal;overflow:hidden;font-size:9px;text-align:left;
+  padding:2px 4px;font-weight:650;border-right:1.5px solid #d8c9a8;
+  line-height:1.1;height:22px;vertical-align:middle;box-sizing:border-box;background:#ffffff;
+}
+#rekapGen1Table thead th:nth-child(1){background:#f8eeda;text-align:center !important}
+#rekapGen1Table thead th:nth-child(2){background:#e8f5e9;text-align:center !important}
+#rekapGen1Table th:nth-child(n+3), #rekapGen1Table td:nth-child(n+3){
+  width:28px !important;min-width:28px !important;max-width:28px !important;
+  padding:2px 1px;font-size:8.5px;line-height:1.1;height:22px;
+  text-align:center;box-sizing:border-box;
+  white-space:nowrap !important;
+  overflow:hidden;
+  text-overflow:clip;
+}
+#rekapGen1Table th:nth-child(n+3){
+  font-size:8px !important;
+}
+#rekapGen1Table tr:nth-child(even) td:nth-child(2){background:#f5f9ef !important}
 #rekapGen1Table tr.clickable td:nth-child(2){background:#ffffff !important}
-#rekapGen1Table tr.clickable:nth-child(even) td:nth-child(2){background:#fdf2f8 !important}
-#rekapGen1Table tr.clickable td:nth-child(2) b{color:#2563eb !important} /* BIRU - siap diklik tetap biru biar jelas */
-#rekapGen1Table tr.clickable:hover td{background:#fce7f3 !important}
-#rekapGen1Table tr.clickable:hover td:nth-child(2){background:#fce7f3 !important}
+#rekapGen1Table tr.clickable:nth-child(even) td:nth-child(2){background:#f5f9ef !important}
+#rekapGen1Table td:nth-child(2) b{
+  display:-webkit-box !important;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;text-overflow:ellipsis;white-space:normal;word-break:break-word;
+  line-height:1.1;max-height:2.2em;text-align:left !important;
+  margin:auto 0 !important;vertical-align:middle;font-size:9px;width:100%;
+}
+#rekapGen1Table tr.clickable td:nth-child(2) b{color:#2563eb !important}
+#rekapGen1Table tr.clickable:hover td{background:#dbeafe !important}
+#rekapGen1Table tr.clickable:hover td:nth-child(2){background:#dbeafe !important}
 #rekapGen1Table tr.clickable:hover td:nth-child(2) b{color:#1d4ed8 !important}
-#rekapGen1Table tr:not(.clickable) td:nth-child(2) b{color:#1e293b !important} /* HITAM - kosong */
-#rekapGen1Table td.hasChild::after{content:'›';float:right;color:#ec4899;font-weight:900;margin-left:3px}
-#rekapGen1Footer{padding:8px 10px;background:linear-gradient(90deg,#fce7f3 0%, #ffffff 100%);font-size:10px;color:#831843;border-top:1.5px solid #f9a8d4;line-height:1.3;font-weight:600}
+#rekapGen1Table tr:not(.clickable) td:nth-child(2) b{color:#1e293b !important}
+#rekapGen1Table td.hasChild{
+  display:table-cell !important;
+  position:sticky !important;left:20px !important;
+  vertical-align:middle !important;
+  padding-right:14px !important;
+}
+#rekapGen1Table td.hasChild b{
+  display:-webkit-box !important;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;text-overflow:ellipsis;white-space:normal;word-break:break-word;
+  line-height:1.1;max-height:2.2em;text-align:left !important;
+  margin:auto 0 !important;font-size:9px;width:100%;
+}
+#rekapGen1Table td.hasChild::after{
+  content:'›';color:#2563eb;font-weight:900;font-size:11px;line-height:1;
+  position:absolute !important;right:3px;top:50%;
+  transform:translateY(-50%) !important;float:none !important;
+  display:inline-flex;align-items:center;justify-content:center;pointer-events:none;
+}
+#rekapGen1Footer{padding:5px 8px;background:linear-gradient(90deg,#e8f5e9,#f3e2c8);font-size:8.5px;color:#4a5a3a;border-top:1.5px solid #c5d9b2;line-height:1.15;font-weight:600}
 @media(max-width:380px){
-  #rekapGen1Panel{max-width:96vw;bottom:60px}
-  #rekapGen1Table{min-width:380px}
-  #rekapGen1Table th:nth-child(2), #rekapGen1Table td:nth-child(2){min-width:68px;max-width:78px;width:72px;font-size:10px}
+  #rekapGen1Panel{max-width:96vw}
+  #rekapGen1Table{min-width:320px}
+  #rekapGen1Table th:nth-child(2), #rekapGen1Table td:nth-child(2){width:100px !important;min-width:100px !important;max-width:100px !important;left:20px !important;font-size:8.5px}
+  #rekapGen1Table th:nth-child(n+3), #rekapGen1Table td:nth-child(n+3){width:26px !important;min-width:26px !important;max-width:26px !important}
   #rekapGen1Btn{width:44px;height:44px}
   #rekapGen1Fab{width:44px;height:44px}
 }
 @media(min-width:768px){
   #rekapGen1Fab{bottom:12px}
-  #rekapGen1Panel{bottom:66px;max-width:560px;width:520px}
-  #rekapGen1Table{min-width:460px}
-  #rekapGen1Table th:nth-child(2), #rekapGen1Table td:nth-child(2){min-width:110px;max-width:130px;width:120px;font-size:12px}
+  #rekapGen1Panel{max-width:560px;width:520px}
+  #rekapGen1Table{min-width:340px}
+  #rekapGen1Table th:nth-child(2), #rekapGen1Table td:nth-child(2){width:120px !important;min-width:120px !important;max-width:120px !important;left:20px !important;font-size:9.5px}
 }
 </style>
 
