@@ -4255,10 +4255,14 @@ function findBaniNode(data,keywords){
   }
   return data;
 }
+function isFarathEntry(node){
+  return !!((node.name && node.name.toUpperCase().includes('FARATH')) || (node.extraName && node.extraName.toUpperCase().includes('FARATH')));
+}
 function getRealChildren(node){
   let out=[];
   (node.children||[]).forEach(c=>{
-    if((c.type||'')==='wife'){ (c.children||[]).forEach(g=>out.push(g)); } else { out.push(c); }
+    if((c.type||'')==='wife'){ (c.children||[]).forEach(g=>{ if(!isFarathEntry(g)) out.push(g); }); }
+    else if(!isFarathEntry(c)){ out.push(c); }
   });
   return out;
 }
