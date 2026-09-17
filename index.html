@@ -4114,10 +4114,11 @@
 @keyframes rekapFade{from{opacity:0;transform:translate(-50%,calc(-50% + 10px)) scale(0.98)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 #rekapGen1Header{background:linear-gradient(135deg,#e8f5e9 0%, #dcedc8 45%, #f3e2c8 100%);padding:10px 12px;border-bottom:1.5px solid #c5d9b2;display:flex;justify-content:space-between;align-items:center;gap:8px}
 #rekapGen1Header>div{min-width:0;flex:1;overflow:hidden}
-#rekapGen1Header h4{font-size:12px;font-weight:900;color:#9d174d;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2;text-transform:uppercase;letter-spacing:0.4px}
+#rekapGen1Header h4{font-size:12px;font-weight:900;color:#000000;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.2;text-transform:uppercase;letter-spacing:0.4px}
 #rekapGen1Header small{font-size:8.5px;color:#831843;display:block;line-height:1.25;white-space:normal;font-weight:500;margin-top:2px}
 #rekapGen1Breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:2px}
-#rekapBackBtn{background:#ffffff;border:1.5px solid #f9a8d4;border-radius:10px;padding:7px 14px;font-size:13px;font-weight:800;color:#be185d;cursor:pointer;display:none}
+#rekapBackBtn{background:linear-gradient(90deg,#000000 0%,#ffffff 100%);border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:800;cursor:pointer;display:none;isolation:isolate;overflow:hidden}
+#rekapBackBtn .btnText{color:#ffffff;mix-blend-mode:difference;white-space:nowrap}
 #rekapBackBtn.show{display:inline-flex}
 #rekapGen1TableWrap{overflow:auto;flex:1;-webkit-overflow-scrolling:touch;background:#ffffff}
 #rekapGen1Table{
@@ -4215,7 +4216,7 @@
 <div id="rekapGen1Panel">
   <div id="rekapGen1Header">
     <div>
-      <div id="rekapGen1Breadcrumb"><button id="rekapBackBtn">‹ Kembali</button></div>
+      <div id="rekapGen1Breadcrumb"><button id="rekapBackBtn"><span class="btnText">‹ Kembali</span></button></div>
       <h4 id="rekapTitle">JUMLAH KETURUNAN</h4>
       <small style="color:#000;font-style:italic;">Klik <b style="color:#2563eb;font-style:normal;">nama biru</b> untuk lihat keturunannya</small>
     </div>
@@ -4301,7 +4302,7 @@ function renderRekap(){
     document.getElementById('rekapTitle').textContent=isRoot?'JUMLAH KETURUNAN':'KETURUNAN - '+cleanName;
     const backBtn=document.getElementById('rekapBackBtn');
     if(isRoot) backBtn.classList.remove('show');
-    else{ backBtn.classList.add('show'); backBtn.textContent='‹ Kembali ke '+toTitleCase(historyStack[historyStack.length-1].name.replace(/\(.*\)/,'').trim()); }
+    else{ backBtn.classList.add('show'); backBtn.innerHTML='<span class="btnText">‹ Kembali ke '+toTitleCase(historyStack[historyStack.length-1].name.replace(/\(.*\)/,'').trim())+'</span>'; }
     const tbody=document.getElementById('rekapGen1Body');
     tbody.innerHTML=rows.map((r,i)=>{
       const cls=r.hasChild?'clickable':'';
@@ -4332,7 +4333,7 @@ function renderRekap(){
     const totalJiwa = (rc.anak||0)+(rc.cucu||0)+(rc.buyut||0)+(rc.canggah||0)+(rc.wareng||0)+(rc.gantungSiwur||0);
     const namaBersih = currentRoot.name.replace(/\(.*\)/,'').trim();
     let footerText = '<b>' + namaBersih + '</b> : ' + (parts.length?parts.join(', '):'Belum ada keturunan');
-    if(totalJiwa>0) footerText += ', <b style="color:#9d174d;">Total '+totalJiwa+' Jiwa</b>';
+    if(totalJiwa>0) footerText += ', <b style="color:#000000;">Total '+totalJiwa+' Jiwa</b>';
     document.getElementById('rekapGen1Footer').innerHTML = footerText;
   }catch(e){ console.error(e); }
 }
