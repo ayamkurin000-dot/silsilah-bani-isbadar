@@ -4217,7 +4217,7 @@
     <div>
       <div id="rekapGen1Breadcrumb"><button id="rekapBackBtn">‹ Kembali</button></div>
       <h4 id="rekapTitle">JUMLAH KETURUNAN</h4>
-      <small><i>Klik nama biru untuk lihat keturunannya</i></small>
+      <small style="color:#000;font-style:italic;">Klik <b style="color:#2563eb;font-style:normal;">nama biru</b> untuk lihat keturunannya</small>
     </div>
     <button id="rekapGen1Close" style="background:#fff;border:1px solid #a7d7b5;border-radius:8px;width:26px;height:26px;font-size:14px;font-weight:800;color:#2e5939;cursor:pointer;">✕</button>
   </div>
@@ -4227,6 +4227,9 @@
 <script>
 (function(){
 let currentRoot=null;let historyStack=[];
+function toTitleCase(str){
+  return String(str||'').toLowerCase().replace(/(^|[\s\-\(\/])([a-zà-ÿ])/g, function(m,p1,p2){ return p1+p2.toUpperCase(); });
+}
 function findBaniNode(data,keywords){
   const kws=Array.isArray(keywords)?keywords:[keywords];
   for(let kw of kws){ if((data.name||'').toUpperCase().includes(kw.toUpperCase())) return data; }
@@ -4298,12 +4301,13 @@ function renderRekap(){
     document.getElementById('rekapTitle').textContent=isRoot?'JUMLAH KETURUNAN':'KETURUNAN - '+cleanName;
     const backBtn=document.getElementById('rekapBackBtn');
     if(isRoot) backBtn.classList.remove('show');
-    else{ backBtn.classList.add('show'); backBtn.textContent=historyStack.length===1?'‹ Kembali ke Bani Isbadar':'‹ '+(historyStack[historyStack.length-1].name.replace(/\(.*\)/,'').substring(0,14)); }
+    else{ backBtn.classList.add('show'); backBtn.textContent='‹ Kembali ke '+toTitleCase(historyStack[historyStack.length-1].name.replace(/\(.*\)/,'').trim()); }
     const tbody=document.getElementById('rekapGen1Body');
     tbody.innerHTML=rows.map((r,i)=>{
       const cls=r.hasChild?'clickable':'';
       const tdCls=r.hasChild?'hasChild':'';
-      return `<tr class="${cls}" data-idx="${i}"><td class="rank">${i+1}</td><td class="${tdCls}" title="${r.nama} - ${r.hasChild?'Klik untuk lihat keturunan':'Tidak ada keturunan'}"><b>${r.nama}</b></td><td>${r.anak||0}</td><td>${r.cucu||0}</td><td>${r.buyut||0}</td><td>${r.canggah||0}</td><td>${r.wareng||0}</td></tr>`;
+      const namaTampil = toTitleCase(r.nama);
+      return `<tr class="${cls}" data-idx="${i}"><td class="rank">${i+1}</td><td class="${tdCls}" title="${namaTampil} - ${r.hasChild?'Klik untuk lihat keturunan':'Tidak ada keturunan'}"><b>${namaTampil}</b></td><td>${r.anak||0}</td><td>${r.cucu||0}</td><td>${r.buyut||0}</td><td>${r.canggah||0}</td><td>${r.wareng||0}</td></tr>`;
     }).join('');
     tbody.querySelectorAll('tr.clickable').forEach(tr=>{
       tr.addEventListener('click',()=>{
