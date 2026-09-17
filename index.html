@@ -945,12 +945,9 @@
             transform: translateX(-50%) translateY(0);
         }
     
-        .special-flower-badge, .deceased-flower-badge {
-            /* always in front */
-            isolation: isolate;
-        }
         .deceased-flower-badge {
-            /* merah lebih pop in front */
+            /* always in front, merah lebih pop */
+            isolation: isolate;
             filter: drop-shadow(0 3px 7px rgba(185,28,28,0.45)) !important;
         }
 
@@ -1273,9 +1270,7 @@
                         { "name": "ADEK PUTRI DEWI ROHMAH", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
                     ] },
                     { "name": "ILMAYUNI ROWIYATI", "life": "1970 - ....", "spouse": "GUNAWAN", "spouse_life": "1966 - ....", "type": "gen2", "address": "", "extraName": "", "children": [
-                        { "name": "MEGA FAHMA L.", "life": "2001 - ....", "spouse": "MUH. RIZKI MUBAROK", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [
-                            { "name": "AMIRUL MUKMININ", "life": "", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "specialBadge": "flower", "children": [] }
-                        ] },
+                        { "name": "MEGA FAHMA L.", "life": "2001 - ....", "spouse": "MUH. RIZKI MUBAROK", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children":[] },
                         { "name": "ZAYYINA MAULIDA A.", "life": "2005 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
                     ] },
                     { "name": "NGIZAM MASROIR", "life": "1972 - ....", "spouse": "NUR AZIZAH", "spouse_life": "1975 - ....", "type": "gen2", "address": "", "extraName": "", "children": [
@@ -1388,12 +1383,8 @@
                     ] },
                     { "name": "TUTIK", "life": "", "spouse": "", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "deceased": true, "children": [] },
                     { "name": "SAIFUL HADI / SYAIKHU", "life": "", "spouse": "WATUTIK AISYAH", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [
-                        { "name": "FEBRIAN SETIANTO", "life": "", "spouse": "UMMI KHAIRA LATIF", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [
-                            { "name": "AMIRUL MUKMININ", "life": "", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "specialBadge": "flower", "children": [] }
-                        ] },
-                        { "name": "DENIS PRAMANA", "life": "", "spouse": "KHARISMA", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [
-                            { "name": "AMIRUL MUKMININ", "life": "", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "specialBadge": "flower", "children": [] }
-                        ] },
+                        { "name": "FEBRIAN SETIANTO", "life": "", "spouse": "UMMI KHAIRA LATIF", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children":[] },
+                        { "name": "DENIS PRAMANA", "life": "", "spouse": "KHARISMA", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children":[] },
                         { "name": "ANISA WANDALIA", "life": "", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
                     ] },
                     { "name": "UMI HANIK", "life": "", "spouse": "Nurcholis", "spouse_life": "", "type": "gen2", "address": "", "extraName": "", "children": [] },
@@ -1503,9 +1494,7 @@
                         { "name": "SAHIA DEWI MAHIRA", "life": "2003 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
                     ] },
                     { "name": "Hj. MARYAM JAMILAH MA'RUF", "life": "1973 - ....", "spouse": "H. MUSLIM", "spouse_life": "1972 - ....", "type": "gen2", "address": "", "extraName": "", "children": [
-                        { "name": "ANISA MAHDIANA AWALIN", "life": "2000 - ....", "spouse": "MITRO UBAIDILAH", "spouse_life": "2000 - ....", "type": "gen3", "address": "", "extraName": "", "children": [
-                            { "name": "AMIRUL MUKMININ", "life": "", "spouse": "", "spouse_life": "", "type": "gen4", "address": "", "extraName": "", "specialBadge": "flower", "children": [] }
-                        ] },
+                        { "name": "ANISA MAHDIANA AWALIN", "life": "2000 - ....", "spouse": "MITRO UBAIDILAH", "spouse_life": "2000 - ....", "type": "gen3", "address": "", "extraName": "", "children":[] },
                         { "name": "NAJMA TSANIA MAHFIDA", "life": "2002 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] },
                         { "name": "HIMMATUZZULFA AL AULA", "life": "2008 - ....", "spouse": "", "spouse_life": "", "type": "gen3", "address": "", "extraName": "", "children": [] }
                     ] },
@@ -1868,27 +1857,6 @@
         .attr('width', 3.5).attr('height', 8)
         .attr('fill', '#ffffff')
         .attr('opacity', 0.55);
-
-    // ===== Symbol: badge bunga besar untuk node "Amirul Mukminin" (pasangan belum berketurunan) =====
-    const bigFlowerBadge = defs.append('g').attr('id', 'big-flower-badge');
-    bigFlowerBadge.append('circle')
-        .attr('r', 20).attr('fill', '#ffffff').attr('opacity', 0.95);
-    bigFlowerBadge.append('circle')
-        .attr('r', 20).attr('fill', 'none').attr('stroke', '#eab308').attr('stroke-width', 1.5).attr('opacity', 0.8);
-    [0, 72, 144, 216, 288].forEach(angle => {
-        const rad = angle * Math.PI / 180;
-        const px = 9.5 * Math.cos(rad);
-        const py = 9.5 * Math.sin(rad);
-        bigFlowerBadge.append('ellipse')
-            .attr('cx', px).attr('cy', py)
-            .attr('rx', 7.5).attr('ry', 5.5)
-            .attr('transform', `rotate(${angle + 90}, ${px}, ${py})`)
-            .attr('fill', angle % 144 === 0 ? '#fb7185' : '#f472b6');
-    });
-    bigFlowerBadge.append('circle')
-        .attr('r', 5.5).attr('fill', '#fde047');
-    bigFlowerBadge.append('circle')
-        .attr('r', 5.5).attr('fill', 'none').attr('stroke', '#eab308').attr('stroke-width', 1);
 
     // ===== Symbol: badge bunga merah besar untuk node yang sudah alm./almh. (deceased) =====
     const bigFlowerBadgeRed = defs.append('g').attr('id', 'big-flower-badge-red');
@@ -2410,19 +2378,6 @@
         
         
 
-
-        // ========== BADGE BUNGA BESAR (AMIRUL MUKMININ) - IN FRONT OF SHAPE ==========
-        nodeEnter.filter(d => d.data.specialBadge === 'flower')
-            .append('use')
-            .attr('href', '#big-flower-badge')
-            .attr('class', 'special-flower-badge')
-            .attr('transform', d => {
-                const { w, h } = cardDims(d);
-                return `translate(${w - 2},${-h / 2 - 2}) scale(1.1)`;
-            })
-            .style('pointer-events', 'none')
-            .style('filter', 'drop-shadow(0 3px 6px rgba(0,0,0,0.35))')
-            .raise();
 
         // ========== BADGE BUNGA MERAH (DECEASED, non-FARATH) - IN FRONT OF SHAPE ==========
         nodeEnter.filter(d => d.data.deceased && !isFarathNode(d))
