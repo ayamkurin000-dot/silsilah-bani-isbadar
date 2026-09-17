@@ -1704,7 +1704,8 @@
     const width = window.innerWidth;
     const height = window.innerHeight;
     const cardWidth = 240;
-    const cardHeight = 60;
+    const cardHeight = 60; // dipakai untuk JARAK antar shape (nodeSize) - JANGAN diubah supaya jarak antar shape tetap
+    const cardHeightDraw = 46; // tinggi shape yang benar-benar digambar - dibuat lebih kurus/ramping, panjang (lebar) tetap
     const founderCardWidth = 320;  // DIPERBESAR untuk 2 baris teks
     const founderCardHeight = 120; // DIPERBESAR untuk 3 baris
     const rootCardWidth = 260;
@@ -1713,7 +1714,7 @@
     // ===== Ukuran & jarak khusus kotak "ISTERI/SUAMI" (pasangan ke-2 dst) =====
     // Dibuat lebih kecil dari kartu utama supaya renggang & tidak menumpuk kotak lain.
     const wifeCardWidth = Math.round(cardWidth * 0.72);   // ~173
-    const wifeCardHeight = Math.round(cardHeight * 0.72); // ~43
+    const wifeCardHeight = Math.round(cardHeightDraw * 0.72); // ikut lebih ramping
     const wifeGapX = 60; // jarak renggang horizontal dari kotak utama (suami/isteri) - digeser lebih ke kanan
     const wifeGapY = 10; // jarak renggang vertikal antar kotak isteri/suami yang bertumpuk
 
@@ -1751,23 +1752,34 @@
     }
 
     // ====== REALISTIC GLOSSY BATTERY - TANPA GELANG & TANPA KOTAK BAWAH (final polos) ======
+    // Pojok KANAN pakai radius normal (r), pojok KIRI radiusnya dikurangi banyak
+    // sehingga terlihat hampir siku tapi tetap sedikit radial.
+    function shapeBodyPath(w, h, rRight, rLeft) {
+        return `M ${rLeft},${-h / 2} ` +
+            `L ${w - rRight},${-h / 2} Q ${w},${-h / 2} ${w},${-h / 2 + rRight} ` +
+            `L ${w},${h / 2 - rRight} Q ${w},${h / 2} ${w - rRight},${h / 2} ` +
+            `L ${rLeft},${h / 2} Q 0,${h / 2} 0,${h / 2 - rLeft} ` +
+            `L 0,${-h / 2 + rLeft} Q 0,${-h / 2} ${rLeft},${-h / 2} Z`;
+    }
+
     function drawRealisticBattery(g, w, h, type){
-        const r = Math.min(22, Math.round(h*0.42));
+        const r = Math.min(22, Math.round(h*0.42)); // radius pojok KANAN - tetap seperti sebelumnya
+        const rLeft = Math.max(2, Math.round(r * 0.15)); // radius pojok KIRI - dikurangi banyak, hampir siku
         const nubBaseW = 8;
         const nubBaseH = h*0.68;
         const nubW = 18;
         const nubH = h*0.48;
 
         // shadow halus
-        g.append('rect')
-            .attr('x', 1.5).attr('y', -h/2+2)
-            .attr('width', w).attr('height', h).attr('rx', r)
+        g.append('path')
+            .attr('transform', 'translate(1.5,2)')
+            .attr('d', shapeBodyPath(w, h, r, rLeft))
             .attr('fill', '#000').attr('opacity', 0.09);
 
         // body utama glossy POLOS - gradasi full
-        g.append('rect')
+        g.append('path')
             .attr('class', 'real-body')
-            .attr('x', 0).attr('y', -h/2).attr('width', w).attr('height', h).attr('rx', r)
+            .attr('d', shapeBodyPath(w, h, r, rLeft))
             .attr('fill', `url(#grad-real-${type})`)
             .attr('stroke', '#1e293b').attr('stroke-width', 0.9).attr('stroke-opacity', 0.18);
 
@@ -1807,7 +1819,7 @@
     // ===== Ukuran MINIMAL untuk semua generasi (selain root & farath) =====
     // Mengikuti ukuran shape "H. SAHUDI" (cardHeight + extraNameHeight, karena punya label "ANAK KE-8")
     const minGenCardWidth = cardWidth;
-    const minGenCardHeight = cardHeight + extraNameHeight;
+    const minGenCardHeight = cardHeightDraw + extraNameHeight;
 
     function cardDims(d) {
         if (d.data.name === 'ISBADAR bin BURNAWI') {
@@ -1822,7 +1834,7 @@
             return { w, h };
         }
         let w = cardWidth;
-        let h = cardHeight + (d.data.extraName ? extraNameHeight : 0) + (d.data.address ? extraNameHeight : 0);
+        let h = cardHeightDraw + (d.data.extraName ? extraNameHeight : 0) + (d.data.address ? extraNameHeight : 0);
         // Minimal sebesar shape H. SAHUDI, boleh lebih besar jika kontennya butuh lebih banyak ruang
         w = Math.max(w, minGenCardWidth);
         h = Math.max(h, minGenCardHeight);
@@ -2159,7 +2171,7 @@
             maxY = -Infinity;
         list.forEach(d => {
             let w = cardWidth;
-            let h = cardHeight + (d.data.extraName ? extraNameHeight : 0);
+            let h = cardHeightDraw + (d.data.extraName ? extraNameHeight : 0);
             if (d.data.name === 'ISBADAR bin BURNAWI') {
                 w = founderCardWidth;
                 h = founderCardHeight;
