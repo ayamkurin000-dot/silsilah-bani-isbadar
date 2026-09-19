@@ -3597,7 +3597,7 @@
     }
     function replyMessage(id) {
         if (!chatUser) { showLoginForm(); return; }
-        const msgs = getMessages();
+        const msgs = typeof getAllMessages === 'function' ? getAllMessages() : getMessages();
         const m = msgs.find(x=>x.id===id);
         if (!m) return;
         replyToId = id;
