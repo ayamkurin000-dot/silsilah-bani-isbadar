@@ -596,6 +596,80 @@
             margin-bottom: 5px;
             border-left: 2px solid #94a3b8;
         }
+        .chat-msg.is-reply-target { box-shadow: 0 0 0 2px #93c5fd; }
+        /* Balasan ala YouTube: masuk ke kanan, sejajar mulai dari teks chat induk, tanpa kotak sendiri */
+        .thread-replies {
+            margin-top: 10px;
+            margin-left: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .thread-reply {
+            padding: 0;
+            border-radius: 8px;
+        }
+        .thread-reply.is-reply-target { background: #dbeafe; box-shadow: 0 0 0 4px #dbeafe; }
+        .thread-replies .msg-avatar {
+            width: 26px !important;
+            height: 26px !important;
+            min-width: 26px !important;
+            font-size: 0.62rem !important;
+        }
+        .inline-reply-box {
+            margin-top: 10px;
+            margin-left: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .inline-reply-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.68rem;
+            color: #1e40af;
+            font-weight: 700;
+        }
+        .inline-reply-label button {
+            background: none; border: none; color: #dc2626; font-weight: 800; cursor: pointer; font-size: 0.8rem;
+        }
+        .inline-reply-box textarea {
+            width: 100%;
+            box-sizing: border-box;
+            min-height: 54px;
+            max-height: 120px;
+            padding: 8px 10px;
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            resize: vertical;
+            outline: none;
+            font-family: inherit;
+            background: #ffffff;
+        }
+        .inline-reply-box textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+        }
+        .inline-reply-actions { display: flex; gap: 6px; }
+        .inline-reply-actions button {
+            padding: 7px 12px;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .inline-reply-actions button.send {
+            flex: 1;
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+        .inline-reply-actions button.send:hover { background: #2563eb; }
         #chat-input-area {
             padding: 10px;
             border-top: 1px solid #e2e8f0;
@@ -1044,7 +1118,10 @@
     <div id="chat-panel">
         <div class="chat-header">
             <span>💬 CHAT & SARAN BANI ISBADAR</span>
-            <small id="chat-count">0 pesan</small>
+            <span style="display:flex; align-items:center; gap:6px;">
+                <small id="chat-version" title="Versi kode chat" style="font-size:0.55rem; color:#94a3b8; font-weight:700; border:1px solid #cbd5e1; border-radius:6px; padding:1px 4px;">v7</small>
+                <small id="chat-count">0 pesan</small>
+            </span>
         </div>
 
         <!-- PESAN CHAT - SELALU TAMPIL, SIAPA SAJA BISA BACA TANPA LOGIN -->
@@ -1123,10 +1200,6 @@
             </div>
 
             <div id="chat-input-area">
-                <div id="reply-preview" class="replying-to" style="display:none;">
-                    <span id="reply-text"></span>
-                    <button onclick="cancelReply()" style="background:none; border:none; color:#dc2626; font-weight:800; cursor:pointer;">✕</button>
-                </div>
                 <div id="file-preview" style="display:none; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:8px; padding:8px; margin-bottom:6px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <span id="file-preview-name" style="font-size:0.7rem; font-weight:700; color:#334155;"></span>
@@ -2948,6 +3021,8 @@
 
     let chatUser = null;
     let replyToId = null;
+    let pendingReplyId = null; // tombol Balas yang ditekan saat belum login -> dilanjutkan setelah login
+    let replyDraft = ''; // isi ketikan balasan inline (tetap aman saat chat di-render ulang)
     let profilePhotoMap = {}; // email -> photoUrl terbaru (biar pesan lama ikut update kalau foto profil diganti)
 
     function getEffectivePhoto(email, fallbackPhoto) {
@@ -3137,6 +3212,7 @@
         if (form) form.style.display = 'flex';
     }
     function hideLoginForm() {
+        pendingReplyId = null;
         const guestBar = document.getElementById('chat-guest-bar');
         const form = document.getElementById('chat-login-form');
         if (form) form.style.display = 'none';
@@ -3179,6 +3255,12 @@
             // welcome disabled - fokus chat saja
         }
         renderMessages();
+        // Kalau tadi menekan Balas sebelum login, lanjutkan: buka kotak balasan di bingkai chat itu
+        if (pendingReplyId) {
+            const rid = pendingReplyId;
+            pendingReplyId = null;
+            replyMessage(rid);
+        }
     }
     function logoutChat() {
         if (!confirm('Keluar dari chat?')) return;
@@ -3473,15 +3555,18 @@
         btn.disabled = !(nameOk && baniOk);
     }
 
-    async function sendMessage() {
+    async function sendMessage(fromInline) {
+        const inline = fromInline === true; // true = dikirim dari kotak balasan di dalam bingkai chat
         if (!chatUser) { showLoginForm(); return; }
-        const input = document.getElementById('chat-input');
+        const input = document.getElementById(inline ? 'inline-reply-input' : 'chat-input');
+        if (!input) return;
         const text = input.value.trim();
-        if (!text && !pendingFileData) return;
-        if (text.length < 2 && !pendingFileData) { alert('Pesan terlalu pendek'); return; }
+        const useFile = !inline && !!pendingFileData;
+        if (!text && !useFile) return;
+        if (text.length < 2 && !useFile) { alert('Pesan terlalu pendek'); return; }
         const msg = {
             id: 'msg_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
-            parentId: replyToId,
+            parentId: inline ? replyToId : null,
             name: chatUser.name,
             email: chatUser.email,
             bani: chatUser.bani,
@@ -3491,7 +3576,7 @@
             text,
             ts: Date.now()
         };
-        if (pendingFileData) { msg.image = pendingFileData; msg.fileName = pendingFileName; }
+        if (useFile) { msg.image = pendingFileData; msg.fileName = pendingFileName; }
         if (typeof useFirebase !== 'undefined' && useFirebase && db && fsFns) {
             try {
                 const { id, ...msgData } = msg;
@@ -3508,109 +3593,173 @@
             saveMessages(arr);
         }
         input.value = '';
-        clearFilePreview();
-        cancelReply();
+        const wasReply = !!msg.parentId;
+        if (inline) { replyToId = null; replyDraft = ''; }
+        if (useFile) clearFilePreview();
         renderMessages();
-        // auto scroll
-        setTimeout(()=>{ const c=document.getElementById('chat-messages'); c.scrollTop=c.scrollHeight; }, 60);
+        // auto scroll ke pesan terbaru (hanya untuk pesan baru, bukan balasan)
+        if (!wasReply) setTimeout(()=>{ const c=document.getElementById('chat-messages'); c.scrollTop=c.scrollHeight; }, 60);
     }
-        function renderMessages() {
+
+    // Cari pesan paling atas (induk) dari sebuah rantai balasan
+    function getThreadRootId(id, visMap) {
+        let cur = visMap[id], guard = 0;
+        while (cur && cur.parentId && visMap[cur.parentId] && guard++ < 50) cur = visMap[cur.parentId];
+        return cur ? cur.id : id;
+    }
+
+    // Saat sedang membalas, kotak ketik bawah disembunyikan supaya hanya ada SATU kotak balasan (di dalam bingkai)
+    function syncInputArea() {
+        const area = document.getElementById('chat-input-area');
+        if (area) area.style.display = replyToId ? 'none' : '';
+    }
+
+    function renderMessages() {
         const container = document.getElementById('chat-messages');
         if (!container) return;
-        let allMsgs = typeof getAllMessages === 'function' ? getAllMessages() : (typeof getMessages === 'function' ? getMessages() : []);
+
+        // Simpan dulu ketikan balasan (dan fokusnya) supaya tidak hilang saat chat di-render ulang
+        const oldTa = document.getElementById('inline-reply-input');
+        let hadFocus = false, selS = 0, selE = 0;
+        if (oldTa) {
+            replyDraft = oldTa.value;
+            hadFocus = (document.activeElement === oldTa);
+            selS = oldTa.selectionStart; selE = oldTa.selectionEnd;
+        }
+        const prevScroll = container.scrollTop;
+        const wasAtBottom = (container.scrollHeight - prevScroll - container.clientHeight) < 80;
+        const firstRender = container.dataset.rendered !== '1';
+
+        let msgs = typeof getAllMessages === 'function' ? getAllMessages() : (typeof getMessages === 'function' ? getMessages() : []);
         if (typeof updateChatNotifBadge === 'function') updateChatNotifBadge();
         // hapus sys messages biar fokus chat user saja
-        allMsgs = allMsgs.filter(m => !m.sys);
-        allMsgs.sort((a,b)=>a.ts-b.ts);
+        msgs = msgs.filter(m => !m.sys);
+        msgs.sort((a,b)=>a.ts-b.ts);
         // batasi 100 terakhir biar tidak macet
-        let msgs = allMsgs;
         if (msgs.length > 100) msgs = msgs.slice(msgs.length-100);
         if (msgs.length === 0) {
+            replyToId = null; replyDraft = '';
+            syncInputArea();
             container.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8; font-size:0.72rem;">Belum ada chat.<br>Tulis pesan pertama! 💬</div>';
+            container.dataset.rendered = '1';
             const ce = document.getElementById('chat-count');
             if (ce) ce.textContent = '0 pesan';
             return;
         }
-        const map = {};
-        allMsgs.forEach(m=>map[m.id]=m);
+        const allMap = {};
+        (typeof getAllMessages === 'function' ? getAllMessages() : msgs).forEach(m=>allMap[m.id]=m);
+        const visMap = {};
+        msgs.forEach(m=>visMap[m.id]=m);
+        const isAdmin = typeof isAdminUser === 'function' ? isAdminUser(chatUser) : false;
 
-        // ===== SUSUN BALASAN (REPLY) BERTINGKAT TEPAT DI BAWAH PESAN YANG DIBALAS =====
-        // Jadi balasan tidak lompat ke paling bawah urutan waktu, tapi nempel
-        // persis di bawah pesan induknya (mirip thread), seolah membalas pesan
-        // itu langsung, bukan membuka pesan/percakapan baru.
-        const idsInView = new Set(msgs.map(m=>m.id));
-        const childrenMap = {};
-        const roots = [];
+        // Kalau pesan yang sedang dibalas sudah hilang (dihapus) atau user sudah keluar -> tutup kotak balasan
+        if (replyToId && (!visMap[replyToId] || !chatUser)) { replyToId = null; replyDraft = ''; }
+        const replyRootId = replyToId ? getThreadRootId(replyToId, visMap) : null;
+
+        // Kelompokkan: pesan utama + balasan-balasannya (semua balasan masuk ke bingkai pesan utama)
+        const threads = {};
+        const tops = [];
         msgs.forEach(m=>{
-            if (m.parentId && map[m.parentId] && idsInView.has(m.parentId)) {
-                (childrenMap[m.parentId] = childrenMap[m.parentId] || []).push(m);
-            } else {
-                roots.push(m);
-            }
+            const rid = getThreadRootId(m.id, visMap);
+            if (rid === m.id) tops.push(m);
+            else (threads[rid] = threads[rid] || []).push(m);
         });
-        // urutkan balasan tiap induk berdasarkan waktu kirim
-        Object.keys(childrenMap).forEach(k => childrenMap[k].sort((a,b)=>a.ts-b.ts));
 
-        function renderMsgHtml(m, depth) {
+        function itemHtml(m, isReply, rootId) {
             const isMe = chatUser && m.email && chatUser.email === m.email;
-            const isAdmin = typeof isAdminUser === 'function' ? isAdminUser(chatUser) : false;
             let parentHtml = '';
-            if (m.parentId && map[m.parentId]) {
-                const p = map[m.parentId];
-                parentHtml = `<div class="reply-preview">↳ ${escapeHtml(p.name)}: ${escapeHtml(p.text.slice(0,50))}</div>`;
+            // Tampilkan "membalas siapa" hanya bila bukan membalas pesan utama di bingkai yang sama
+            if (m.parentId && allMap[m.parentId] && (!isReply || m.parentId !== rootId)) {
+                const p = allMap[m.parentId];
+                parentHtml = `<div class="reply-preview">↳ ${escapeHtml(p.name)}: ${escapeHtml((p.text||'').slice(0,50))}</div>`;
             }
-            const indent = Math.min(depth, 4) * 18;
-            const indentStyle = indent > 0 ? `margin-left:${indent}px; border-left:2px solid #cbd5e1; padding-left:8px;` : '';
-            // SIMPLE: avatar di kiri, nama + waktu relatif, bani di kanan
-            return `<div class="chat-msg ${m.parentId?'reply':''}" style="${indentStyle}${isMe?'border-color:#93c5fd; background:#eff6ff;':''}">
-                ${parentHtml}
+            return `${parentHtml}
                 <div style="display:flex; gap:8px; align-items:flex-start;">
                     ${renderAvatarHtml(m.name, m.email, getEffectivePhoto(m.email, m.photoUrl))}
                     <div style="flex:1; min-width:0;">
                         <div class="msg-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:6px;">
-                            <span class="msg-name" style="font-weight:800; color:#0f172a; font-size:0.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%;">${escapeHtml(m.name)}</span>
+                            <span style="display:flex; align-items:baseline; gap:6px; min-width:0; flex:1; overflow:hidden;">
+                                <span class="msg-name" style="font-weight:800; color:#0f172a; font-size:0.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%;">${escapeHtml(m.name)}</span>
+                            </span>
                             <span class="chat-bani-badge" style="background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:20px; font-size:0.65rem; font-weight:800; flex-shrink:0;">${escapeHtml(m.bani)}</span>
                         </div>
                         <div class="msg-text" style="color:#334155; font-size:0.82rem; line-height:1.4; white-space:pre-wrap; word-break:break-word;">${escapeHtml(m.text)}</div>${m.image ? `<div style="margin-top:8px;"><img src="${m.image}" style="max-width:220px; max-height:220px; border-radius:10px; border:1px solid #e2e8f0; cursor:pointer;" onclick="window.open(this.src, '_blank')"><div style="font-size:0.6rem; color:#64748b; margin-top:2px;">📎 ${escapeHtml(m.fileName||'file')}</div></div>` : ''}
-                        <div class="msg-actions" style="margin-top:6px; display:flex; justify-content:flex-end; align-items:center; gap:10px;">
+                        <div class="msg-actions" style="margin-top:6px; display:flex; gap:10px; align-items:center;">
                             <button onclick="replyMessage('${m.id}')" style="background:none; border:none; font-size:0.68rem; font-weight:700; color:#3b82f6; cursor:pointer;">↩️ Balas</button>
                             ${(isMe||isAdmin)?`<button onclick="deleteMessage('${m.id}')" style="background:none; border:none; font-size:0.68rem; font-weight:700; color:${isAdmin && !isMe ? '#7c3aed' : '#dc2626'}; cursor:pointer;">${isAdmin && !isMe ? '🛡️ Hapus' : '🗑️ Hapus'}</button>`:''}
-                            <span class="msg-time-relative" data-ts="${m.ts}" title="${formatChatTime(m.ts)}" style="font-size:0.62rem; color:#94a3b8; font-weight:600; white-space:nowrap; margin-left:auto;">${formatRelativeTime(m.ts)}</span>
+                            <span class="msg-time-relative" data-ts="${m.ts}" title="${formatChatTime(m.ts)}" style="margin-left:auto; font-size:0.62rem; color:#94a3b8; font-weight:600; white-space:nowrap; flex-shrink:0; text-align:right;">${formatRelativeTime(m.ts)}</span>
                         </div>
                     </div>
-                </div>
-            </div>`;
+                </div>`;
         }
 
         let htmlOut = '';
-        function renderThread(m, depth) {
-            htmlOut += renderMsgHtml(m, depth);
-            const kids = childrenMap[m.id] || [];
-            kids.forEach(k => renderThread(k, depth + 1));
-        }
-        roots.forEach(m => renderThread(m, 0));
-
+        tops.forEach(m=>{
+            const isMe = chatUser && m.email && chatUser.email === m.email;
+            const replies = threads[m.id] || [];
+            let repliesHtml = '';
+            if (replies.length) {
+                repliesHtml = `<div class="thread-replies">` + replies.map(r=>{
+                    const rMe = chatUser && r.email && chatUser.email === r.email;
+                    return `<div class="thread-reply${rMe?' is-me':''}${r.id===replyToId?' is-reply-target':''}">${itemHtml(r, true, m.id)}</div>`;
+                }).join('') + `</div>`;
+            }
+            let composerHtml = '';
+            if (replyToId && m.id === replyRootId) {
+                composerHtml = `<div class="inline-reply-box">
+                    <div class="inline-reply-label"><span>↩️ Membalas <b>${escapeHtml(visMap[replyToId].name)}</b></span><button onclick="cancelReply()" title="Batal">✕</button></div>
+                    <textarea id="inline-reply-input" placeholder="Tulis balasan... (Enter kirim, Shift+Enter baris baru)"></textarea>
+                    <div class="inline-reply-actions"><button class="send" onclick="sendMessage(true)">KIRIM BALASAN</button><button onclick="cancelReply()">BATAL</button></div>
+                </div>`;
+            }
+            htmlOut += `<div class="chat-msg${m.id===replyToId?' is-reply-target':''}" id="thread-${m.id}" style="${isMe?'border-color:#93c5fd; background:#eff6ff;':''}">
+                ${itemHtml(m, false, m.id)}
+                ${repliesHtml}
+                ${composerHtml}
+            </div>`;
+        });
         container.innerHTML = htmlOut;
-        container.scrollTop = container.scrollHeight;
+        container.dataset.rendered = '1';
+
+        // Posisi scroll: ke bawah kalau pertama kali / user memang sedang di bawah, selain itu jangan digeser
+        if (firstRender || wasAtBottom || container.clientHeight === 0) container.scrollTop = container.scrollHeight;
+        else container.scrollTop = prevScroll;
+
+        const ta = document.getElementById('inline-reply-input');
+        if (ta) {
+            ta.value = replyDraft;
+            ta.addEventListener('input', ()=>{ replyDraft = ta.value; });
+            ta.addEventListener('keydown', (e)=>{
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(true); }
+                else if (e.key === 'Escape') { cancelReply(); }
+            });
+            if (hadFocus) {
+                ta.focus({ preventScroll: true });
+                try { ta.setSelectionRange(selS, selE); } catch(_) {}
+            }
+        }
         const ce = document.getElementById('chat-count');
         if (ce) ce.textContent = msgs.length + ' pesan';
+        syncInputArea();
     }
     function replyMessage(id) {
-        if (!chatUser) { showLoginForm(); return; }
-        const msgs = typeof getAllMessages === 'function' ? getAllMessages() : getMessages();
-        const m = msgs.find(x=>x.id===id);
+        if (!chatUser) { pendingReplyId = id; showLoginForm(); return; }
+        const list = typeof getAllMessages === 'function' ? getAllMessages() : getMessages();
+        const m = list.find(x=>x.id===id);
         if (!m) return;
         replyToId = id;
-        const preview = document.getElementById('reply-preview');
-        const txt = document.getElementById('reply-text');
-        txt.textContent = 'Membalas ' + m.name + ': ' + m.text.slice(0,50);
-        preview.style.display = 'flex';
-        document.getElementById('chat-input').focus();
+        renderMessages();
+        // kotak balasan muncul di dalam bingkai chat yang dibalas -> langsung fokus & tampilkan
+        const ta = document.getElementById('inline-reply-input');
+        if (ta) {
+            ta.focus({ preventScroll: true });
+            ta.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
     }
     function cancelReply() {
         replyToId = null;
-        const preview = document.getElementById('reply-preview');
-        if (preview) preview.style.display = 'none';
+        replyDraft = '';
+        if (typeof renderMessages === 'function') renderMessages();
     }
     async function deleteMessage(id) {
         if (!confirm('Hapus pesan ini?')) return;
