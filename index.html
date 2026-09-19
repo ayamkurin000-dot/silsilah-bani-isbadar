@@ -3517,12 +3517,13 @@
         function renderMessages() {
         const container = document.getElementById('chat-messages');
         if (!container) return;
-        let msgs = typeof getAllMessages === 'function' ? getAllMessages() : (typeof getMessages === 'function' ? getMessages() : []);
+        let allMsgs = typeof getAllMessages === 'function' ? getAllMessages() : (typeof getMessages === 'function' ? getMessages() : []);
         if (typeof updateChatNotifBadge === 'function') updateChatNotifBadge();
         // hapus sys messages biar fokus chat user saja
-        msgs = msgs.filter(m => !m.sys);
-        msgs.sort((a,b)=>a.ts-b.ts);
+        allMsgs = allMsgs.filter(m => !m.sys);
+        allMsgs.sort((a,b)=>a.ts-b.ts);
         // batasi 100 terakhir biar tidak macet
+        let msgs = allMsgs;
         if (msgs.length > 100) msgs = msgs.slice(msgs.length-100);
         if (msgs.length === 0) {
             container.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8; font-size:0.72rem;">Belum ada chat.<br>Tulis pesan pertama! 💬</div>';
@@ -3531,9 +3532,26 @@
             return;
         }
         const map = {};
-        (typeof getAllMessages === 'function' ? getAllMessages() : msgs).forEach(m=>map[m.id]=m);
-        let htmlOut = '';
+        allMsgs.forEach(m=>map[m.id]=m);
+
+        // ===== SUSUN BALASAN (REPLY) BERTINGKAT TEPAT DI BAWAH PESAN YANG DIBALAS =====
+        // Jadi balasan tidak lompat ke paling bawah urutan waktu, tapi nempel
+        // persis di bawah pesan induknya (mirip thread), seolah membalas pesan
+        // itu langsung, bukan membuka pesan/percakapan baru.
+        const idsInView = new Set(msgs.map(m=>m.id));
+        const childrenMap = {};
+        const roots = [];
         msgs.forEach(m=>{
+            if (m.parentId && map[m.parentId] && idsInView.has(m.parentId)) {
+                (childrenMap[m.parentId] = childrenMap[m.parentId] || []).push(m);
+            } else {
+                roots.push(m);
+            }
+        });
+        // urutkan balasan tiap induk berdasarkan waktu kirim
+        Object.keys(childrenMap).forEach(k => childrenMap[k].sort((a,b)=>a.ts-b.ts));
+
+        function renderMsgHtml(m, depth) {
             const isMe = chatUser && m.email && chatUser.email === m.email;
             const isAdmin = typeof isAdminUser === 'function' ? isAdminUser(chatUser) : false;
             let parentHtml = '';
@@ -3541,8 +3559,10 @@
                 const p = map[m.parentId];
                 parentHtml = `<div class="reply-preview">↳ ${escapeHtml(p.name)}: ${escapeHtml(p.text.slice(0,50))}</div>`;
             }
+            const indent = Math.min(depth, 4) * 18;
+            const indentStyle = indent > 0 ? `margin-left:${indent}px; border-left:2px solid #cbd5e1; padding-left:8px;` : '';
             // SIMPLE: avatar di kiri, nama + waktu relatif, bani di kanan
-            htmlOut += `<div class="chat-msg ${m.parentId?'reply':''}" style="${isMe?'border-color:#93c5fd; background:#eff6ff;':''}">
+            return `<div class="chat-msg ${m.parentId?'reply':''}" style="${indentStyle}${isMe?'border-color:#93c5fd; background:#eff6ff;':''}">
                 ${parentHtml}
                 <div style="display:flex; gap:8px; align-items:flex-start;">
                     ${renderAvatarHtml(m.name, m.email, getEffectivePhoto(m.email, m.photoUrl))}
@@ -3560,7 +3580,16 @@
                     </div>
                 </div>
             </div>`;
-        });
+        }
+
+        let htmlOut = '';
+        function renderThread(m, depth) {
+            htmlOut += renderMsgHtml(m, depth);
+            const kids = childrenMap[m.id] || [];
+            kids.forEach(k => renderThread(k, depth + 1));
+        }
+        roots.forEach(m => renderThread(m, 0));
+
         container.innerHTML = htmlOut;
         container.scrollTop = container.scrollHeight;
         const ce = document.getElementById('chat-count');
