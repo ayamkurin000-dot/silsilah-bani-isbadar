@@ -99,20 +99,27 @@
             align-items: center;
             gap: 8px;
             flex: 1 1 auto;
-            max-width: 300px;
+            max-width: 340px;
             min-width: 150px;
         }
         #search-container {
             position: relative;
             flex: 1 1 auto;
-            max-width: 180px;
+            max-width: 230px;
             min-width: 100px;
         }
         #search-row .btn {
-            font-size: 0.7rem;
-            padding: 5px 10px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            padding: 6px 13px;
             white-space: nowrap;
             flex: 0 0 auto;
+            margin-left: auto;
+            background: #dc2626;
+            color: #ffffff;
+        }
+        #search-row .btn:hover {
+            background: #b91c1c;
         }
         #search-input {
             width: 100%;
@@ -186,13 +193,13 @@
                 order: 3;
             }
             #search-container {
-                max-width: 150px;
+                max-width: none;
                 width: auto;
                 flex: 1 1 auto;
             }
             #search-row .btn {
-                font-size: 0.6rem;
-                padding: 4px 7px;
+                font-size: 0.68rem;
+                padding: 5px 10px;
             }
             .controls .btn {
                 font-size: 0.6rem;
