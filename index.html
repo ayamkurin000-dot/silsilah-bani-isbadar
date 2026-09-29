@@ -94,11 +94,25 @@
             font-size: 0.7rem;
             padding: 5px 10px;
         }
-        #search-container {
-            position: relative;
+        #search-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             flex: 1 1 auto;
             max-width: 300px;
             min-width: 150px;
+        }
+        #search-container {
+            position: relative;
+            flex: 1 1 auto;
+            max-width: 180px;
+            min-width: 100px;
+        }
+        #search-row .btn {
+            font-size: 0.7rem;
+            padding: 5px 10px;
+            white-space: nowrap;
+            flex: 0 0 auto;
         }
         #search-input {
             width: 100%;
@@ -165,11 +179,20 @@
                 white-space: nowrap;
                 letter-spacing: -0.1px;
             }
-            #search-container {
+            #search-row {
                 max-width: none;
                 width: 100%;
                 flex-basis: 100%;
                 order: 3;
+            }
+            #search-container {
+                max-width: 150px;
+                width: auto;
+                flex: 1 1 auto;
+            }
+            #search-row .btn {
+                font-size: 0.6rem;
+                padding: 4px 7px;
             }
             .controls .btn {
                 font-size: 0.6rem;
@@ -178,6 +201,19 @@
             #search-input {
                 font-size: 0.6rem;
             }
+        }
+        #header .btn {
+            border: 1.5px solid #000000;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28), 0 1px 2px rgba(0, 0, 0, 0.2);
+            transform: translateY(-1px);
+        }
+        #header .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.32), 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        #header .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
         #chart-container {
             width: 100vw;
@@ -1033,9 +1069,12 @@
             <h1>SILSILAH BANI ISBADAR</h1>
             <p>KLIK NODE UNTUK BUKA/TUTUP, SCROLL/DRAG UNTUK ZOOM & PAN</p>
         </div>
-        <div id="search-container">
-            <input type="text" id="search-input" placeholder="cari nama (min. 3 huruf)..." autocomplete="off">
-            <div id="search-results"></div>
+        <div id="search-row">
+            <div id="search-container">
+                <input type="text" id="search-input" placeholder="cari nama (min. 3 huruf)..." autocomplete="off">
+                <div id="search-results"></div>
+            </div>
+            <button class="btn" id="wali9-btn" onclick="window.location.href='https://ayamkurin000-dot.github.io/Maulana-Ishaq/'">WALI 9</button>
         </div>
         <div class="controls">
             <button class="btn" onclick="resetZoom()">RESET</button>
