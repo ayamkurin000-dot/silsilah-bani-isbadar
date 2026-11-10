@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="192x192" href="logo/ikon-192.png">
+    <link rel="apple-touch-icon" href="logo/apple-touch-icon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Bani Isbadar">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Silsilah Interaktif - BANI ISBADAR</title>
 
     <!-- Meta Tag Open Graph agar preview WhatsApp makin mantap -->
@@ -4603,5 +4611,64 @@ window.addEventListener('load',()=> setTimeout(()=>{ renderRekap(); if(panel.cla
 <!-- END WIDGET -->
 
 
+<script>
+/* Ajakan memasang aplikasi (PWA): "Ya" -> dialog pemasangan; "Tidak" -> tidak muncul lagi selama 7 hari.
+   Android/komputer (Chrome, Edge): beforeinstallprompt. iPhone/iPad (Safari): petunjuk manual. */
+(function(){
+  var KUNCI='bi-ajak-instal',TUNDA=7*24*3600*1000,tunda=null,tawar=null,kotak=null;
+  function sudahTerpasang(){
+    return (window.matchMedia&&(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches))||navigator.standalone===true;
+  }
+  function ditunda(){try{var t=+localStorage.getItem(KUNCI)||0;return t&&Date.now()-t<TUNDA}catch(e){return false}}
+  function catatTunda(){try{localStorage.setItem(KUNCI,String(Date.now()))}catch(e){}}
+  function tutup(){if(kotak){kotak.remove();kotak=null}}
+  function ios(){return /iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
+  function tampil(modeIos){
+    if(kotak||sudahTerpasang()||ditunda())return;
+    var css=document.createElement('style');
+    css.textContent='#ajakInstal{position:fixed;left:0;right:0;bottom:0;z-index:2147483000;display:flex;justify-content:center;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px));pointer-events:none;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif}'
+     +'#ajakInstal .kt{pointer-events:auto;width:100%;max-width:440px;box-sizing:border-box;padding:16px 18px;border-radius:18px;color:#0f172a;background:#fff;border:2px solid #15803d;box-shadow:0 10px 30px rgba(15,23,42,.28);animation:ajkNaik .35s ease-out}'
+     +'#ajakInstal .jd{display:flex;align-items:center;gap:12px;margin:0 0 12px}'
+     +'#ajakInstal img{width:46px;height:46px;border-radius:12px;flex:none}'
+     +'#ajakInstal b{display:block;font-size:16px;line-height:1.3;color:#14532d}'
+     +'#ajakInstal span.ket{display:block;font-size:13px;line-height:1.45;color:#475569;margin-top:2px}'
+     +'#ajakInstal .bt{display:flex;gap:10px;justify-content:flex-end}'
+     +'#ajakInstal button{font:inherit;font-size:15px;font-weight:600;padding:10px 22px;border-radius:12px;cursor:pointer;min-width:84px}'
+     +'#ajakInstal .tdk{background:#fff;color:#475569;border:1px solid #cbd5e1}'
+     +'#ajakInstal .ya{background:#15803d;color:#fff;border:1px solid #15803d}'
+     +'@keyframes ajkNaik{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}'
+     +'@media (prefers-reduced-motion:reduce){#ajakInstal .kt{animation:none}}';
+    document.head.appendChild(css);
+    kotak=document.createElement('div');
+    kotak.id='ajakInstal';
+    kotak.innerHTML='<div class="kt" role="dialog" aria-label="Instal aplikasi"><div class="jd"><img src="logo/ikon-192.png" alt=""><div><b>Instal Aplikasi Silsilah Bani Isbadar?</b><span class="ket">'
+      +(modeIos?'Ketuk tombol Bagikan di Safari, lalu pilih “Tambahkan ke Layar Utama”.':'Ada ikon di layar utama, tampil layar penuh, dan lebih cepat dibuka.')
+      +'</span></div></div><div class="bt"><button type="button" class="tdk">Tidak</button><button type="button" class="ya">'+(modeIos?'Mengerti':'Ya')+'</button></div></div>';
+    document.body.appendChild(kotak);
+    kotak.querySelector('.tdk').onclick=function(){catatTunda();tutup()};
+    kotak.querySelector('.ya').onclick=function(){
+      if(modeIos){catatTunda();tutup();return}
+      var p=tawar;tawar=null;tutup();
+      if(!p)return;
+      p.prompt();
+      p.userChoice.then(function(h){if(h&&h.outcome!=='accepted')catatTunda()},function(){});
+    };
+  }
+  window.addEventListener('beforeinstallprompt',function(e){
+    e.preventDefault();tawar=e;
+    clearTimeout(tunda);tunda=setTimeout(function(){tampil(false)},2500);
+  });
+  window.addEventListener('appinstalled',function(){tawar=null;tutup();catatTunda()});
+  window.addEventListener('load',function(){
+    if(ios()&&!sudahTerpasang()&&/safari/i.test(navigator.userAgent)&&!/crios|fxios|edgios/i.test(navigator.userAgent)){
+      setTimeout(function(){tampil(true)},2500);
+    }
+    /* Service worker (butuh HTTPS atau localhost) */
+    if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
+      navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(function(){});
+    }
+  });
+})();
+</script>
 </body>
 </html>

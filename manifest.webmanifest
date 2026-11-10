@@ -1,0 +1,19 @@
+{
+  "name": "SILSILAH BANI ISBADAR",
+  "short_name": "Bani Isbadar",
+  "description": "Silsilah Bani Isbadar Butun Gandusari Blitar",
+  "lang": "id",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#4c4a4a",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "logo/ikon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "logo/ikon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "logo/ikon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
