@@ -1993,18 +1993,36 @@
             .attr('width', w - r*1.2).attr('height', h*0.36).attr('rx', r*0.5)
             .attr('fill', `url(#gloss-${type})`).attr('pointer-events','none');
 
-        // gelang gelap di ujung kanan tabung (satu <use> per kartu; bentuknya dibuat sekali di <defs>)
+        // gelang pengikat di ujung kanan tabung (satu <use> per kartu; bentuknya dibuat sekali di <defs>)
         if (ring) {
             const ringId = `gelang-${ring}-${Math.round(h)}`;
             if (!document.getElementById(ringId)) {
-                const rg = d3.select('#chart-container svg defs').empty() ? null : d3.select('#chart-container svg defs');
-                if (rg) {
+                const rg = d3.select('#chart-container svg defs');
+                if (!rg.empty()) {
                     const gg = rg.append('g').attr('id', ringId);
-                    const rx0 = -11, rw = 7, ry = -h / 2 + 1.2, rh = h - 2.4;
-                    gg.append('rect').attr('x', rx0).attr('y', ry).attr('width', rw).attr('height', rh).attr('rx', 1.6)
-                        .attr('fill', `url(#grad-ring-${ring})`).attr('stroke', '#111827').attr('stroke-width', 0.7).attr('stroke-opacity', 0.55);
-                    gg.append('rect').attr('x', rx0 + 1.2).attr('y', ry + 1.2).attr('width', 1.7).attr('height', rh - 2.4).attr('rx', 0.8)
-                        .attr('fill', '#fff').attr('opacity', 0.38);
+                    const RW = 15, PO = 3.2;                          // lebar gelang, tonjolan di atas/bawah tabung
+                    const rx0 = -(RW + 4), ry = -h / 2 - PO, rh = h + PO * 2;
+                    // bayangan jatuh di badan tabung (kiri gelang) & di bawah tonjolan
+                    gg.append('rect').attr('x', rx0 - 3.5).attr('y', -h / 2 + 1).attr('width', 5).attr('height', h - 2)
+                        .attr('fill', '#000').attr('opacity', 0.16);
+                    gg.append('rect').attr('x', rx0 + 1.2).attr('y', ry + 2.4).attr('width', RW).attr('height', rh).attr('rx', 3.4)
+                        .attr('fill', '#000').attr('opacity', 0.26);
+                    // badan gelang
+                    gg.append('rect').attr('x', rx0).attr('y', ry).attr('width', RW).attr('height', rh).attr('rx', 3.4)
+                        .attr('fill', `url(#grad-ring-${ring})`).attr('stroke', '#0b1220').attr('stroke-width', 0.8).attr('stroke-opacity', 0.7);
+                    // lengkung sisi (kesan membungkus silinder)
+                    gg.append('rect').attr('x', rx0).attr('y', ry).attr('width', RW).attr('height', rh).attr('rx', 3.4)
+                        .attr('fill', 'url(#grad-ring-side)');
+                    // tepi timbul (alur kiri & kanan)
+                    [rx0 + 2.3, rx0 + RW - 2.3].forEach((xx, i) => {
+                        gg.append('line').attr('x1', xx).attr('x2', xx).attr('y1', ry + 1.6).attr('y2', ry + rh - 1.6)
+                            .attr('stroke', '#000').attr('stroke-opacity', 0.38).attr('stroke-width', 0.9);
+                        gg.append('line').attr('x1', xx + (i ? -0.9 : 0.9)).attr('x2', xx + (i ? -0.9 : 0.9)).attr('y1', ry + 1.8).attr('y2', ry + rh - 1.8)
+                            .attr('stroke', '#fff').attr('stroke-opacity', 0.3).attr('stroke-width', 0.7);
+                    });
+                    // kilau memanjang di sepertiga atas
+                    gg.append('rect').attr('x', rx0 + 3.6).attr('y', ry + rh * 0.12).attr('width', RW - 7.2).attr('height', rh * 0.2).attr('rx', 2)
+                        .attr('fill', '#fff').attr('opacity', 0.42);
                 }
             }
             g.append('use').attr('href', '#' + ringId).attr('transform', `translate(${w},0)`).attr('pointer-events', 'none');
@@ -2201,11 +2219,18 @@
         .attr('x1','0%').attr('y1','0%').attr('x2','0%').attr('y2','100%');
     [{off:'0%',c:'#f8fafc'},{off:'28%',c:'#d5dde8'},{off:'62%',c:'#98a6b8'},{off:'100%',c:'#5b6b80'}]
       .forEach(s=> usbBody.append('stop').attr('offset',s.off).attr('stop-color',s.c));
-    // Gelang di ujung kanan tabung kartu: gelap, berkilau seperti cincin tabung. Hijau = punya keturunan, merah = tidak.
-    [['hijau', ['#3fae6c', '#1c6b3f', '#0f4a2a', '#052e16']], ['merah', ['#d9534a', '#a32424', '#701414', '#3f0a0a']]].forEach(([nm, c]) => {
+    // Gelang pengikat di ujung kanan tabung kartu. Hijau tua = punya keturunan, merah tua = tidak.
+    // Gradasi vertikal meniru silinder (kilau di sepertiga atas, gelap di bawah) agar serasi dengan tabungnya.
+    [['hijau', [[0, '#0f4a2a'], [14, '#2f9d62'], [30, '#9be8bd'], [46, '#2f9d62'], [72, '#145c35'], [100, '#04230f']]],
+     ['merah', [[0, '#5a0f0f'], [14, '#cf4a42'], [30, '#f7aaa3'], [46, '#c23b34'], [72, '#821a1a'], [100, '#2c0505']]]].forEach(([nm, st]) => {
         const gr = defs.append('linearGradient').attr('id', 'grad-ring-' + nm).attr('x1', '0%').attr('y1', '0%').attr('x2', '0%').attr('y2', '100%');
-        [[0, c[0]], [30, c[1]], [68, c[2]], [100, c[3]]].forEach(st => gr.append('stop').attr('offset', st[0] + '%').attr('stop-color', st[1]));
+        st.forEach(c => gr.append('stop').attr('offset', c[0] + '%').attr('stop-color', c[1]));
     });
+    // bayangan sisi kiri/kanan gelang (tepi melengkung ke dalam, seperti cincin yang membungkus tabung)
+    (function () {
+        const gs = defs.append('linearGradient').attr('id', 'grad-ring-side').attr('x1', '0%').attr('y1', '0%').attr('x2', '100%').attr('y2', '0%');
+        [[0, 0.5], [16, 0], [84, 0], [100, 0.55]].forEach(c => gs.append('stop').attr('offset', c[0] + '%').attr('stop-color', '#000').attr('stop-opacity', c[1]));
+    })();
     const usbConn = defs.append('linearGradient').attr('id','grad-usb-conn')
         .attr('x1','0%').attr('y1','0%').attr('x2','0%').attr('y2','100%');
     [{off:'0%',c:'#ffffff'},{off:'30%',c:'#e2e8f0'},{off:'70%',c:'#aab6c6'},{off:'100%',c:'#6b7a8f'}]
@@ -3481,7 +3506,8 @@
         const TEXT_PAD_X = 14;
         const hasChildNo = d => d.depth > 0 && d.data.type !== 'wife' && d.data._no != null;
         const textX = d => TEXT_PAD_X;   // nomor kini di lidah flashdisk luar kartu, teks pakai seluruh lebar kartu
-        const textRoom = (d, w) => w - textX(d) - TEXT_PAD_X;
+        const RING_PAD = 28;   // ruang kosong di kanan untuk gelang pengikat
+        const textRoom = (d, w) => w - textX(d) - RING_PAD;
 
         function autoFitText(textEl, maxWidth, minFontSize, maxFontSize) {
             let fontSize = maxFontSize;
