@@ -68,8 +68,9 @@
         }
         .controls {
             display: flex;
-            gap: 8px;
+            gap: 4px;
             flex-wrap: wrap;
+            align-items: center;
         }
         .btn {
             background: linear-gradient(135deg, #0ea5e9, #2563eb);
@@ -99,8 +100,10 @@
             background: #cbd5e1;
         }
         .controls .btn {
-            font-size: 0.7rem;
-            padding: 5px 10px;
+            font-size: 0.64rem;
+            padding: 4px 7px;
+            letter-spacing: -0.2px;   /* teks dirapatkan (press) */
+            white-space: nowrap;
         }
         #search-row {
             display: flex;
@@ -209,10 +212,20 @@
                 font-size: 0.68rem;
                 padding: 5px 10px;
             }
-            .controls .btn {
-                font-size: 0.6rem;
-                padding: 4px 7px;
+            .controls {
+                flex-wrap: nowrap;   /* kelima tombol selalu satu baris */
+                gap: 3px;
             }
+            .controls .btn {
+                font-size: 0.54rem;
+                padding: 4px 5px;
+                letter-spacing: -0.3px;
+            }
+            #header .controls .btn { border-width: 1.2px; }
+        }
+        @media (max-width: 340px) {
+            .controls { gap: 2px; }
+            .controls .btn { font-size: 0.5rem; padding: 4px 4px; letter-spacing: -0.35px; }
             #search-input {
                 font-size: 0.6rem;
             }
@@ -1089,7 +1102,9 @@
         .node text.spouse-name-root, .node text.spouse-life-root {
             paint-order: stroke fill; stroke: var(--card-halo, none); stroke-width: var(--card-halo-w, 0px); stroke-linejoin: round;
         }
-        #theme-btn { background: linear-gradient(135deg, #f59e0b, #db2777); box-shadow: 0 3px 10px rgba(219, 39, 119, 0.35); }
+        #theme-btn, #theme-btn:hover { background: linear-gradient(135deg, #a78bfa, #6d28d9); box-shadow: 0 3px 10px rgba(109, 40, 217, 0.4); }
+        #theme-btn:hover { background: linear-gradient(135deg, #c4b5fd, #7c3aed); }
+        .controls #theme-btn { font-size: 0.8rem; padding: 3px 7px; margin-left: 2px; letter-spacing: 0; }
         #th-panel { position: fixed; top: 68px; right: 12px; width: 340px; max-height: calc(100vh - 84px); overflow: auto;
             background: rgba(255,255,255,.97); border-radius: 14px; box-shadow: 0 12px 40px rgba(15,23,42,.35);
             z-index: 99999; padding: 12px 14px 14px; font-size: .78rem; color: #1e293b; display: none; -webkit-overflow-scrolling: touch; }
