@@ -315,6 +315,11 @@
             filter: none !important;
             transition: none !important;
         }
+        /* Saat cubit/geser: sembunyikan tekstur & hiasan kartu, render cepat */
+        #chart-container svg.sedang-gerak .card-tex,
+        #chart-container svg.sedang-gerak .deco,
+        #chart-container svg.sedang-gerak .flow-layer { display: none !important; }
+        #chart-container svg.sedang-gerak { shape-rendering: optimizeSpeed; text-rendering: optimizeSpeed; }
 
         #cursor-fx {
             position: fixed;
@@ -2707,7 +2712,7 @@
     }
 
     function flowTick() {
-        if (document.hidden || flowDisabled()) { flowSchedule(700); return; }
+        if (document.hidden || flowDisabled() || svg.node().classList.contains('sedang-gerak')) { flowSchedule(500); return; }
         const linkNodes = gContainer.selectAll('path.link').nodes().filter(n => n.__data__ && n.__data__.target && n.getAttribute('d'));
         if (!linkNodes.length) { flowSchedule(800); return; }
 
@@ -2868,10 +2873,14 @@
         zoom.on("start.ringan", () => {
             clearTimeout(timer);
             svgEl.classList.add("sedang-gerak");
+            FLOW.active.forEach(a => { try { a.pause(); } catch (e) {} });   // aliran listrik berhenti sementara
         });
         zoom.on("end.ringan", () => {
             clearTimeout(timer);
-            timer = setTimeout(() => svgEl.classList.remove("sedang-gerak"), 150);
+            timer = setTimeout(() => {
+                svgEl.classList.remove("sedang-gerak");
+                FLOW.active.forEach(a => { try { a.play(); } catch (e) {} });
+            }, 150);
         });
     })();
 
@@ -3235,66 +3244,73 @@
         };
         const hasLeftLidah = d => d.depth > 0 && d.data.type !== 'wife' && d.data._no != null;
 
+        // Bentuk lidah digambar SEKALI per variasi (tinggi, warna generasi, ada/tidaknya colokan, arah)
+        // di <defs>; tiap kartu hanya memakai 1 elemen <use>. Dulu tiap lidah ~14 elemen -> ribuan elemen
+        // saat semua cabang terbuka, itulah yang membuat cubit zoom berat di HP.
+        function lidahSymbol(th, type, withConn, bodyVis, sx) {
+            const id = `lidah-${type}-${Math.round(th * 10)}-${withConn ? 'c' : 'b'}-${bodyVis}-${sx < 0 ? 'l' : 'r'}`;
+            if (!document.getElementById(id)) {
+                const g = defs.append('g').attr('id', id);
+                const CONN_W = 16, HIDE = 16;
+                const ch = th * 0.6;                        // tinggi colokan
+                const x0 = -(CONN_W + bodyVis);             // ujung colokan
+                const bx = -bodyVis;                        // awal badan
+
+                // bayangan halus
+                g.append('rect').attr('x', bx).attr('y', -th/2).attr('width', bodyVis + HIDE).attr('height', th)
+                    .attr('rx', 5).attr('transform', `translate(${sx},2)`).attr('fill', '#000').attr('opacity', 0.14);
+                if (withConn) {
+                    g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', CONN_W + 2).attr('height', ch)
+                        .attr('rx', 1.5).attr('transform', `translate(${sx},2)`).attr('fill', '#000').attr('opacity', 0.14);
+                    // colokan USB-A dari logam
+                    g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', CONN_W + 3).attr('height', ch).attr('rx', 1.8)
+                        .attr('fill', 'url(#grad-usb-conn)').attr('stroke', '#475569').attr('stroke-width', 0.8);
+                    // lubang kecil pengunci di cangkang colokan
+                    [-1, 1].forEach(k => {
+                        g.append('rect').attr('x', x0 + 7).attr('y', k * ch * 0.22 - 1.8)
+                            .attr('width', 4).attr('height', 3.6).attr('rx', 0.8)
+                            .attr('fill', '#1e293b').attr('opacity', 0.85);
+                    });
+                    // bibir ujung colokan
+                    g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', 1.6).attr('height', ch).attr('rx', 0.8)
+                        .attr('fill', '#334155').attr('opacity', 0.45);
+                    // kilau colokan
+                    g.append('rect').attr('x', x0 + 2).attr('y', -ch/2 + 1.2).attr('width', CONN_W - 3).attr('height', ch * 0.26).attr('rx', 1.2)
+                        .attr('fill', '#fff').attr('opacity', 0.7);
+                }
+                // badan flashdisk dari logam
+                g.append('rect').attr('x', bx).attr('y', -th/2).attr('width', bodyVis + HIDE).attr('height', th).attr('rx', 5)
+                    .attr('fill', 'url(#grad-usb-body)').attr('stroke', '#334155').attr('stroke-width', 0.9).attr('stroke-opacity', 0.55);
+                // goresan sikat logam
+                [0.22, 0.78].forEach(f => {
+                    g.append('line').attr('x1', bx + 5).attr('x2', bx + bodyVis - 3)
+                        .attr('y1', -th/2 + th * f).attr('y2', -th/2 + th * f)
+                        .attr('stroke', '#fff').attr('stroke-opacity', 0.35).attr('stroke-width', 0.6);
+                });
+                // cincin kecil berwarna generasi di pangkal badan (menyatu dengan warna kartu)
+                g.append('rect').attr('x', bx - 0.5).attr('y', -th/2 + 0.5).attr('width', 3.4).attr('height', th - 1)
+                    .attr('fill', `url(#grad-real-${type})`).attr('stroke', '#334155').attr('stroke-width', 0.5).attr('stroke-opacity', 0.5);
+                // kilau atas badan
+                g.append('rect').attr('x', bx + 4).attr('y', -th/2 + 2).attr('width', bodyVis - 6).attr('height', th * 0.3).attr('rx', 3.5)
+                    .attr('fill', '#fff').attr('opacity', 0.5);
+            }
+            return id;
+        }
+
         function drawLidah(parentSel, d, o) {
             const { no, withConn, mirror } = o;
             const g = parentSel.append('g').attr('class', mirror ? 'lidah-keturunan' : 'lidah-anak');
             const { w, h } = cardDims(d);
             if (mirror) g.attr('transform', `translate(${w},0) scale(-1,1)`);
             const type = colorTypeOf(d);
-            const sx = mirror ? 1 : -1;                 // arah bayangan tetap sama di layar
-
-            const CONN_W = 16;                          // colokan USB (logam polos)
             const BODY_VIS = (no != null && no >= 10) ? 36 : 30;   // badan flashdisk yang tampak
-            const HIDE = 16;                            // bagian yang terselip di bawah kartu
-            const th = Math.max(30, Math.min(46, h * 0.64));   // tinggi badan
-            const ch = th * 0.6;                        // tinggi colokan
-            const x0 = -(CONN_W + BODY_VIS);            // ujung colokan
-            const bx = -BODY_VIS;                       // awal badan
-
-            // bayangan halus
-            g.append('rect').attr('x', bx).attr('y', -th/2).attr('width', BODY_VIS + HIDE).attr('height', th)
-                .attr('rx', 5).attr('transform', `translate(${sx},2)`).attr('fill', '#000').attr('opacity', 0.14);
-            if (withConn) {
-                g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', CONN_W + 2).attr('height', ch)
-                    .attr('rx', 1.5).attr('transform', `translate(${sx},2)`).attr('fill', '#000').attr('opacity', 0.14);
-
-                // colokan USB-A dari logam
-                g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', CONN_W + 3).attr('height', ch).attr('rx', 1.8)
-                    .attr('fill', 'url(#grad-usb-conn)').attr('stroke', '#475569').attr('stroke-width', 0.8);
-                // lubang kecil pengunci di cangkang colokan
-                [-1, 1].forEach(k => {
-                    g.append('rect').attr('x', x0 + 7).attr('y', k * ch * 0.22 - 1.8)
-                        .attr('width', 4).attr('height', 3.6).attr('rx', 0.8)
-                        .attr('fill', '#1e293b').attr('opacity', 0.85);
-                });
-                // bibir ujung colokan
-                g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', 1.6).attr('height', ch).attr('rx', 0.8)
-                    .attr('fill', '#334155').attr('opacity', 0.45);
-                // kilau colokan
-                g.append('rect').attr('x', x0 + 2).attr('y', -ch/2 + 1.2).attr('width', CONN_W - 3).attr('height', ch * 0.26).attr('rx', 1.2)
-                    .attr('fill', '#fff').attr('opacity', 0.7).attr('pointer-events', 'none');
-            }
-
-            // badan flashdisk dari logam
-            g.append('rect').attr('x', bx).attr('y', -th/2).attr('width', BODY_VIS + HIDE).attr('height', th).attr('rx', 5)
-                .attr('fill', 'url(#grad-usb-body)').attr('stroke', '#334155').attr('stroke-width', 0.9).attr('stroke-opacity', 0.55);
-            // goresan sikat logam
-            [0.22, 0.78].forEach(f => {
-                g.append('line').attr('x1', bx + 5).attr('x2', bx + BODY_VIS - 3)
-                    .attr('y1', -th/2 + th * f).attr('y2', -th/2 + th * f)
-                    .attr('stroke', '#fff').attr('stroke-opacity', 0.35).attr('stroke-width', 0.6);
-            });
-            // cincin kecil berwarna generasi di pangkal badan (menyatu dengan warna kartu)
-            g.append('rect').attr('x', bx - 0.5).attr('y', -th/2 + 0.5).attr('width', 3.4).attr('height', th - 1)
-                .attr('fill', `url(#grad-real-${type})`).attr('stroke', '#334155').attr('stroke-width', 0.5).attr('stroke-opacity', 0.5);
-            // kilau atas badan
-            g.append('rect').attr('x', bx + 4).attr('y', -th/2 + 2).attr('width', BODY_VIS - 6).attr('height', th * 0.3).attr('rx', 3.5)
-                .attr('fill', '#fff').attr('opacity', 0.5).attr('pointer-events', 'none');
+            const th = Math.max(30, Math.min(46, h * 0.64));       // tinggi badan
+            g.append('use').attr('href', '#' + lidahSymbol(th, type, withConn, BODY_VIS, mirror ? 1 : -1));
 
             // nomor (hanya lidah kiri; efek ukiran: bayangan terang tipis di bawah huruf gelap)
             if (no != null) {
                 const fs = no >= 10 ? '14px' : '17px';
-                const cx = bx + 3.4 + (BODY_VIS - 3.4) / 2 - 1;
+                const cx = -BODY_VIS + 3.4 + (BODY_VIS - 3.4) / 2 - 1;
                 [{dy: 0.8, fill: '#ffffff', op: 0.75}, {dy: 0, fill: '#0f172a', op: 1}].forEach(t => {
                     g.append('text')
                         .attr('x', cx).attr('y', t.dy).attr('dy', '0.35em')
