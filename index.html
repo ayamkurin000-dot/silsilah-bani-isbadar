@@ -273,46 +273,37 @@
             100% { opacity: 1; transform: translate(-50%, -100%); }
         }
 
-        /* === MOBILE PERF PATCH === */
-        .node .node-shape {
-            will-change: transform;
+        /* === ZOOM RINGAN ===
+           Dulu tiap kartu diberi will-change: transform => browser HP membuat
+           satu layer GPU PER KARTU (ratusan layer) yang dirender ulang tiap frame
+           saat cubit zoom. will-change itu DIHAPUS. Tampilan saat diam sama persis. */
+        .node .node-shape-real {
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+        .node:hover .node-shape-real {
+            transform: scale(1.03);
+            filter: drop-shadow(0 8px 18px rgba(15,23,42,0.32)) brightness(1.05);
+        }
+        .node-root .node-shape {
+            stroke-width: 3.5px;
         }
         @media (max-width: 640px) {
             body { background-attachment: scroll !important; }
-            .node .node-shape {
-                filter: none !important;
-                transition: transform 0.12s ease !important;
-            }
-            .node:hover .node-shape {
-                filter: none !important;
-            }
-            
-        .node .node-shape-real {
-            will-change: transform;
-            transition: transform 0.15s ease, filter 0.15s ease;
+            #cursor-fx { display: none !important; }
         }
-        .node:hover .node-shape-real {
-            transform: scale(1.03);
-            filter: drop-shadow(0 8px 18px rgba(15,23,42,0.32)) brightness(1.05);
+        /* Panel chat: blur latar memaksa compositing terus di HP; latarnya sudah 93% putih. */
+        @media (pointer: coarse) {
+            #chat-panel { backdrop-filter: none !important; }
         }
-        .node-root .node-shape {
-            stroke-width: 3.5px;
-        }
-
-        #cursor-fx { display: none !important; }
-        }
-
-        
-        .node .node-shape-real {
-            will-change: transform;
-            transition: transform 0.15s ease, filter 0.15s ease;
-        }
-        .node:hover .node-shape-real {
-            transform: scale(1.03);
-            filter: drop-shadow(0 8px 18px rgba(15,23,42,0.32)) brightness(1.05);
-        }
-        .node-root .node-shape {
-            stroke-width: 3.5px;
+        /* Selama jari/mouse sedang zoom atau geser (class dipasang lewat JS), matikan
+           filter & transisi yang dihitung ulang tiap frame. Begitu berhenti, kembali normal. */
+        #chart-container svg.sedang-gerak .node,
+        #chart-container svg.sedang-gerak .node-shape-real,
+        #chart-container svg.sedang-gerak .node-farath,
+        #chart-container svg.sedang-gerak .deceased-flower-badge,
+        #chart-container svg.sedang-gerak .search-highlight-overlay {
+            filter: none !important;
+            transition: none !important;
         }
 
         #cursor-fx {
@@ -2213,6 +2204,20 @@
         .on("zoom", (event) => {
             gContainer.attr("transform", event.transform);
         });
+
+    // Mode gerak: pasang class selama zoom/geser (lihat CSS ".sedang-gerak"), lepas 150ms setelah berhenti.
+    (function () {
+        const svgEl = svg.node();
+        let timer = null;
+        zoom.on("start.ringan", () => {
+            clearTimeout(timer);
+            svgEl.classList.add("sedang-gerak");
+        });
+        zoom.on("end.ringan", () => {
+            clearTimeout(timer);
+            timer = setTimeout(() => svgEl.classList.remove("sedang-gerak"), 150);
+        });
+    })();
 
     svg.call(zoom);
     // Jaga-jaga untuk tap singkat yang tidak memicu event zoom "start" (mis. klik cepat tanpa geser)
