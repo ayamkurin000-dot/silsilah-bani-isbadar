@@ -844,8 +844,15 @@
         }
         .link {
             fill: none;
-            stroke: rgba(0, 0, 0, 0.8);
-            stroke-width: 1px;
+            stroke: rgba(15, 23, 42, 0.75);
+            stroke-width: 1.4px;
+            stroke-linecap: round;
+        }
+        /* Lapisan aliran listrik/cairan di atas garis lengkung (digambar lewat JS) */
+        .flow-layer path {
+            fill: none;
+            stroke-linecap: round;
+            pointer-events: none;
         }
         .node-shape {
             fill: none !important;
@@ -2217,6 +2224,134 @@
     });
 
     const gContainer = svg.append("g");
+    // Lapisan aliran harus dibuat SEBELUM node/link pertama: link disisipkan sebelum <g> pertama
+    // (di bawah layer ini) dan node ditambahkan sesudahnya (di atas layer ini).
+    const flowLayer = gContainer.append('g').attr('class', 'flow-layer');
+
+    // =====================================================================
+    // ALIRAN LISTRIK / CAIRAN DI GARIS LENGKUNG PENGHUBUNG KARTU -> ANAK
+    // Setiap garis yang tampil dapat giliran. Urutan satu putaran dipilih acak:
+    // dari atas (anak pertama), dari bawah (anak terakhir), mulai dari tengah, atau diacak penuh.
+    // Putaran baru baru dimulai setelah SEMUA garis di putaran sebelumnya kebagian giliran.
+    // =====================================================================
+    const FLOW_COLORS = ['#22d3ee', '#a3e635', '#f472b6', '#fbbf24', '#a78bfa', '#34d399', '#fb7185', '#60a5fa'];
+    const FLOW = { queue: [], timer: null, resumeAt: 0, lastColor: -1, active: new Set() };
+
+    function flowDisabled() {
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+        try { return perfMode === 'off'; } catch (e) { return false; }   // tombol "EFEK" mematikan aliran
+    }
+
+    function flowShuffle(a) {
+        for (let k = a.length - 1; k > 0; k--) {
+            const j = Math.floor(Math.random() * (k + 1));
+            [a[k], a[j]] = [a[j], a[k]];
+        }
+        return a;
+    }
+
+    // Susun urutan satu putaran (berisi id target semua garis yang sedang tampil)
+    function flowBuildRound(linkNodes) {
+        const items = linkNodes
+            .map(n => ({ id: n.__data__.target.id, x: n.__data__.target.x, y: n.__data__.target.y }))
+            .sort((a, b) => (a.x - b.x) || (a.y - b.y));          // atas -> bawah
+        const mode = Math.floor(Math.random() * 5);
+        let ordered;
+        if (mode === 0) ordered = items;                                               // dari anak paling atas
+        else if (mode === 1) ordered = items.slice().reverse();                        // dari anak paling bawah
+        else if (mode === 2) {                                                         // mulai dari tengah/acak, lanjut ke bawah lalu memutar
+            const st = Math.floor(Math.random() * items.length);
+            ordered = items.slice(st).concat(items.slice(0, st));
+        } else if (mode === 3) {                                                       // mulai dari tengah/acak, lanjut ke atas lalu memutar
+            const st = Math.floor(Math.random() * items.length);
+            ordered = items.slice(0, st + 1).reverse().concat(items.slice(st + 1).reverse());
+        } else ordered = flowShuffle(items);                                           // acak penuh
+        return ordered.map(o => o.id);
+    }
+
+    function flowSchedule(ms) {
+        clearTimeout(FLOW.timer);
+        FLOW.timer = setTimeout(flowTick, ms);
+    }
+
+    function flowReset() {
+        clearTimeout(FLOW.timer);
+        FLOW.queue = [];                                   // putaran baru dengan susunan link yang baru
+        FLOW.active.forEach(a => { try { a.cancel(); } catch (e) {} });
+        FLOW.active.clear();
+        flowLayer.selectAll('*').remove();
+        flowSchedule(duration + 250);                      // tunggu transisi garis selesai dulu
+    }
+
+    function flowTick() {
+        if (document.hidden || flowDisabled()) { flowSchedule(700); return; }
+        const linkNodes = gContainer.selectAll('path.link').nodes().filter(n => n.__data__ && n.__data__.target && n.getAttribute('d'));
+        if (!linkNodes.length) { flowSchedule(800); return; }
+
+        const byId = new Map(linkNodes.map(n => [n.__data__.target.id, n]));
+        FLOW.queue = FLOW.queue.filter(id => byId.has(id));
+        let restBeforeNext = 0;
+        if (!FLOW.queue.length) {                          // semua sudah kebagian -> putaran baru, urutan baru
+            FLOW.queue = flowBuildRound(linkNodes);
+            restBeforeNext = 500 + Math.random() * 900;   // jeda napas antar putaran
+        }
+        const id = FLOW.queue.shift();
+        const node = byId.get(id);
+        const dur = node ? flowPulse(node) : 600;
+
+        // garis berikutnya mulai sebelum yang ini benar-benar selesai (tumpang tindih tipis), agar mengalir bersambung
+        flowSchedule(Math.max(220, dur * (0.45 + Math.random() * 0.2)) + restBeforeNext);
+    }
+
+    // Satu denyut warna merambat dari kartu induk ke kartu anak lewat garis lengkung. Mengembalikan durasi (ms).
+    function flowPulse(linkNode) {
+        const d = linkNode.getAttribute('d');
+        let len = 0;
+        try { len = linkNode.getTotalLength(); } catch (e) {}
+        if (!len || !isFinite(len)) return 400;
+
+        let ci;
+        do { ci = Math.floor(Math.random() * FLOW_COLORS.length); } while (ci === FLOW.lastColor && FLOW_COLORS.length > 1);
+        FLOW.lastColor = ci;
+        const col = FLOW_COLORS[ci];
+
+        const dur = Math.max(900, Math.min(1900, 650 + len * 2.2));
+        const head = Math.max(26, Math.min(80, len * 0.28));         // panjang kepala yang bersinar
+        const g = flowLayer.append('g');
+        const add = (w, color, op) => g.append('path').attr('d', d).attr('stroke', color).attr('stroke-width', w).attr('stroke-opacity', op);
+
+        // 1. jejak cairan berwarna: terisi pelan-pelan dari induk sampai anak, lalu memudar
+        const trail = add(2.6, col, 0.9).attr('stroke-dasharray', `${len} ${len}`).attr('stroke-dashoffset', len);
+        // 2. kepala listrik: halo lebar + inti terang
+        const halo = add(8, col, 0.28).attr('stroke-dasharray', `${head} ${len + head}`).attr('stroke-dashoffset', head);
+        const mid = add(4, col, 0.8).attr('stroke-dasharray', `${head * 0.6} ${len + head}`).attr('stroke-dashoffset', head * 0.6);
+        const core = add(1.8, '#ffffff', 1).attr('stroke-dasharray', `${head * 0.35} ${len + head}`).attr('stroke-dashoffset', head * 0.35);
+
+        const ease = 'cubic-bezier(.45,.05,.55,.95)';
+        const run = (sel, from, to, t, opts) => {
+            const a = sel.node().animate([{ strokeDashoffset: from }, { strokeDashoffset: to }],
+                Object.assign({ duration: t, easing: ease, fill: 'forwards' }, opts || {}));
+            FLOW.active.add(a);
+            return a;
+        };
+        run(trail, len, 0, dur);
+        run(halo, head, -len, dur);
+        run(mid, head * 0.6, -len, dur);
+        run(core, head * 0.35, -len, dur);
+
+        // setelah tiba, jejak cairan memudar perlahan lalu semuanya dibersihkan
+        const fade = trail.node().animate([{ strokeOpacity: 0.9 }, { strokeOpacity: 0 }],
+            { duration: 900, delay: dur, easing: 'ease-out', fill: 'forwards' });
+        FLOW.active.add(fade);
+        fade.onfinish = () => {
+            g.remove();
+            FLOW.active.forEach(a => { if (a.playState === 'finished') FLOW.active.delete(a); });
+        };
+        return dur;
+    }
+
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) flowSchedule(300); });
+
 
     const zoom = d3.zoom()
         .scaleExtent([0.2, 2])
@@ -2989,6 +3124,9 @@
             d.x0 = d.x;
             d.y0 = d.y;
         });
+
+        // Struktur pohon berubah (kartu dibuka/ditutup): hentikan aliran lama, mulai lagi setelah transisi selesai
+        flowReset();
     }
 
     function diagonal(s, d) {
