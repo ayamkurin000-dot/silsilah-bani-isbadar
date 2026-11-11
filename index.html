@@ -2235,7 +2235,7 @@
     // Putaran baru baru dimulai setelah SEMUA garis di putaran sebelumnya kebagian giliran.
     // =====================================================================
     const FLOW_COLORS = ['#22d3ee', '#a3e635', '#f472b6', '#fbbf24', '#a78bfa', '#34d399', '#fb7185', '#60a5fa'];
-    const FLOW = { queue: [], timer: null, resumeAt: 0, lastColor: -1, active: new Set() };
+    const FLOW = { queue: [], timer: null, resumeAt: 0, lastColor: -1, active: new Set(), gen: 0 };
 
     function flowDisabled() {
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
@@ -2280,6 +2280,8 @@
         FLOW.active.forEach(a => { try { a.cancel(); } catch (e) {} });
         FLOW.active.clear();
         flowLayer.selectAll('*').remove();
+        FLOW.gen++;                                        // batalkan kilatan kartu yang masih terjadwal
+        gContainer.selectAll('g.zap').remove();
         flowSchedule(duration + 250);                      // tunggu transisi garis selesai dulu
     }
 
@@ -2303,6 +2305,79 @@
         flowSchedule(Math.max(220, dur * (0.45 + Math.random() * 0.2)) + restBeforeNext);
     }
 
+    // Efek kartu tersengat listrik sesaat lalu kembali normal.
+    // strong=false: cukup glow tipis (kartu induk). strong=true: glow + semburan warna + garis listrik + percikan (kartu anak).
+    function flowZap(d, col, strong) {
+        const nodeSel = gContainer.selectAll('g.node').filter(n => n === d);
+        if (nodeSel.empty()) return;
+        const el = nodeSel.node();
+        const track = a => { FLOW.active.add(a); a.onfinish = () => FLOW.active.delete(a); return a; };
+
+        // 1. kartu menyala & berkedip (glow berwarna + terang), otomatis kembali ke semula
+        const real = el.querySelector('.node-shape-real');
+        if (real) {
+            const k = strong ? 1 : 0.4;
+            const f = (b, br) => `drop-shadow(0 0 ${b}px ${col}) brightness(${br})`;
+            track(real.animate([
+                { filter: f(0, 1), offset: 0 },
+                { filter: f(20 * k + 3, 1 + 0.38 * k), offset: 0.10 },
+                { filter: f(5, 1.04), offset: 0.20 },
+                { filter: f(24 * k + 3, 1 + 0.45 * k), offset: 0.32 },
+                { filter: f(8, 1.06), offset: 0.46 },
+                { filter: f(16 * k, 1 + 0.22 * k), offset: 0.60 },
+                { filter: f(0, 1), offset: 1 }
+            ], { duration: strong ? 1200 : 650, easing: 'linear' }));
+        }
+        if (!strong) return;
+
+        // 2. lapisan listrik di atas kartu (dihapus sendiri setelah selesai)
+        const { w, h } = cardDims(d);
+        const r = Math.min(22, Math.round(h * 0.42));
+        const rl = Math.max(2, Math.round(r * 0.15));
+        const body = shapeBodyPath(w, h, r, rl);
+        const zap = d3.select(el).append('g').attr('class', 'zap').style('pointer-events', 'none');
+        const T = 1200;
+
+        const tint = zap.append('path').attr('d', body).attr('fill', col).attr('opacity', 0);
+        const edge = zap.append('path').attr('d', body).attr('fill', 'none').attr('stroke', col)
+            .attr('stroke-width', 3.2).attr('stroke-linejoin', 'round').attr('opacity', 0);
+        const arc = zap.append('path').attr('d', body).attr('fill', 'none').attr('stroke', '#fff')
+            .attr('stroke-width', 1.6).attr('stroke-dasharray', '9 14').attr('stroke-linecap', 'round').attr('opacity', 0);
+
+        const flick = [0, 1, 0.25, 1, 0.35, 0.9, 0.15, 0.6, 0];
+        track(tint.node().animate([{ opacity: 0 }, { opacity: 0.30 }, { opacity: 0.08 }, { opacity: 0.26 }, { opacity: 0.06 }, { opacity: 0 }],
+            { duration: T, easing: 'linear' }));
+        track(edge.node().animate(flick.map(o => ({ opacity: o })), { duration: T, easing: 'linear' }));
+        track(arc.node().animate([
+            { opacity: 0, strokeDashoffset: 0 }, { opacity: 1, strokeDashoffset: -46, offset: 0.2 },
+            { opacity: 0.4, strokeDashoffset: -92, offset: 0.5 }, { opacity: 1, strokeDashoffset: -138, offset: 0.7 },
+            { opacity: 0, strokeDashoffset: -184 }], { duration: T, easing: 'linear' }));
+
+        // 3. percikan listrik zig-zag acak di tepi kartu
+        const rnd = (a, b) => a + Math.random() * (b - a);
+        const nSpark = 5 + Math.floor(Math.random() * 3);
+        for (let n = 0; n < nSpark; n++) {
+            const side = Math.floor(Math.random() * 4);                  // 0 atas, 1 bawah, 2 kiri, 3 kanan
+            let x, y, nx, ny;
+            if (side === 0) { x = rnd(r, w - r); y = -h / 2; nx = 0; ny = -1; }
+            else if (side === 1) { x = rnd(r, w - r); y = h / 2; nx = 0; ny = 1; }
+            else if (side === 2) { x = 0; y = rnd(-h / 2 + 4, h / 2 - 4); nx = -1; ny = 0; }
+            else { x = w; y = rnd(-h / 2 + r, h / 2 - r); nx = 1; ny = 0; }
+            const len = rnd(12, 24), steps = 4;
+            let pts = `M ${x.toFixed(1)} ${y.toFixed(1)}`;
+            for (let q = 1; q <= steps; q++) {
+                const t = len * q / steps, j = rnd(-5, 5);
+                pts += ` L ${(x + nx * t - ny * j).toFixed(1)} ${(y + ny * t + nx * j).toFixed(1)}`;
+            }
+            const grp = zap.append('g').attr('opacity', 0);
+            grp.append('path').attr('d', pts).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 3.4).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('opacity', 0.55);
+            grp.append('path').attr('d', pts).attr('fill', 'none').attr('stroke', '#fff').attr('stroke-width', 1.3).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round');
+            track(grp.node().animate([{ opacity: 0 }, { opacity: 1 }, { opacity: 0 }, { opacity: 1 }, { opacity: 0 }, { opacity: 0.8 }, { opacity: 0 }],
+                { duration: rnd(380, 620), delay: rnd(0, T - 650), easing: 'steps(1,end)', fill: 'both' }));
+        }
+        setTimeout(() => zap.remove(), T + 700);
+    }
+
     // Satu denyut warna merambat dari kartu induk ke kartu anak lewat garis lengkung. Mengembalikan durasi (ms).
     function flowPulse(linkNode) {
         const d = linkNode.getAttribute('d');
@@ -2317,6 +2392,11 @@
 
         const dur = Math.max(900, Math.min(1900, 650 + len * 2.2));
         const head = Math.max(26, Math.min(80, len * 0.28));         // panjang kepala yang bersinar
+        // Kartu ikut "dialiri": induk berkedip halus saat listrik berangkat, anak tersengat kuat saat listrik tiba
+        const ld = linkNode.__data__, gen = FLOW.gen;
+        flowZap(ld.source, col, false);
+        setTimeout(() => { if (gen === FLOW.gen) flowZap(ld.target, col, true); }, dur * 0.9);
+
         const g = flowLayer.append('g');
         const add = (w, color, op) => g.append('path').attr('d', d).attr('stroke', color).attr('stroke-width', w).attr('stroke-opacity', op);
 
