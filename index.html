@@ -2108,6 +2108,16 @@
     [{off:'0%',c:'#1e293b'},{off:'18%',c:'#64748b'},{off:'42%',c:'#f1f5f9'},{off:'68%',c:'#94a3b8'},{off:'100%',c:'#0f172a'}]
       .forEach(s=> metalNub.append('stop').attr('offset',s.off).attr('stop-color',s.c));
 
+    // ===== FLASHDISK METAL (lidah nomor anak) =====
+    const usbBody = defs.append('linearGradient').attr('id','grad-usb-body')
+        .attr('x1','0%').attr('y1','0%').attr('x2','0%').attr('y2','100%');
+    [{off:'0%',c:'#f8fafc'},{off:'28%',c:'#d5dde8'},{off:'62%',c:'#98a6b8'},{off:'100%',c:'#5b6b80'}]
+      .forEach(s=> usbBody.append('stop').attr('offset',s.off).attr('stop-color',s.c));
+    const usbConn = defs.append('linearGradient').attr('id','grad-usb-conn')
+        .attr('x1','0%').attr('y1','0%').attr('x2','0%').attr('y2','100%');
+    [{off:'0%',c:'#ffffff'},{off:'30%',c:'#e2e8f0'},{off:'70%',c:'#aab6c6'},{off:'100%',c:'#6b7a8f'}]
+      .forEach(s=> usbConn.append('stop').attr('offset',s.off).attr('stop-color',s.c));
+
     // Root: gradasi pelangi horizontal
     const tubeRoot = defs.append('linearGradient')
         .attr('id', 'grad-tube-root')
@@ -2566,6 +2576,76 @@
                 }
             });
 
+        // ========== LIDAH NOMOR ANAK - FLASHDISK METAL (di kiri kartu, terselip di bawah kartu) ==========
+        // Nomor = urutan anak di bawah orang tuanya. Root & kotak pasangan tidak diberi lidah.
+        nodeEnter.filter(d => d.depth > 0 && d.data.type !== 'wife' && d.data._no != null).each(function(d) {
+            const g = d3.select(this).append('g').attr('class', 'lidah-anak');
+            const { h } = cardDims(d);
+            const no = d.data._no;
+            let type = d.data.type;
+            if (!['gen1','gen2','gen3','gen4','gen5','wife','root'].includes(type)) type = 'gen3';
+            if (isFarathNode(d)) type = 'farath';
+
+            const CONN_W = 16;                          // colokan USB (logam polos)
+            const BODY_VIS = no >= 10 ? 36 : 30;        // badan flashdisk yang tampak
+            const HIDE = 16;                            // bagian yang terselip di bawah kartu
+            const th = Math.max(30, Math.min(46, h * 0.64));   // tinggi badan
+            const ch = th * 0.6;                        // tinggi colokan
+            const x0 = -(CONN_W + BODY_VIS);            // ujung colokan
+            const bx = -BODY_VIS;                       // awal badan
+
+            // bayangan halus
+            g.append('rect').attr('x', bx).attr('y', -th/2).attr('width', BODY_VIS + HIDE).attr('height', th)
+                .attr('rx', 5).attr('transform', 'translate(-1,2)').attr('fill', '#000').attr('opacity', 0.14);
+            g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', CONN_W + 2).attr('height', ch)
+                .attr('rx', 1.5).attr('transform', 'translate(-1,2)').attr('fill', '#000').attr('opacity', 0.14);
+
+            // colokan USB-A dari logam
+            g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', CONN_W + 3).attr('height', ch).attr('rx', 1.8)
+                .attr('fill', 'url(#grad-usb-conn)').attr('stroke', '#475569').attr('stroke-width', 0.8);
+            // lubang kecil pengunci di cangkang colokan
+            [-1, 1].forEach(k => {
+                g.append('rect').attr('x', x0 + 7).attr('y', k * ch * 0.22 - 1.8)
+                    .attr('width', 4).attr('height', 3.6).attr('rx', 0.8)
+                    .attr('fill', '#1e293b').attr('opacity', 0.85);
+            });
+            // bibir ujung colokan
+            g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', 1.6).attr('height', ch).attr('rx', 0.8)
+                .attr('fill', '#334155').attr('opacity', 0.45);
+            // kilau colokan
+            g.append('rect').attr('x', x0 + 2).attr('y', -ch/2 + 1.2).attr('width', CONN_W - 3).attr('height', ch * 0.26).attr('rx', 1.2)
+                .attr('fill', '#fff').attr('opacity', 0.7).attr('pointer-events', 'none');
+
+            // badan flashdisk dari logam
+            g.append('rect').attr('x', bx).attr('y', -th/2).attr('width', BODY_VIS + HIDE).attr('height', th).attr('rx', 5)
+                .attr('fill', 'url(#grad-usb-body)').attr('stroke', '#334155').attr('stroke-width', 0.9).attr('stroke-opacity', 0.55);
+            // goresan sikat logam
+            [0.22, 0.78].forEach(f => {
+                g.append('line').attr('x1', bx + 5).attr('x2', bx + BODY_VIS - 3)
+                    .attr('y1', -th/2 + th * f).attr('y2', -th/2 + th * f)
+                    .attr('stroke', '#fff').attr('stroke-opacity', 0.35).attr('stroke-width', 0.6);
+            });
+            // cincin kecil berwarna generasi di pangkal badan (menyatu dengan warna kartu)
+            g.append('rect').attr('x', bx - 0.5).attr('y', -th/2 + 0.5).attr('width', 3.4).attr('height', th - 1)
+                .attr('fill', `url(#grad-real-${type})`).attr('stroke', '#334155').attr('stroke-width', 0.5).attr('stroke-opacity', 0.5);
+            // kilau atas badan
+            g.append('rect').attr('x', bx + 4).attr('y', -th/2 + 2).attr('width', BODY_VIS - 6).attr('height', th * 0.3).attr('rx', 3.5)
+                .attr('fill', '#fff').attr('opacity', 0.5).attr('pointer-events', 'none');
+
+            // nomor (efek ukiran: bayangan terang tipis di bawah huruf gelap)
+            const fs = no >= 10 ? '14px' : '17px';
+            const cx = bx + 3.4 + (BODY_VIS - 3.4) / 2 - 1;
+            [{dy: 0.8, fill: '#ffffff', op: 0.75}, {dy: 0, fill: '#0f172a', op: 1}].forEach(t => {
+                g.append('text')
+                    .attr('x', cx).attr('y', t.dy).attr('dy', '0.35em')
+                    .attr('text-anchor', 'middle')
+                    .style('font-weight', '800').style('font-size', fs)
+                    .style('fill', t.fill).style('opacity', t.op)
+                    .style('pointer-events', 'none').style('user-select', 'none')
+                    .text(no);
+            });
+        });
+
                         // Shape node - SEMUA pakai model glossy realistic TANPA GELANG & TANPA KOTAK BAWAH (root juga sama)
         nodeEnter.append('g')
             .attr('class', 'node-shape-real')
@@ -2682,12 +2762,9 @@
             return !hasWifeBranch;
         };
         const TEXT_PAD_X = 14;
-        // Kolom nomor urut di kiri kartu anak: [ nomor | pembatas | teks ]
-        const NUM_W = 30;     // lebar kolom nomor (garis pembatas ada di x = NUM_W)
-        const NUM_GAP = 8;    // jarak teks dari garis pembatas
         const hasChildNo = d => d.depth > 0 && d.data.type !== 'wife' && d.data._no != null;
-        const textX = d => hasChildNo(d) ? NUM_W + NUM_GAP : TEXT_PAD_X;
-        const textRoom = (d, w) => w - textX(d) - (hasChildNo(d) ? 12 : TEXT_PAD_X);
+        const textX = d => TEXT_PAD_X;   // nomor kini di lidah flashdisk luar kartu, teks pakai seluruh lebar kartu
+        const textRoom = (d, w) => w - textX(d) - TEXT_PAD_X;
 
         function autoFitText(textEl, maxWidth, minFontSize, maxFontSize) {
             let fontSize = maxFontSize;
@@ -2854,29 +2931,6 @@
                     autoFitText(d3.select(this), textRoom(d, cardDims(d).w), 8, 12);
                 }
             });
-
-        // ========== NOMOR URUT ANAK (kiri-tengah kartu) + GARIS PEMBATAS ==========
-        nodeEnter.filter(hasChildNo).each(function(d) {
-            const { h } = cardDims(d);
-            const g = d3.select(this).append('g')
-                .attr('class', 'child-no')
-                .style('pointer-events', 'none');
-            g.append('line')
-                .attr('x1', NUM_W).attr('x2', NUM_W)
-                .attr('y1', -h / 2 + 8).attr('y2', h / 2 - 8)
-                .style('stroke', '#000000')
-                .style('stroke-width', 1)
-                .style('opacity', 0.55);
-            g.append('text')
-                .attr('x', NUM_W / 2 + 1)
-                .attr('y', 1)
-                .attr('text-anchor', 'middle')
-                .attr('dominant-baseline', 'central')
-                .style('font-weight', '800')
-                .style('font-size', d.data._no >= 10 ? '15px' : '18px')
-                .style('fill', '#000000')
-                .text(d.data._no);
-        });
 
         const nodeUpdate = nodeEnter.merge(node);
 
