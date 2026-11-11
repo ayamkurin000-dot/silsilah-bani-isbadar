@@ -305,21 +305,8 @@
         @media (pointer: coarse) {
             #chat-panel { backdrop-filter: none !important; }
         }
-        /* Selama jari/mouse sedang zoom atau geser (class dipasang lewat JS), matikan
-           filter & transisi yang dihitung ulang tiap frame. Begitu berhenti, kembali normal. */
-        #chart-container svg.sedang-gerak .node,
-        #chart-container svg.sedang-gerak .node-shape-real,
-        #chart-container svg.sedang-gerak .node-farath,
-        #chart-container svg.sedang-gerak .deceased-flower-badge,
-        #chart-container svg.sedang-gerak .search-highlight-overlay {
-            filter: none !important;
-            transition: none !important;
-        }
-        /* Saat cubit/geser: sembunyikan tekstur & hiasan kartu, render cepat */
-        #chart-container svg.sedang-gerak .card-tex,
-        #chart-container svg.sedang-gerak .deco,
-        #chart-container svg.sedang-gerak .flow-layer { display: none !important; }
-        #chart-container svg.sedang-gerak { shape-rendering: optimizeSpeed; text-rendering: optimizeSpeed; }
+        /* Cubit/geser: tampilan kartu TIDAK diubah sama sekali (tekstur, hiasan tabung, bayangan tetap
+           tampil utuh), sama seperti Bani Mukti. Hanya transform grup yang bergeser/membesar. */
 
         #cursor-fx {
             position: fixed;
@@ -2756,7 +2743,7 @@
     // Putaran baru baru dimulai setelah SEMUA garis di putaran sebelumnya kebagian giliran.
     // =====================================================================
     const FLOW_COLORS = ['#22d3ee', '#a3e635', '#f472b6', '#fbbf24', '#a78bfa', '#34d399', '#fb7185', '#60a5fa'];
-    const FLOW = { queue: [], timer: null, resumeAt: 0, lastColor: -1, active: new Set(), gen: 0 };
+    const FLOW = { moving: false, queue: [], timer: null, resumeAt: 0, lastColor: -1, active: new Set(), gen: 0 };
 
     function flowDisabled() {
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
@@ -2807,7 +2794,7 @@
     }
 
     function flowTick() {
-        if (document.hidden || flowDisabled() || svg.node().classList.contains('sedang-gerak')) { flowSchedule(500); return; }
+        if (document.hidden || flowDisabled() || FLOW.moving) { flowSchedule(500); return; }
         const linkNodes = gContainer.selectAll('path.link').nodes().filter(n => n.__data__ && n.__data__.target && n.getAttribute('d'));
         if (!linkNodes.length) { flowSchedule(800); return; }
 
@@ -2930,19 +2917,19 @@
             gContainer.attr("transform", event.transform);
         });
 
-    // Mode gerak: pasang class selama zoom/geser (lihat CSS ".sedang-gerak"), lepas 150ms setelah berhenti.
+    // Saat cubit/geser: tampilan kartu tidak berubah. Yang dihentikan sementara hanya animasi aliran
+    // listrik (tidak terlihat bedanya), lalu jalan lagi 150ms setelah jari dilepas.
     (function () {
-        const svgEl = svg.node();
         let timer = null;
         zoom.on("start.ringan", () => {
             clearTimeout(timer);
-            svgEl.classList.add("sedang-gerak");
-            FLOW.active.forEach(a => { try { a.pause(); } catch (e) {} });   // aliran listrik berhenti sementara
+            FLOW.moving = true;
+            FLOW.active.forEach(a => { try { a.pause(); } catch (e) {} });
         });
         zoom.on("end.ringan", () => {
             clearTimeout(timer);
             timer = setTimeout(() => {
-                svgEl.classList.remove("sedang-gerak");
+                FLOW.moving = false;
                 FLOW.active.forEach(a => { try { a.play(); } catch (e) {} });
             }, 150);
         });
