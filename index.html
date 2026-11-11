@@ -1077,6 +1077,40 @@
             filter: drop-shadow(0 3px 7px rgba(185,28,28,0.45)) !important;
         }
 
+        /* =====================================================================
+           MODE RINGAN UNTUK HP / LAYAR SENTUH
+           Aturan & tampilan tetap sama; hanya efek yang berat bagi GPU HP dimatikan supaya
+           geser dan pinch-zoom lancar:
+           - will-change per kartu (ratusan lapisan GPU) -> dimatikan
+           - bayangan (drop-shadow) & animasi hover pada kartu -> dimatikan. Di layar sentuh,
+             jari yang menempel saat pinch dianggap "hover" dan memicu efek berat ini.
+           - anti-aliasing murah untuk bentuk, garis, dan teks
+           ===================================================================== */
+        @media (pointer: coarse), (max-width: 640px) {
+            .node .node-shape,
+            .node .node-shape-real {
+                will-change: auto !important;
+                transition: none !important;
+                filter: none !important;
+            }
+            .node:hover .node-shape,
+            .node:hover .node-shape-real {
+                transform: none !important;
+                filter: none !important;
+            }
+            .deceased-flower-badge {
+                filter: none !important;
+            }
+            .node-shape-real path,
+            .node-shape-real rect,
+            path.link {
+                shape-rendering: optimizeSpeed;
+            }
+            .node text {
+                text-rendering: optimizeSpeed;
+            }
+        }
+
         </style>
 </head>
 <body>
@@ -2652,7 +2686,7 @@
                 return `translate(${w - 2},${-h / 2 - 2}) scale(1.15)`;
             })
             .style('pointer-events', 'none')
-            .style('filter', 'drop-shadow(0 3px 7px rgba(185,28,28,0.45))')
+            .style('filter', window.matchMedia('(pointer: coarse)').matches ? 'none' : 'drop-shadow(0 3px 7px rgba(185,28,28,0.45))')
             .raise();
 
         // ========== TANDA HATI ❤️ UNTUK NODE FARATH (pengganti badge bunga) ==========
