@@ -27,7 +27,7 @@
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             color: #1e293b;
             overflow: hidden;
-            background-color: #f8eeda;
+            background-color: var(--bg-color, #f8eeda);
             position: relative;
         }
         body::before {
@@ -37,9 +37,9 @@
             left: 50%;
             width: 200vw;
             height: 200vh;
-            transform: translate(-50%, -50%) rotate(45deg);
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg stroke='%23a08760' stroke-width='1.5' stroke-linejoin='round'%3E%3Crect x='4' y='2' width='13' height='36' fill='%23f3e2c8'/%3E%3Crect x='23' y='2' width='13' height='36' fill='%23ead0ac'/%3E%3Crect x='44' y='4' width='34' height='13' fill='%23f3e2c8'/%3E%3Crect x='44' y='23' width='34' height='13' fill='%23ead0ac'/%3E%3Crect x='2' y='44' width='34' height='13' fill='%23ead0ac'/%3E%3Crect x='2' y='63' width='34' height='13' fill='%23f3e2c8'/%3E%3Crect x='44' y='42' width='13' height='36' fill='%23ead0ac'/%3E%3Crect x='63' y='42' width='13' height='36' fill='%23f3e2c8'/%3E%3C/g%3E%3C/svg%3E");
-            background-size: 80px 80px;
+            transform: translate(-50%, -50%) var(--bg-rot, rotate(45deg));
+            background-image: var(--bg-img, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg stroke='%23a08760' stroke-width='1.5' stroke-linejoin='round'%3E%3Crect x='4' y='2' width='13' height='36' fill='%23f3e2c8'/%3E%3Crect x='23' y='2' width='13' height='36' fill='%23ead0ac'/%3E%3Crect x='44' y='4' width='34' height='13' fill='%23f3e2c8'/%3E%3Crect x='44' y='23' width='34' height='13' fill='%23ead0ac'/%3E%3Crect x='2' y='44' width='34' height='13' fill='%23ead0ac'/%3E%3Crect x='2' y='63' width='34' height='13' fill='%23f3e2c8'/%3E%3Crect x='44' y='42' width='13' height='36' fill='%23ead0ac'/%3E%3Crect x='63' y='42' width='13' height='36' fill='%23f3e2c8'/%3E%3C/g%3E%3C/svg%3E"));
+            background-size: var(--bg-size, 80px 80px);
             z-index: -1;
         }
         #header {
@@ -844,7 +844,7 @@
         }
         .link {
             fill: none;
-            stroke: rgba(15, 23, 42, 0.75);
+            stroke: var(--link-color, rgba(15, 23, 42, 0.75));
             stroke-width: 1.4px;
             stroke-linecap: round;
         }
@@ -1084,6 +1084,41 @@
             filter: drop-shadow(0 3px 7px rgba(185,28,28,0.45)) !important;
         }
 
+
+        /* ===== TEMA: lapisan latar, tekstur & hiasan kartu, halo teks, panel pilihan ===== */
+        body::after { content: ""; position: fixed; inset: 0; z-index: -2; background: var(--bg-grad, none); pointer-events: none; }
+        .card-tex { opacity: var(--tex-op, 0); pointer-events: none; }
+        .deco { display: none; pointer-events: none; }
+        svg[data-model="tabung"] .deco-tabung,
+        svg[data-model="timbul"] .deco-timbul,
+        svg[data-model="kaca"] .deco-kaca,
+        svg[data-stitch="1"] .deco-stitch { display: inline; }
+        .node text.name-life, .node text.extra-name, .node text.address-info, .node text.spouse-info,
+        .node text.spouse-name-root, .node text.spouse-life-root {
+            paint-order: stroke fill; stroke: var(--card-halo, none); stroke-width: var(--card-halo-w, 0px); stroke-linejoin: round;
+        }
+        #theme-btn { background: linear-gradient(135deg, #f59e0b, #db2777); box-shadow: 0 3px 10px rgba(219, 39, 119, 0.35); }
+        #th-panel { position: fixed; top: 68px; right: 12px; width: 340px; max-height: calc(100vh - 84px); overflow: auto;
+            background: rgba(255,255,255,.97); border-radius: 14px; box-shadow: 0 12px 40px rgba(15,23,42,.35);
+            z-index: 99999; padding: 12px 14px 14px; font-size: .78rem; color: #1e293b; display: none; -webkit-overflow-scrolling: touch; }
+        #th-panel.open { display: block; }
+        #th-panel .th-head { display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: .95rem; }
+        #th-panel .th-head button { background: #f1f5f9; border: none; border-radius: 8px; width: 28px; height: 28px; font-weight: 800; cursor: pointer; color: #475569; }
+        #th-panel .th-sec { font-weight: 800; font-size: .68rem; letter-spacing: .06em; color: #64748b; margin: 13px 0 6px; text-transform: uppercase; }
+        #th-panel .th-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+        #th-panel .th-chip { border: 2px solid #e2e8f0; border-radius: 10px; padding: 5px; background: #fff; cursor: pointer; text-align: center; font-size: .68rem; font-weight: 700; line-height: 1.2; }
+        #th-panel .th-chip:hover { border-color: #93c5fd; }
+        #th-panel .th-chip.on { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,.25); }
+        #th-panel .th-chip .pv { height: 34px; border-radius: 7px; margin-bottom: 4px; border: 1px solid rgba(15,23,42,.15); }
+        #th-panel .th-pills { display: flex; gap: 3px; height: 34px; align-items: center; margin-bottom: 4px; }
+        #th-panel .th-pills i { flex: 1; height: 24px; border-radius: 7px; border: 1px solid rgba(15,23,42,.2); }
+        #th-panel .th-colors { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+        #th-panel .th-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #cbd5e1; cursor: pointer; font-weight: 800; box-sizing: border-box; }
+        #th-panel .th-dot.on { outline: 3px solid #2563eb; outline-offset: 1px; }
+        #th-panel .th-actions { display: flex; gap: 8px; margin-top: 14px; }
+        @media (max-width: 640px) {
+            #th-panel { top: auto; bottom: 0; right: 0; left: 0; width: auto; max-height: 52vh; border-radius: 16px 16px 0 0; }
+        }
         </style>
 </head>
 <body>
@@ -1105,6 +1140,7 @@
             <button class="btn" onclick="showFeatureDisabledNotice()">BUKA SEMUA</button>
             <button class="btn" onclick="showFeatureDisabledNotice()">TUTUP SEMUA</button>
             <button class="btn" id="lock-expand-btn" onclick="toggleLockExpand()" style="background:#64748b;">🔓 KUNCI: OFF</button>
+            <button class="btn" id="theme-btn" onclick="toggleThemePanel()" title="Tema tampilan: latar, bahan & model kartu, warna teks">🎨</button>
         </div>
     </div>
 
@@ -1918,6 +1954,39 @@
             .attr('fill', `url(#grad-real-${type})`)
             .attr('stroke', '#1e293b').attr('stroke-width', 0.9).attr('stroke-opacity', 0.18);
 
+        // ===== tekstur bahan + hiasan tiap model (tampil/sembunyi lewat CSS: data-model / data-stitch di <svg>) =====
+        const bodyD = shapeBodyPath(w, h, r, rLeft);
+        g.append('path').attr('class', 'card-tex').attr('d', bodyD)
+            .attr('fill', 'url(#tex-card)').attr('pointer-events', 'none');
+        // setengah tinggi badan pada posisi x (menghormati sudut membulat)
+        const halfAt = x => {
+            if (x > w - r) { const dx = x - (w - r); return h / 2 - r + Math.sqrt(Math.max(0, r * r - dx * dx)); }
+            if (x < rLeft) { const dx = rLeft - x; return h / 2 - rLeft + Math.sqrt(Math.max(0, rLeft * rLeft - dx * dx)); }
+            return h / 2;
+        };
+        // tabung: alur cincin dekat ujung kiri & kanan
+        [[w - 15, 1], [w - 22, 0.6], [13, 0.8]].forEach(([x, k]) => {
+            const e = halfAt(x) - 1.2;
+            g.append('line').attr('class', 'deco deco-tabung').attr('x1', x).attr('x2', x).attr('y1', -e).attr('y2', e)
+                .attr('stroke', '#000').attr('stroke-opacity', 0.30 * k).attr('stroke-width', 1.6);
+            g.append('line').attr('class', 'deco deco-tabung').attr('x1', x + 1.6).attr('x2', x + 1.6).attr('y1', -e).attr('y2', e)
+                .attr('stroke', '#fff').attr('stroke-opacity', 0.55 * k).attr('stroke-width', 1);
+        });
+        // timbul: tepi bevel (terang kiri-atas, gelap kanan-bawah)
+        g.append('path').attr('class', 'deco deco-timbul')
+            .attr('d', shapeBodyPath(w - 3, h - 3, Math.max(2, r - 1.5), Math.max(1, rLeft - 0.5)))
+            .attr('transform', 'translate(1.5,0)').attr('fill', 'none')
+            .attr('stroke', 'url(#bevel-stroke)').attr('stroke-width', 2.6);
+        // kaca: pinggir berkilau
+        g.append('path').attr('class', 'deco deco-kaca').attr('d', bodyD).attr('fill', 'none')
+            .attr('stroke', 'rgba(255,255,255,.8)').attr('stroke-width', 1.4);
+        // jahitan (bahan kulit)
+        const stD = shapeBodyPath(w - 9, h - 9, Math.max(3, r - 4.5), 2);
+        g.append('path').attr('class', 'deco deco-stitch').attr('d', stD).attr('transform', 'translate(4.5,1)')
+            .attr('fill', 'none').attr('stroke', '#000').attr('stroke-opacity', 0.3).attr('stroke-width', 1.2).attr('stroke-dasharray', '4 3');
+        g.append('path').attr('class', 'deco deco-stitch').attr('d', stD).attr('transform', 'translate(4.5,0)')
+            .attr('fill', 'none').attr('stroke', '#f6ead2').attr('stroke-opacity', 0.9).attr('stroke-width', 1.2).attr('stroke-dasharray', '4 3');
+
         // highlight atas saja - bawah dihapus
         g.append('rect')
             .attr('x', r*0.6).attr('y', -h/2+2.5)
@@ -2222,6 +2291,376 @@
         lg.append('stop').attr('offset', '0%').attr('stop-color', g.c1);
         lg.append('stop').attr('offset', '100%').attr('stop-color', g.c2);
     });
+
+    // =====================================================================
+    // SISTEM TEMA: latar belakang, bahan + model kartu 3D, warna teks
+    // Warna kartu = gradien di <defs> (grad-real-*), jadi ganti tema cukup mengganti isi gradien:
+    // semua kartu yang sudah tampil langsung ikut berubah tanpa digambar ulang.
+    // =====================================================================
+    const THEME_KEY = 'silsilah_tema_v1';
+    const THEME_TYPES = ['gen1', 'gen2', 'gen3', 'gen4', 'gen5', 'wife', 'farath', 'root'];
+    const TH_DEFAULT = { bg: 'bawaan', mat: 'bawaan', model: 'glossy', text: 'auto' };
+    let TH = Object.assign({}, TH_DEFAULT);
+    try { Object.assign(TH, JSON.parse(localStorage.getItem(THEME_KEY) || '{}')); } catch (e) {}
+
+    // ---------- generator tekstur: bitmap alfa hitam/putih yang ditimpa di atas warna dasar ----------
+    const TEX_CACHE = {};
+    function rng(seed) {
+        let a = seed >>> 0;
+        return function () {
+            a |= 0; a = a + 0x6D2B79F5 | 0;
+            let t = Math.imul(a ^ a >>> 15, 1 | a);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+    // noise nilai yang periodik (ubin tidak bersambung kasar)
+    function pnoise(seed, px, py) {
+        const r = rng(seed), g = new Float32Array(px * py);
+        for (let k = 0; k < g.length; k++) g[k] = r();
+        const sm = t => t * t * (3 - 2 * t);
+        return (x, y) => {
+            const x0 = Math.floor(x), y0 = Math.floor(y), fx = sm(x - x0), fy = sm(y - y0);
+            const xa = ((x0 % px) + px) % px, xb = (xa + 1) % px, ya = ((y0 % py) + py) % py, yb = (ya + 1) % py;
+            const a = g[ya * px + xa], b = g[ya * px + xb], c = g[yb * px + xa], d = g[yb * px + xb];
+            return (a + (b - a) * fx) * (1 - fy) + (c + (d - c) * fx) * fy;
+        };
+    }
+    function texCanvas(w, h, fn) {
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        fn(c.getContext('2d'), w, h);
+        return c.toDataURL('image/png');
+    }
+    function pixelTex(w, h, f) {   // f(x,y) -> -1 (gelap) .. +1 (terang)
+        return texCanvas(w, h, ctx => {
+            const im = ctx.createImageData(w, h), d = im.data;
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const v = f(x, y), i = (y * w + x) * 4;
+                d[i] = d[i + 1] = d[i + 2] = v < 0 ? 0 : 255;
+                d[i + 3] = Math.min(255, Math.abs(v) * 255);
+            }
+            ctx.putImageData(im, 0, 0);
+        });
+    }
+    const TEXGEN = {
+        // goresan sikat logam horizontal
+        brushed() {
+            const n1 = pnoise(11, 3, 256), n2 = pnoise(12, 6, 256);
+            return { size: 128, url: pixelTex(256, 256, (x, y) => {
+                const a = n1(x / 256 * 3, y), b = n2(x / 256 * 6, y);
+                return (((a * 0.6 + b * 0.4) - 0.5) * 1.6 + (Math.random() - 0.5) * 0.12) * 0.8;
+            }) };
+        },
+        // serat + lingkar tahun kayu
+        wood() {
+            const nw = pnoise(21, 2, 3), nf = pnoise(22, 2, 96), nb = pnoise(23, 4, 8);
+            return { size: 128, url: pixelTex(256, 256, (x, y) => {
+                const u = x / 256, w = y / 256;
+                const warp = (nw(u * 2, w * 3) - 0.5) * 1.5 + (nb(u * 4, w * 8) - 0.5) * 0.35;
+                const ring = Math.sin((w * 9 + warp) * Math.PI * 2);
+                let v = -Math.pow(Math.max(0, ring), 3) * 0.55;
+                v += (nf(u * 2, w * 96) - 0.5) * 0.55;
+                if (ring < -0.6) v += 0.10;
+                return v;
+            }) };
+        },
+        // pori + tonjolan kulit jeruk
+        peel() {
+            const S = 120;
+            return { size: S, url: texCanvas(2 * S, 2 * S, ctx => {
+                ctx.scale(2, 2);
+                const r = rng(31), cell = 10, n = S / cell;
+                const bump = (px, py) => {
+                    const R = 6.4;
+                    const g = ctx.createRadialGradient(px - R * 0.28, py - R * 0.32, R * 0.05, px, py, R);
+                    g.addColorStop(0, 'rgba(255,255,255,.42)');
+                    g.addColorStop(0.45, 'rgba(255,255,255,.06)');
+                    g.addColorStop(0.8, 'rgba(0,0,0,.10)');
+                    g.addColorStop(1, 'rgba(0,0,0,.34)');
+                    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, R, 0, 7); ctx.fill();
+                    ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.beginPath(); ctx.arc(px + 0.2, py + 0.2, 0.95, 0, 7); ctx.fill();
+                    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(px - 0.5, py - 0.6, 0.5, 0, 7); ctx.fill();
+                };
+                for (let gy = 0; gy < n; gy++) for (let gx = 0; gx < n; gx++) {
+                    const px = (gx + 0.15 + 0.7 * r()) * cell, py = (gy + 0.15 + 0.7 * r()) * cell;
+                    for (let ox = -1; ox <= 1; ox++) for (let oy = -1; oy <= 1; oy++) {
+                        const X = px + ox * S, Y = py + oy * S;
+                        if (X > -8 && X < S + 8 && Y > -8 && Y < S + 8) bump(X, Y);
+                    }
+                }
+            }) };
+        },
+        // butir kulit (sel voronoi: retakan gelap antar sel)
+        leather() {
+            const S = 128, P = 256, N = 10, r = rng(41), pts = [];
+            for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) pts.push([(i + 0.1 + 0.8 * r()) / N, (j + 0.1 + 0.8 * r()) / N]);
+            const nz = pnoise(42, 16, 16);
+            return { size: S, url: pixelTex(P, P, (x, y) => {
+                const u = x / P, v = y / P, ci = Math.floor(u * N), cj = Math.floor(v * N);
+                let f1 = 9, f2 = 9;
+                for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
+                    const ii = ((ci + di) % N + N) % N, jj = ((cj + dj) % N + N) % N, p = pts[jj * N + ii];
+                    const px = p[0] + Math.floor((ci + di) / N), py = p[1] + Math.floor((cj + dj) / N);
+                    const dx = (px - u) * N, dy = (py - v) * N, dd = Math.sqrt(dx * dx + dy * dy);
+                    if (dd < f1) { f2 = f1; f1 = dd; } else if (dd < f2) f2 = dd;
+                }
+                let val = -(1 - Math.min(1, (f2 - f1) / 0.22)) * 0.62;
+                val += (0.5 - Math.min(0.5, f1)) * 0.35;
+                val += (nz(u * 16, v * 16) - 0.5) * 0.18;
+                return val;
+            }) };
+        },
+        // anyaman serat karbon
+        carbon() {
+            return { size: 32, url: pixelTex(64, 64, (x, y) => {
+                const c = 16, cx = Math.floor(x / c), cy = Math.floor(y / c);
+                const u = (x % c) / c, v = (y % c) / c, horiz = ((cx + cy) & 1) === 0;
+                const s = Math.cos(((horiz ? v : u) - 0.5) * Math.PI);
+                return (s > 0.55 ? (s - 0.55) * 0.9 : -(0.55 - s) * 0.75) - (horiz ? 0.02 : 0);
+            }) };
+        },
+        // bintang (khusus latar)
+        stars() {
+            const S = 256;
+            return { size: S, url: texCanvas(S, S, ctx => {
+                const r = rng(51);
+                for (let k = 0; k < 46; k++) {
+                    const x = r() * S, y = r() * S, rad = 0.4 + r() * 1.2, a = 0.35 + r() * 0.6;
+                    ctx.fillStyle = 'rgba(255,255,255,' + a + ')';
+                    ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fill();
+                    if (rad > 1.2) {
+                        const g = ctx.createRadialGradient(x, y, 0, x, y, 5);
+                        g.addColorStop(0, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+                        ctx.fillStyle = g; ctx.fillRect(x - 5, y - 5, 10, 10);
+                    }
+                }
+            }) };
+        }
+    };
+    function tex(kind) { return TEX_CACHE[kind] || (TEX_CACHE[kind] = TEXGEN[kind]()); }
+
+    // ---------- BAHAN KARTU: tiap bahan punya warna berbeda untuk tiap generasi ----------
+    const MATERIALS = {
+        bawaan: { name: 'Bawaan', tex: null, text: '#000000', pal: null },
+        emas:   { name: 'Emas', tex: 'brushed', texOp: 0.45, text: '#2b1700',
+                  pal: { gen1: '#ffd54a', gen2: '#ee9f8a', gen3: '#c3cc55', gen4: '#e9dcc0', gen5: '#d98542', wife: '#f3b3c4', farath: '#faf6ea', root: '#c58a00' } },
+        perak:  { name: 'Perak', tex: 'brushed', texOp: 0.55, text: '#0b1220',
+                  pal: { gen1: '#aebfd4', gen2: '#b6cfbf', gen3: '#dbb7c6', gen4: '#c4bce0', gen5: '#d9c9a6', wife: '#e6c3d3', farath: '#f6f7f9', root: '#8c9aad' } },
+        kayu:   { name: 'Kayu', tex: 'wood', texOp: 0.9, text: '#1d0d02',
+                  pal: { gen1: '#d2955a', gen2: '#c07a3b', gen3: '#bf6b55', gen4: '#a8845c', gen5: '#e0b878', wife: '#d49c84', farath: '#efdcc0', root: '#a9702f' } },
+        metal:  { name: 'Metal', tex: 'brushed', texOp: 0.8, text: '#ffffff',
+                  pal: { gen1: '#7ea0c4', gen2: '#7fb59a', gen3: '#c283a0', gen4: '#9a8cc8', gen5: '#d0a24c', wife: '#cf8fae', farath: '#8f9aa8', root: '#5f6b7a' } },
+        jeruk:  { name: 'Kulit Jeruk', tex: 'peel', texOp: 0.9, text: '#2a1000',
+                  pal: { gen1: '#ff9f1a', gen2: '#f8d230', gen3: '#a8d23a', gen4: '#ff8a93', gen5: '#ee5a3c', wife: '#ffc3ae', farath: '#fff1cf', root: '#e8650f' } },
+        kulit:  { name: 'Kulit', tex: 'leather', texOp: 0.85, text: '#1b0f06', stitch: true,
+                  pal: { gen1: '#c98a4b', gen2: '#9fa862', gen3: '#bf5f47', gen4: '#7f9bb8', gen5: '#d8ad45', wife: '#dcaaa6', farath: '#f1e6d2', root: '#9d6d3f' } },
+        karbon: { name: 'Karbon', tex: 'carbon', texOp: 1, text: '#ffffff',
+                  pal: { gen1: '#2f6fb2', gen2: '#2a8a5c', gen3: '#b02a5c', gen4: '#6a3fb0', gen5: '#b8791a', wife: '#a8426f', farath: '#4b5563', root: '#2a2f3a' } },
+        permata:{ name: 'Permata', tex: null, text: '#ffffff',
+                  pal: { gen1: '#2f6fe0', gen2: '#17a863', gen3: '#d62d63', gen4: '#8a4fe0', gen5: '#f0a010', wife: '#ef8fbb', farath: '#5f7f9f', root: '#1e3a5f' } }
+    };
+    const MODELS = { glossy: 'Glossy', tabung: 'Tabung 3D', timbul: 'Timbul', kaca: 'Kaca', datar: 'Datar' };
+    const ROOT_RAINBOW = [[0, '#ef4444'], [16, '#f97316'], [32, '#eab308'], [48, '#22c55e'], [64, '#06b6d4'], [80, '#3b82f6'], [100, '#a855f7']];
+
+    function mixc(a, b, t) { return d3.interpolateRgb(a, b)(t); }
+    function quadOf(base) {
+        return { light: mixc(base, '#ffffff', 0.6), mid: mixc(base, '#ffffff', 0.25), mid2: base,
+                 dark: d3.color(base).darker(0.75).formatHex(), deep: d3.color(base).darker(1.7).formatHex() };
+    }
+    function baseQuad(mat, t) {
+        if (mat.pal) return quadOf(mat.pal[t]);
+        if (t === 'root') return quadOf('#f59e0b');
+        const q = GEN_REAL[t] || GEN_REAL.gen3;
+        return { light: q.light, mid: q.mid, mid2: q.mid2, dark: q.dark, deep: d3.color(q.dark).darker(1.2).formatHex() };
+    }
+    // profil bayangan vertikal tiap model kartu: [offset%, warna, opacity]
+    function shade(model, q) {
+        switch (model) {
+            case 'tabung': return [[0, q.deep], [7, q.dark], [19, q.mid2], [31, q.light], [40, q.mid], [60, q.mid2], [79, q.dark], [91, q.mid2], [100, q.deep]];
+            case 'timbul': return [[0, q.light], [14, q.mid], [55, q.mid2], [100, q.dark]];
+            case 'kaca':   return [[0, q.light, 0.62], [35, q.mid, 0.5], [70, q.mid2, 0.58], [100, q.dark, 0.78]];
+            case 'datar':  return [[0, q.mid2], [100, q.mid2]];
+            default:       return [[0, q.light], [22, q.mid], [58, q.mid2], [88, q.dark], [100, d3.color(q.dark).darker(0.5).formatHex()]];
+        }
+    }
+    function glossOf(model) {
+        switch (model) {
+            case 'tabung': return [[0, 0], [24, 0.62], [52, 0]];
+            case 'timbul': return [[0, 0.35], [40, 0.08], [70, 0]];
+            case 'kaca':   return [[0, 0.95], [30, 0.35], [70, 0]];
+            case 'datar':  return [[0, 0], [100, 0]];
+            default:       return [[0, 0.88], [32, 0.28], [68, 0]];
+        }
+    }
+
+    // gradien pembuat efek timbul (tepi terang kiri-atas, gelap kanan-bawah)
+    (function () {
+        const bs = defs.append('linearGradient').attr('id', 'bevel-stroke').attr('x1', '0').attr('y1', '0').attr('x2', '1').attr('y2', '1');
+        [[0, '#ffffff', 0.9], [45, '#ffffff', 0], [55, '#000000', 0], [100, '#000000', 0.5]]
+            .forEach(s => bs.append('stop').attr('offset', s[0] + '%').attr('stop-color', s[1]).attr('stop-opacity', s[2]));
+        defs.append('pattern').attr('id', 'tex-card').attr('patternUnits', 'userSpaceOnUse').attr('width', 100).attr('height', 100);
+    })();
+
+    function applyCardLook() {
+        const mat = MATERIALS[TH.mat] || MATERIALS.bawaan;
+        THEME_TYPES.forEach(t => {
+            const rainbow = (t === 'root' && !mat.pal);
+            const g = defs.select('#grad-real-' + t);
+            if (g.empty()) return;
+            g.attr('x1', '0%').attr('y1', '0%').attr('x2', rainbow ? '100%' : '0%').attr('y2', rainbow ? '0%' : '100%');
+            g.selectAll('stop').remove();
+            (rainbow ? ROOT_RAINBOW : shade(TH.model, baseQuad(mat, t))).forEach(s =>
+                g.append('stop').attr('offset', s[0] + '%').attr('stop-color', s[1]).attr('stop-opacity', s[2] == null ? 1 : s[2]));
+            const gl = defs.select('#gloss-' + t);
+            if (!gl.empty()) {
+                gl.selectAll('stop').remove();
+                glossOf(TH.model).forEach(s => gl.append('stop').attr('offset', s[0] + '%').attr('stop-color', '#ffffff').attr('stop-opacity', s[1]));
+            }
+        });
+        // tekstur bahan
+        const pat = defs.select('#tex-card');
+        pat.selectAll('*').remove();
+        if (mat.tex) {
+            const t = tex(mat.tex);
+            pat.attr('width', t.size).attr('height', t.size);
+            pat.append('image').attr('href', t.url).attr('width', t.size).attr('height', t.size);
+        }
+        document.documentElement.style.setProperty('--tex-op', mat.tex ? (mat.texOp == null ? 1 : mat.texOp) : 0);
+        svg.attr('data-model', TH.model).attr('data-stitch', mat.stitch ? 1 : 0);
+    }
+
+    // ---------- WARNA TEKS ----------
+    function lum(hex) { const c = d3.rgb(hex); return (0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b) / 255; }
+    function applyText() {
+        const mat = MATERIALS[TH.mat] || MATERIALS.bawaan;
+        const col = TH.text === 'auto' ? mat.text : TH.text;
+        const rs = document.documentElement.style;
+        rs.setProperty('--card-text', col);
+        if (lum(col) > 0.6) { rs.setProperty('--card-halo', 'rgba(0,0,0,.62)'); rs.setProperty('--card-halo-w', '2.4px'); }
+        else if (TH.mat !== 'bawaan') { rs.setProperty('--card-halo', 'rgba(255,255,255,.5)'); rs.setProperty('--card-halo-w', '1.8px'); }
+        else { rs.setProperty('--card-halo', 'none'); rs.setProperty('--card-halo-w', '0px'); }
+    }
+
+    // ---------- LATAR BELAKANG ----------
+    const BACKGROUNDS = {
+        bawaan: { name: 'Bawaan', chip: 'linear-gradient(135deg,#f3e2c8 50%,#ead0ac 50%)' },
+        putih:  { name: 'Putih', color: '#f1f5f9', grad: 'linear-gradient(160deg,#ffffff,#e6ecf3)', link: 'rgba(15,23,42,.7)' },
+        krem:   { name: 'Kertas', color: '#ecdcb6', grad: 'radial-gradient(ellipse at 50% 40%,#fbf3df,#ecdcb6)', link: 'rgba(70,45,10,.75)' },
+        gelap:  { name: 'Gelap', color: '#0b1220', grad: 'radial-gradient(ellipse at 50% 35%,#27364d,#0b1220 70%)', link: 'rgba(203,213,225,.75)' },
+        malam:  { name: 'Malam Berbintang', color: '#0b1026', grad: 'linear-gradient(180deg,#0b1026,#1b1b4b 55%,#3b1f5e)', tex: 'stars', link: 'rgba(191,219,254,.8)' },
+        hutan:  { name: 'Hutan', color: '#0a2e1a', grad: 'radial-gradient(ellipse at 50% 30%,#1f6b3f,#0a2e1a 75%)', link: 'rgba(187,247,208,.8)' },
+        laut:   { name: 'Laut', color: '#0369a1', grad: 'linear-gradient(180deg,#38bdf8,#0369a1 60%,#082f49)', link: 'rgba(255,255,255,.85)' },
+        senja:  { name: 'Senja', color: '#f472b6', grad: 'linear-gradient(160deg,#fdba74 0%,#f472b6 45%,#6d28d9 100%)', link: 'rgba(255,255,255,.85)' },
+        kayu:   { name: 'Kayu', color: '#a9743f', grad: 'linear-gradient(180deg,#c28a52,#8f5f31)', tex: 'wood', tile: 160, link: 'rgba(40,20,5,.8)' },
+        logam:  { name: 'Logam Sikat', color: '#9aa5b1', grad: 'linear-gradient(135deg,#cfd6de,#8f9aa7 50%,#c4cbd3)', tex: 'brushed', tile: 128, link: 'rgba(15,23,42,.8)' },
+        karbon: { name: 'Karbon', color: '#10131a', grad: 'linear-gradient(160deg,#1c212b,#0a0c10)', tex: 'carbon', tile: 24, link: 'rgba(203,213,225,.8)' },
+        jeruk:  { name: 'Kulit Jeruk', color: '#ff7a18', grad: 'linear-gradient(160deg,#ffb347,#ff7a18)', tex: 'peel', tile: 90, link: 'rgba(70,25,0,.8)' }
+    };
+    function applyBackground() {
+        const b = BACKGROUNDS[TH.bg] || BACKGROUNDS.bawaan, rs = document.documentElement.style;
+        ['--bg-color', '--bg-img', '--bg-size', '--bg-rot', '--bg-grad', '--link-color'].forEach(p => rs.removeProperty(p));
+        if (TH.bg === 'bawaan' || !BACKGROUNDS[TH.bg]) return;
+        rs.setProperty('--bg-color', b.color);
+        rs.setProperty('--bg-grad', b.grad);
+        rs.setProperty('--bg-rot', 'rotate(0deg)');
+        rs.setProperty('--link-color', b.link);
+        if (b.tex) {
+            const t = tex(b.tex), s = (b.tile || t.size) + 'px';
+            rs.setProperty('--bg-img', 'url("' + t.url + '")');
+            rs.setProperty('--bg-size', s + ' ' + s);
+        } else rs.setProperty('--bg-img', 'none');
+    }
+
+    function applyTheme() { applyBackground(); applyCardLook(); applyText(); }
+    function themeSave() { try { localStorage.setItem(THEME_KEY, JSON.stringify(TH)); } catch (e) {} }
+
+    // ---------- PANEL PILIHAN TEMA ----------
+    function thCss(model, mat, t) {
+        const st = shade(model, baseQuad(mat, t)).map(s => {
+            const c = d3.color(s[1]); c.opacity = s[2] == null ? 1 : s[2];
+            return c.formatRgb() + ' ' + s[0] + '%';
+        });
+        return 'linear-gradient(180deg,' + st.join(',') + ')';
+    }
+    function thTexLayer(mat) {
+        if (!mat.tex) return '';
+        return "url('" + tex(mat.tex).url + "') 0 0/34px 34px, ";
+    }
+    function renderThemePanel() {
+        const p = document.getElementById('th-panel');
+        if (!p) return;
+        const keep = p.scrollTop, mat = MATERIALS[TH.mat] || MATERIALS.bawaan;
+        let h = '<div class="th-head"><span>🎨 Tema Tampilan</span><button onclick="toggleThemePanel()" title="Tutup">✕</button></div>';
+
+        h += '<div class="th-sec">Latar belakang</div><div class="th-grid">';
+        Object.keys(BACKGROUNDS).forEach(k => {
+            const b = BACKGROUNDS[k];
+            let pv;
+            if (k === 'bawaan') pv = b.chip;
+            else if (b.tex) pv = "url('" + tex(b.tex).url + "') 0 0/" + Math.min(b.tile || 60, 60) + 'px ' + Math.min(b.tile || 60, 60) + 'px, ' + b.grad;
+            else pv = b.grad;
+            h += '<div class="th-chip' + (TH.bg === k ? ' on' : '') + '" onclick="thSet(\'bg\',\'' + k + '\')"><div class="pv" style="background:' + pv + '"></div>' + b.name + '</div>';
+        });
+        h += '</div>';
+
+        h += '<div class="th-sec">Bahan kartu <span style="font-weight:600;text-transform:none;letter-spacing:0">(tiap generasi beda warna)</span></div><div class="th-grid">';
+        Object.keys(MATERIALS).forEach(k => {
+            const m = MATERIALS[k];
+            h += '<div class="th-chip' + (TH.mat === k ? ' on' : '') + '" onclick="thSet(\'mat\',\'' + k + '\')"><div class="th-pills">';
+            ['gen1', 'gen2', 'gen3', 'gen4', 'gen5'].forEach(t => {
+                h += '<i style="background:' + thTexLayer(m) + thCss(TH.model === 'kaca' ? 'tabung' : TH.model, m, t) + '"></i>';
+            });
+            h += '</div>' + m.name + '</div>';
+        });
+        h += '</div>';
+
+        h += '<div class="th-sec">Model kartu 3D</div><div class="th-grid">';
+        Object.keys(MODELS).forEach(k => {
+            const bgk = k === 'kaca' ? 'background:repeating-conic-gradient(#cbd5e1 0 25%,#fff 0 50%) 0 0/10px 10px;' : '';
+            h += '<div class="th-chip' + (TH.model === k ? ' on' : '') + '" onclick="thSet(\'model\',\'' + k + '\')"><div class="th-pills" style="' + bgk + 'border-radius:8px;padding:0 6px"><i style="height:24px;background:' + thTexLayer(mat) + thCss(k, mat, 'gen1') + '"></i></div>' + MODELS[k] + '</div>';
+        });
+        h += '</div>';
+
+        h += '<div class="th-sec">Warna teks</div><div class="th-colors">';
+        h += '<div class="th-dot' + (TH.text === 'auto' ? ' on' : '') + '" style="background:#fff;font-size:.7rem;display:flex;align-items:center;justify-content:center" title="Otomatis (mengikuti bahan)" onclick="thSet(\'text\',\'auto\')">A</div>';
+        ['#000000', '#ffffff', '#0b1f4d', '#3b1f0a', '#0f3d22', '#6d0f24', '#ffe08a', '#e5e7eb'].forEach(c => {
+            h += '<div class="th-dot' + (TH.text === c ? ' on' : '') + '" style="background:' + c + '" onclick="thSet(\'text\',\'' + c + '\')"></div>';
+        });
+        const cur = (TH.text !== 'auto' && /^#[0-9a-f]{6}$/i.test(TH.text)) ? TH.text : '#000000';
+        h += '<label class="th-dot" style="background:conic-gradient(red,yellow,lime,aqua,blue,magenta,red);position:relative;overflow:hidden" title="Pilih warna sendiri"><input type="color" value="' + cur + '" oninput="thLive(this.value)" onchange="thSet(\'text\',this.value)" style="opacity:0;position:absolute;inset:0;width:100%;height:100%;cursor:pointer"></label>';
+        h += '</div>';
+
+        h += '<div class="th-actions"><button class="btn" onclick="thRandom()">🎲 Acak</button><button class="btn" style="background:#64748b" onclick="thReset()">Kembalikan bawaan</button></div>';
+        p.innerHTML = h;
+        p.scrollTop = keep;
+    }
+    function thSet(k, v) { TH[k] = v; themeSave(); applyTheme(); renderThemePanel(); }
+    function thLive(v) { TH.text = v; applyText(); }
+    function thReset() { TH = Object.assign({}, TH_DEFAULT); themeSave(); applyTheme(); renderThemePanel(); }
+    function thRandom() {
+        const pick = a => a[Math.floor(Math.random() * a.length)];
+        TH.bg = pick(Object.keys(BACKGROUNDS));
+        TH.mat = pick(Object.keys(MATERIALS));
+        TH.model = pick(Object.keys(MODELS));
+        TH.text = 'auto';
+        themeSave(); applyTheme(); renderThemePanel();
+    }
+    function toggleThemePanel() {
+        let p = document.getElementById('th-panel');
+        if (!p) { p = document.createElement('div'); p.id = 'th-panel'; document.body.appendChild(p); }
+        const open = !p.classList.contains('open');
+        p.classList.toggle('open', open);
+        if (open) renderThemePanel();
+    }
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { const p = document.getElementById('th-panel'); if (p) p.classList.remove('open'); }
+    });
+    // data lama / tidak valid di localStorage -> kembali ke bawaan
+    if (!BACKGROUNDS[TH.bg]) TH.bg = 'bawaan';
+    if (!MATERIALS[TH.mat]) TH.mat = 'bawaan';
+    if (!MODELS[TH.model]) TH.model = 'glossy';
+    applyTheme();
 
     const gContainer = svg.append("g");
     // Lapisan aliran harus dibuat SEBELUM node/link pertama: link disisipkan sebelum <g> pertama
@@ -2924,7 +3363,7 @@
             .attr('x2', founderCardWidth)
             .attr('y1', 0)
             .attr('y2', 0)
-            .style('stroke', '#000000')
+            .style('stroke', 'var(--card-text, #000000)')
             .style('stroke-width', 0.8)
             .style('stroke-dasharray', 'none')
             .style('opacity', 1);
@@ -2938,7 +3377,7 @@
             .attr('text-anchor', 'middle')
             .style('font-size', '17px')
             .style('font-weight', '700')
-            .style('fill', '#000000')
+            .style('fill', 'var(--card-text, #000000)')
             .style('text-transform', 'uppercase')
             .text(d => d.data.spouse || '');
 
@@ -2951,7 +3390,7 @@
             .attr('text-anchor', 'middle')
             .style('font-size', '14px')
             .style('font-weight', '600')
-            .style('fill', '#000000')
+            .style('fill', 'var(--card-text, #000000)')
             .text(d => (d.data.spouse_life || '19xx - 2006'));
 
         // ========== TAHUN ISTRI - UMI KULSUM 19xx-2006 - warna sama seperti tahun ISBADAR ==========
@@ -2963,7 +3402,7 @@
             .attr('text-anchor', 'middle')
             .style('font-size', '14px')
             .style('font-weight', '600')
-            .style('fill', '#000000')
+            .style('fill', 'var(--card-text, #000000)')
             .text(d => (d.data.spouse_life || '19xx - 2006'));
 
         // Indicator "+"
@@ -3012,7 +3451,7 @@
             .style('text-transform', 'uppercase')
             .style('font-weight', '900')
             .style('font-size', '20px')
-            .style('fill', '#000000')
+            .style('fill', 'var(--card-text, #000000)')
             .text(d => d.data.name);
 
         // ========== TAHUN UNTUK ROOT ==========
@@ -3024,7 +3463,7 @@
             .attr('text-anchor', 'middle')
             .style('font-size', '14px')
             .style('font-weight', '600')
-            .style('fill', '#000000')
+            .style('fill', 'var(--card-text, #000000)')
             .text(d => formatLifeYears(d.data.life));
 
         // ========== NAMA UNTUK NODE LAINNYA ==========
@@ -3047,7 +3486,7 @@
             .style('text-transform', 'uppercase')
             .style('font-weight', '700')
             .style('font-size', '14px')
-            .style('fill', '#000000')
+            .style('fill', 'var(--card-text, #000000)')
             .text(d => {
                 let lifeStr = d.data.life ? ` (${formatLifeYears(d.data.life)})` : '';
                 if (isFarathNode(d)) {
@@ -3082,7 +3521,7 @@
             .style('text-transform', 'uppercase')
             .style('font-weight', d => isChildOrderLabel(d) ? '600' : '700')
             .style('font-size', d => isChildOrderLabel(d) ? '8px' : '13px')
-            .style('fill', '#000000')
+            .style('fill', 'var(--card-text, #000000)')
             .text(d => {
                 if (d.data.name === 'ISBADAR bin BURNAWI') return '';
                 if (isFarathNode(d)) return ''; // sudah digabung ke baris nama
@@ -3115,7 +3554,7 @@
             .attr('text-anchor', 'start')
             .style('font-weight', '400')
             .style('font-size', '9px')
-            .style('fill', '#000000')
+            .style('fill', 'var(--card-text, #000000)')
             .style('font-style', 'italic')
             .text(d => isFarathNode(d) ? '' : (d.data.address || ''))
             .each(function(d) {
@@ -3143,7 +3582,7 @@
             .style('text-transform', 'uppercase')
             .style('font-size', '12px')
             .style('font-weight', '500')
-            .style('fill', '#000000')
+            .style('fill', 'var(--card-text, #000000)')
             .text(d => {
                 if (isFarathNode(d)) return '';
                 if (!hasSpouseLine(d)) return '';
