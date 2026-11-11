@@ -230,7 +230,6 @@
             transform: translateY(0);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
-        svg.lod-lite text { display: none; }
         #chart-container {
             width: 100vw;
             height: 100vh;
@@ -1077,40 +1076,6 @@
             filter: drop-shadow(0 3px 7px rgba(185,28,28,0.45)) !important;
         }
 
-        /* =====================================================================
-           MODE RINGAN UNTUK HP / LAYAR SENTUH
-           Aturan & tampilan tetap sama; hanya efek yang berat bagi GPU HP dimatikan supaya
-           geser dan pinch-zoom lancar:
-           - will-change per kartu (ratusan lapisan GPU) -> dimatikan
-           - bayangan (drop-shadow) & animasi hover pada kartu -> dimatikan. Di layar sentuh,
-             jari yang menempel saat pinch dianggap "hover" dan memicu efek berat ini.
-           - anti-aliasing murah untuk bentuk, garis, dan teks
-           ===================================================================== */
-        @media (pointer: coarse), (max-width: 640px) {
-            .node .node-shape,
-            .node .node-shape-real {
-                will-change: auto !important;
-                transition: none !important;
-                filter: none !important;
-            }
-            .node:hover .node-shape,
-            .node:hover .node-shape-real {
-                transform: none !important;
-                filter: none !important;
-            }
-            .deceased-flower-badge {
-                filter: none !important;
-            }
-            .node-shape-real path,
-            .node-shape-real rect,
-            path.link {
-                shape-rendering: optimizeSpeed;
-            }
-            .node text {
-                text-rendering: optimizeSpeed;
-            }
-        }
-
         </style>
 </head>
 <body>
@@ -1936,7 +1901,7 @@
         g.append('path')
             .attr('transform', 'translate(1.5,2)')
             .attr('d', shapeBodyPath(w, h, r, rLeft))
-            .attr('fill', '#000').attr('fill-opacity', 0.09);
+            .attr('fill', '#000').attr('opacity', 0.09);
 
         // body utama glossy POLOS - gradasi full
         g.append('path')
@@ -2247,21 +2212,9 @@
         .on("start", (event) => { if (event.sourceEvent) minimizeGenLegend(); })
         .on("zoom", (event) => {
             gContainer.attr("transform", event.transform);
-            if (lastZoomK !== null && Math.abs(event.transform.k - lastZoomK) > 1e-4) {
-                lastScaleChange = performance.now();
-                clearTimeout(liteTimer);
-                liteTimer = setTimeout(scheduleCull, 200); // pulihkan teks setelah zoom berhenti
-            }
-            lastZoomK = event.transform.k;
-            scheduleCull();
         });
 
     svg.call(zoom);
-    let cullFrame = 0;
-    let cullBusyUntil = 0;
-    let lastZoomK = null;        // skala terakhir (untuk mendeteksi pinch/zoom, bukan sekadar geser)
-    let lastScaleChange = 0;     // waktu terakhir skala berubah
-    let liteTimer = null;
     // Jaga-jaga untuk tap singkat yang tidak memicu event zoom "start" (mis. klik cepat tanpa geser)
     svg.on("pointerdown.genlegend", () => { minimizeGenLegend(); });
 
@@ -2349,58 +2302,6 @@
     }
 
     resetToInitialState();
-
-    // ============================================================
-    // PENGHEMAT TENAGA SAAT DIGESER: kartu & garis yang jauh di luar layar disembunyikan
-    // sementara (display:none) supaya HP tidak menggambar ribuan elemen yang tidak terlihat.
-    // Saat buka/tutup node (animasi), semuanya ditampilkan penuh dulu agar animasi tetap mulus.
-    // ============================================================
-    function cullNow() {
-        cullFrame = 0;
-        if (performance.now() < cullBusyUntil) return;
-        const t = d3.zoomTransform(svg.node());
-        const W = window.innerWidth, H = window.innerHeight;
-        const scaling = (performance.now() - lastScaleChange < 200);
-        const M = scaling ? 60 : 200;   // margin lebih kecil saat zoom
-        let onScreen = 0;
-        gContainer.selectAll('g.node').each(function (d) {
-            const { w, h } = cardDims(d);
-            const sx = t.x + t.k * d.y, sy = t.y + t.k * d.x;
-            if (sx + w * t.k > 0 && sx < W && sy + (h / 2) * t.k > 0 && sy - (h / 2) * t.k < H) onScreen++;
-            const vis = sx + (w + 50) * t.k > -M && sx - 10 * t.k < W + M &&
-                        sy + (h / 2 + 30) * t.k > -M && sy - (h / 2 + 30) * t.k < H + M;
-            if (!!this._culled === vis) { this._culled = !vis; this.style.display = vis ? '' : 'none'; }
-        });
-        // Saat pinch/zoom dan banyak kartu terlihat: teks disembunyikan sementara (teks adalah
-        // bagian paling berat digambar ulang tiap perubahan skala). Muncul lagi 0,2 detik setelah berhenti.
-        svg.classed('lod-lite', scaling && onScreen > 10);
-        gContainer.selectAll('path.link').each(function (l) {
-            const a = l.source, b = l.target;
-            const x1 = t.x + t.k * (a.y + cardDims(a).w), x2 = t.x + t.k * b.y;
-            const y1 = t.y + t.k * a.x, y2 = t.y + t.k * b.x;
-            const vis = Math.max(x1, x2) > -M && Math.min(x1, x2) < W + M &&
-                        Math.max(y1, y2) > -M && Math.min(y1, y2) < H + M;
-            if (!!this._culled === vis) { this._culled = !vis; this.style.display = vis ? '' : 'none'; }
-        });
-    }
-    function scheduleCull() {
-        if (!cullFrame) cullFrame = requestAnimationFrame(cullNow);
-    }
-    function showAllCulled() {
-        gContainer.selectAll('g.node, path.link').each(function () {
-            if (this._culled) { this._culled = false; this.style.display = ''; }
-        });
-    }
-    const _updateAsli = update;
-    update = function (source) {
-        cullBusyUntil = performance.now() + duration + 200;
-        svg.classed('lod-lite', false);      // teks harus tampil supaya pengukuran lebar teks akurat
-        lastScaleChange = 0;
-        showAllCulled();
-        _updateAsli(source);
-        setTimeout(scheduleCull, duration + 250);
-    };
-    window.addEventListener('resize', scheduleCull);
 
     function computeVisibleBBox() {
         const list = root.descendants();
@@ -2686,7 +2587,7 @@
                 return `translate(${w - 2},${-h / 2 - 2}) scale(1.15)`;
             })
             .style('pointer-events', 'none')
-            .style('filter', window.matchMedia('(pointer: coarse)').matches ? 'none' : 'drop-shadow(0 3px 7px rgba(185,28,28,0.45))')
+            .style('filter', 'drop-shadow(0 3px 7px rgba(185,28,28,0.45))')
             .raise();
 
         // ========== TANDA HATI ❤️ UNTUK NODE FARATH (pengganti badge bunga) ==========
@@ -2952,18 +2853,16 @@
         // ========== NOMOR URUT ANAK (kiri-tengah kartu) + GARIS PEMBATAS ==========
         nodeEnter.filter(hasChildNo).each(function(d) {
             const { h } = cardDims(d);
-            const g = d3.select(this);
-            g.append('line')
+            const g = d3.select(this).append('g')
                 .attr('class', 'child-no')
-                .style('pointer-events', 'none')
+                .style('pointer-events', 'none');
+            g.append('line')
                 .attr('x1', NUM_W).attr('x2', NUM_W)
                 .attr('y1', -h / 2 + 8).attr('y2', h / 2 - 8)
                 .style('stroke', '#000000')
                 .style('stroke-width', 1)
                 .style('opacity', 0.55);
             g.append('text')
-                .attr('class', 'child-no')
-                .style('pointer-events', 'none')
                 .attr('x', NUM_W / 2 + 1)
                 .attr('y', 1)
                 .attr('text-anchor', 'middle')
