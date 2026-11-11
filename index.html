@@ -1923,8 +1923,7 @@
     }
 
     // ====== REALISTIC GLOSSY BATTERY - TANPA GELANG & TANPA KOTAK BAWAH (final polos) ======
-    // Pojok KANAN pakai radius normal (r), pojok KIRI radiusnya dikurangi banyak
-    // sehingga terlihat hampir siku tapi tetap sedikit radial.
+    // Pojok KANAN & KIRI sama (hampir siku, sedikit radial) -> kartu simetris.
     function shapeBodyPath(w, h, rRight, rLeft) {
         return `M ${rLeft},${-h / 2} ` +
             `L ${w - rRight},${-h / 2} Q ${w},${-h / 2} ${w},${-h / 2 + rRight} ` +
@@ -1936,31 +1935,27 @@
     function drawRealisticBattery(g, w, h, type){
         const r = Math.min(22, Math.round(h*0.42)); // radius pojok KANAN - tetap seperti sebelumnya
         const rLeft = Math.max(2, Math.round(r * 0.15)); // radius pojok KIRI - dikurangi banyak, hampir siku
-        const nubBaseW = 8;
-        const nubBaseH = h*0.68;
-        const nubW = 18;
-        const nubH = h*0.48;
 
         // shadow halus
         g.append('path')
             .attr('transform', 'translate(1.5,2)')
-            .attr('d', shapeBodyPath(w, h, r, rLeft))
+            .attr('d', shapeBodyPath(w, h, rLeft, rLeft))
             .attr('fill', '#000').attr('opacity', 0.09);
 
         // body utama glossy POLOS - gradasi full
         g.append('path')
             .attr('class', 'real-body')
-            .attr('d', shapeBodyPath(w, h, r, rLeft))
+            .attr('d', shapeBodyPath(w, h, rLeft, rLeft))
             .attr('fill', `url(#grad-real-${type})`)
             .attr('stroke', '#1e293b').attr('stroke-width', 0.9).attr('stroke-opacity', 0.18);
 
         // ===== tekstur bahan + hiasan tiap model (tampil/sembunyi lewat CSS: data-model / data-stitch di <svg>) =====
-        const bodyD = shapeBodyPath(w, h, r, rLeft);
+        const bodyD = shapeBodyPath(w, h, rLeft, rLeft);
         g.append('path').attr('class', 'card-tex').attr('d', bodyD)
             .attr('fill', 'url(#tex-card)').attr('pointer-events', 'none');
         // setengah tinggi badan pada posisi x (menghormati sudut membulat)
         const halfAt = x => {
-            if (x > w - r) { const dx = x - (w - r); return h / 2 - r + Math.sqrt(Math.max(0, r * r - dx * dx)); }
+            if (x > w - rLeft) { const dx = x - (w - rLeft); return h / 2 - rLeft + Math.sqrt(Math.max(0, rLeft * rLeft - dx * dx)); }
             if (x < rLeft) { const dx = rLeft - x; return h / 2 - rLeft + Math.sqrt(Math.max(0, rLeft * rLeft - dx * dx)); }
             return h / 2;
         };
@@ -1974,14 +1969,14 @@
         });
         // timbul: tepi bevel (terang kiri-atas, gelap kanan-bawah)
         g.append('path').attr('class', 'deco deco-timbul')
-            .attr('d', shapeBodyPath(w - 3, h - 3, Math.max(2, r - 1.5), Math.max(1, rLeft - 0.5)))
+            .attr('d', shapeBodyPath(w - 3, h - 3, Math.max(1, rLeft - 0.5), Math.max(1, rLeft - 0.5)))
             .attr('transform', 'translate(1.5,0)').attr('fill', 'none')
             .attr('stroke', 'url(#bevel-stroke)').attr('stroke-width', 2.6);
         // kaca: pinggir berkilau
         g.append('path').attr('class', 'deco deco-kaca').attr('d', bodyD).attr('fill', 'none')
             .attr('stroke', 'rgba(255,255,255,.8)').attr('stroke-width', 1.4);
         // jahitan (bahan kulit)
-        const stD = shapeBodyPath(w - 9, h - 9, Math.max(3, r - 4.5), 2);
+        const stD = shapeBodyPath(w - 9, h - 9, 2, 2);
         g.append('path').attr('class', 'deco deco-stitch').attr('d', stD).attr('transform', 'translate(4.5,1)')
             .attr('fill', 'none').attr('stroke', '#000').attr('stroke-opacity', 0.3).attr('stroke-width', 1.2).attr('stroke-dasharray', '4 3');
         g.append('path').attr('class', 'deco deco-stitch').attr('d', stD).attr('transform', 'translate(4.5,0)')
@@ -1993,20 +1988,7 @@
             .attr('width', w - r*1.2).attr('height', h*0.36).attr('rx', r*0.5)
             .attr('fill', `url(#gloss-${type})`).attr('pointer-events','none');
 
-        // metal base
-        g.append('rect')
-            .attr('x', w).attr('y', -nubBaseH/2)
-            .attr('width', nubBaseW).attr('height', nubBaseH).attr('rx', 2.2)
-            .attr('fill','url(#grad-metal-base)').attr('stroke','#64748b').attr('stroke-width',0.6);
-
-        // nub terminal
-        const nubG = g.append('g').attr('transform',`translate(${w+nubBaseW},0)`);
-        nubG.append('rect')
-            .attr('x',0).attr('y',-nubH/2).attr('width',nubW).attr('height',nubH).attr('rx',5.5)
-            .attr('fill','url(#grad-metal-nub)').attr('stroke','#334155').attr('stroke-width',0.7);
-        nubG.append('rect')
-            .attr('x',2.5).attr('y',-nubH/2+2.5).attr('width',nubW-5).attr('height',nubH*0.38).attr('rx',2.5)
-            .attr('fill','#ffffff').attr('opacity',0.58).attr('pointer-events','none');
+        // (ujung kanan kini digambar oleh drawLidah(): cermin persis lidah kiri)
     }
 
 
@@ -2905,12 +2887,13 @@
     // separation() dari tinggi kartu ASLI kedua node yang bertetangga, sehingga
     // ruang kosong (gap) antar tepi kartu selalu sama besar untuk semua pasangan
     // node, berapa pun jumlah barisnya.
+    const GEN_GAP = 170; // jarak horizontal antar generasi (diperlebar: lidah kiri + lidah kanan tiap kartu ~50px)
     const NODE_BASE_UNIT = cardHeight + extraNameHeight + 4; // satuan dasar yang dipakai nodeSize()
     const SIBLING_EDGE_GAP = 14;   // jarak kosong antar tepi kartu untuk anak dari orang tua yang sama
     const COUSIN_EXTRA_GAP = 22;   // tambahan jarak antar kelompok keluarga berbeda (sepupu/cabang lain)
 
     const tree = d3.tree()
-        .nodeSize([NODE_BASE_UNIT, cardWidth + 100])
+        .nodeSize([NODE_BASE_UNIT, cardWidth + GEN_GAP])
         .separation((a, b) => {
             const ha = cardDims(a).h;
             const hb = cardDims(b).h;
@@ -3166,7 +3149,7 @@
             if (d.depth === 0) {
                 d.y = 0;
             } else {
-                d.y = (founderCardWidth + founderChildGap) + (d.depth - 1) * (cardWidth + 100);
+                d.y = (founderCardWidth + founderChildGap) + (d.depth - 1) * (cardWidth + GEN_GAP);
             }
         });
 
@@ -3240,18 +3223,28 @@
                 }
             });
 
-        // ========== LIDAH NOMOR ANAK - FLASHDISK METAL (di kiri kartu, terselip di bawah kartu) ==========
-        // Nomor = urutan anak di bawah orang tuanya. Root & kotak pasangan tidak diberi lidah.
-        nodeEnter.filter(d => d.depth > 0 && d.data.type !== 'wife' && d.data._no != null).each(function(d) {
-            const g = d3.select(this).append('g').attr('class', 'lidah-anak');
-            const { h } = cardDims(d);
-            const no = d.data._no;
+        // ========== LIDAH FLASHDISK METAL: KIRI (nomor anak) & KANAN (penanda keturunan) ==========
+        // Ujung kanan = cermin persis ujung kiri. Kartu yang punya anak/keturunan -> lengkap (colokan + badan);
+        // kartu tanpa keturunan -> colokan kecilnya dihilangkan, tinggal badan. Ini menggantikan tanda + / -.
+        const colorTypeOf = d => {
             let type = d.data.type;
-            if (!['gen1','gen2','gen3','gen4','gen5','wife','root'].includes(type)) type = 'gen3';
+            if (d.data.name === 'ISBADAR bin BURNAWI' || type === 'root') type = 'root';
+            else if (!['gen1','gen2','gen3','gen4','gen5','wife','root'].includes(type)) type = 'gen3';
             if (isFarathNode(d)) type = 'farath';
+            return type;
+        };
+        const hasLeftLidah = d => d.depth > 0 && d.data.type !== 'wife' && d.data._no != null;
+
+        function drawLidah(parentSel, d, o) {
+            const { no, withConn, mirror } = o;
+            const g = parentSel.append('g').attr('class', mirror ? 'lidah-keturunan' : 'lidah-anak');
+            const { w, h } = cardDims(d);
+            if (mirror) g.attr('transform', `translate(${w},0) scale(-1,1)`);
+            const type = colorTypeOf(d);
+            const sx = mirror ? 1 : -1;                 // arah bayangan tetap sama di layar
 
             const CONN_W = 16;                          // colokan USB (logam polos)
-            const BODY_VIS = no >= 10 ? 36 : 30;        // badan flashdisk yang tampak
+            const BODY_VIS = (no != null && no >= 10) ? 36 : 30;   // badan flashdisk yang tampak
             const HIDE = 16;                            // bagian yang terselip di bawah kartu
             const th = Math.max(30, Math.min(46, h * 0.64));   // tinggi badan
             const ch = th * 0.6;                        // tinggi colokan
@@ -3260,25 +3253,27 @@
 
             // bayangan halus
             g.append('rect').attr('x', bx).attr('y', -th/2).attr('width', BODY_VIS + HIDE).attr('height', th)
-                .attr('rx', 5).attr('transform', 'translate(-1,2)').attr('fill', '#000').attr('opacity', 0.14);
-            g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', CONN_W + 2).attr('height', ch)
-                .attr('rx', 1.5).attr('transform', 'translate(-1,2)').attr('fill', '#000').attr('opacity', 0.14);
+                .attr('rx', 5).attr('transform', `translate(${sx},2)`).attr('fill', '#000').attr('opacity', 0.14);
+            if (withConn) {
+                g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', CONN_W + 2).attr('height', ch)
+                    .attr('rx', 1.5).attr('transform', `translate(${sx},2)`).attr('fill', '#000').attr('opacity', 0.14);
 
-            // colokan USB-A dari logam
-            g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', CONN_W + 3).attr('height', ch).attr('rx', 1.8)
-                .attr('fill', 'url(#grad-usb-conn)').attr('stroke', '#475569').attr('stroke-width', 0.8);
-            // lubang kecil pengunci di cangkang colokan
-            [-1, 1].forEach(k => {
-                g.append('rect').attr('x', x0 + 7).attr('y', k * ch * 0.22 - 1.8)
-                    .attr('width', 4).attr('height', 3.6).attr('rx', 0.8)
-                    .attr('fill', '#1e293b').attr('opacity', 0.85);
-            });
-            // bibir ujung colokan
-            g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', 1.6).attr('height', ch).attr('rx', 0.8)
-                .attr('fill', '#334155').attr('opacity', 0.45);
-            // kilau colokan
-            g.append('rect').attr('x', x0 + 2).attr('y', -ch/2 + 1.2).attr('width', CONN_W - 3).attr('height', ch * 0.26).attr('rx', 1.2)
-                .attr('fill', '#fff').attr('opacity', 0.7).attr('pointer-events', 'none');
+                // colokan USB-A dari logam
+                g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', CONN_W + 3).attr('height', ch).attr('rx', 1.8)
+                    .attr('fill', 'url(#grad-usb-conn)').attr('stroke', '#475569').attr('stroke-width', 0.8);
+                // lubang kecil pengunci di cangkang colokan
+                [-1, 1].forEach(k => {
+                    g.append('rect').attr('x', x0 + 7).attr('y', k * ch * 0.22 - 1.8)
+                        .attr('width', 4).attr('height', 3.6).attr('rx', 0.8)
+                        .attr('fill', '#1e293b').attr('opacity', 0.85);
+                });
+                // bibir ujung colokan
+                g.append('rect').attr('x', x0).attr('y', -ch/2).attr('width', 1.6).attr('height', ch).attr('rx', 0.8)
+                    .attr('fill', '#334155').attr('opacity', 0.45);
+                // kilau colokan
+                g.append('rect').attr('x', x0 + 2).attr('y', -ch/2 + 1.2).attr('width', CONN_W - 3).attr('height', ch * 0.26).attr('rx', 1.2)
+                    .attr('fill', '#fff').attr('opacity', 0.7).attr('pointer-events', 'none');
+            }
 
             // badan flashdisk dari logam
             g.append('rect').attr('x', bx).attr('y', -th/2).attr('width', BODY_VIS + HIDE).attr('height', th).attr('rx', 5)
@@ -3296,18 +3291,32 @@
             g.append('rect').attr('x', bx + 4).attr('y', -th/2 + 2).attr('width', BODY_VIS - 6).attr('height', th * 0.3).attr('rx', 3.5)
                 .attr('fill', '#fff').attr('opacity', 0.5).attr('pointer-events', 'none');
 
-            // nomor (efek ukiran: bayangan terang tipis di bawah huruf gelap)
-            const fs = no >= 10 ? '14px' : '17px';
-            const cx = bx + 3.4 + (BODY_VIS - 3.4) / 2 - 1;
-            [{dy: 0.8, fill: '#ffffff', op: 0.75}, {dy: 0, fill: '#0f172a', op: 1}].forEach(t => {
-                g.append('text')
-                    .attr('x', cx).attr('y', t.dy).attr('dy', '0.35em')
-                    .attr('text-anchor', 'middle')
-                    .style('font-weight', '800').style('font-size', fs)
-                    .style('fill', t.fill).style('opacity', t.op)
-                    .style('pointer-events', 'none').style('user-select', 'none')
-                    .text(no);
-            });
+            // nomor (hanya lidah kiri; efek ukiran: bayangan terang tipis di bawah huruf gelap)
+            if (no != null) {
+                const fs = no >= 10 ? '14px' : '17px';
+                const cx = bx + 3.4 + (BODY_VIS - 3.4) / 2 - 1;
+                [{dy: 0.8, fill: '#ffffff', op: 0.75}, {dy: 0, fill: '#0f172a', op: 1}].forEach(t => {
+                    g.append('text')
+                        .attr('x', cx).attr('y', t.dy).attr('dy', '0.35em')
+                        .attr('text-anchor', 'middle')
+                        .style('font-weight', '800').style('font-size', fs)
+                        .style('fill', t.fill).style('opacity', t.op)
+                        .style('pointer-events', 'none').style('user-select', 'none')
+                        .text(no);
+                });
+            }
+        }
+
+        // Lidah KIRI: nomor anak. Root & kotak pasangan tidak diberi lidah kiri.
+        nodeEnter.filter(hasLeftLidah).each(function(d) {
+            drawLidah(d3.select(this), d, { no: d.data._no, withConn: true, mirror: false });
+        });
+
+        // Lidah KANAN: cermin lidah kiri. Punya keturunan -> lengkap; tanpa keturunan -> tanpa colokan kecil.
+        // Kartu yang tidak punya lidah kiri (root / pasangan) hanya diberi lidah kanan bila punya keturunan.
+        nodeEnter.filter(d => !!(d.children || d._children) || hasLeftLidah(d)).each(function(d) {
+            const hasKids = !!(d.children || d._children);
+            drawLidah(d3.select(this), d, { no: null, withConn: hasKids, mirror: true });
         });
 
                         // Shape node - SEMUA pakai model glossy realistic TANPA GELANG & TANPA KOTAK BAWAH (root juga sama)
@@ -3405,19 +3414,7 @@
             .style('fill', 'var(--card-text, #000000)')
             .text(d => (d.data.spouse_life || '19xx - 2006'));
 
-        // Indicator "+"
-        const toggleIndicator = nodeEnter.append('g')
-            .attr('class', 'toggle-indicator')
-            .attr('transform', d => {
-                const { w } = cardDims(d);
-                return `translate(${w + 10},0)`;
-            })
-            .style('display', d => (d.children || d._children) ? null : 'none');
-        toggleIndicator.append('circle')
-            .attr('r', 9);
-        toggleIndicator.append('path')
-            .attr('class', 'toggle-icon')
-            .attr('d', d => d._children ? 'M -4,0 L 4,0 M 0,-4 L 0,4' : 'M -4,0 L 4,0');
+        // (tanda +/- diganti lidah kanan: lengkap = punya keturunan, tanpa colokan = tidak punya)
 
         const hasSpouseLine = d => {
             if (!d.data.spouse) return false;
@@ -3601,11 +3598,6 @@
         nodeUpdate.transition()
             .duration(duration)
             .attr("transform", d => `translate(${d.y},${d.x})`);
-
-        nodeUpdate.select('.toggle-indicator')
-            .style('display', d => (d.children || d._children) ? null : 'none');
-        nodeUpdate.select('.toggle-icon')
-            .attr('d', d => d._children ? 'M -4,0 L 4,0 M 0,-4 L 0,4' : 'M -4,0 L 4,0');
 
         const nodeExit = node.exit().transition()
             .duration(duration)
