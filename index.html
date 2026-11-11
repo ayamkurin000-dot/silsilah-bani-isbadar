@@ -2030,7 +2030,7 @@
         }
 
         if (type === 'root') {
-            // KARTU PUNCAK: tabung pelangi dengan selubung silinder + 2 gelang hijau muda di tiap ujung
+            // KARTU PUNCAK: tabung pelangi dengan selubung silinder + 2 gelang hijau muda di ujung kanan (kiri tanpa gelang)
             g.append('path').attr('d', bodyD).attr('fill', 'url(#grad-tube-cyl)').attr('pointer-events', 'none');
             g.append('path').attr('d', bodyD).attr('fill', 'url(#grad-tube-ends)').attr('pointer-events', 'none');
             g.append('rect').attr('x', 46).attr('y', -h / 2 + 7).attr('width', w - 92).attr('height', 5).attr('rx', 2.5)
@@ -2040,8 +2040,7 @@
             const A = 22, B = 11, GAP = 3, EDGE = 3, PO = 5;
             ringUse('hijaumuda', A, PO, w - EDGE - A, 'r');                 // ujung kanan: lebar di tepi, ramping di dalam
             ringUse('hijaumuda', B, PO, w - EDGE - A - GAP - B, 'r');
-            ringUse('hijaumuda', A, PO, EDGE, 'l');                         // ujung kiri: cermin
-            ringUse('hijaumuda', B, PO, EDGE + A + GAP, 'l');
+            // gelang ujung kiri kartu ISBADAR dihilangkan
         } else if (ring) {
             ringUse(ring, 15, 3.2, w - 19, 'r');
         }
@@ -2358,9 +2357,9 @@
     // Warna kartu = gradien di <defs> (grad-real-*), jadi ganti tema cukup mengganti isi gradien:
     // semua kartu yang sudah tampil langsung ikut berubah tanpa digambar ulang.
     // =====================================================================
-    const THEME_KEY = 'silsilah_tema_v1';
+    const THEME_KEY = 'silsilah_tema_v2';
     const THEME_TYPES = ['gen1', 'gen2', 'gen3', 'gen4', 'gen5', 'wife', 'farath', 'root'];
-    const TH_DEFAULT = { bg: 'bawaan', mat: 'bawaan', model: 'glossy', text: 'auto' };
+    const TH_DEFAULT = { bg: 'hitam', mat: 'bawaan', model: 'tabung', text: '#000000' };
     let TH = Object.assign({}, TH_DEFAULT);
     try { Object.assign(TH, JSON.parse(localStorage.getItem(THEME_KEY) || '{}')); } catch (e) {}
 
