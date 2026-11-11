@@ -1109,6 +1109,23 @@
             background: rgba(255,255,255,.97); border-radius: 14px; box-shadow: 0 12px 40px rgba(15,23,42,.35);
             z-index: 99999; padding: 12px 14px 14px; font-size: .78rem; color: #1e293b; display: none; -webkit-overflow-scrolling: touch; }
         #th-panel.open { display: block; }
+        #th-pw { position: fixed; inset: 0; z-index: 100000; display: none; align-items: center; justify-content: center;
+            background: rgba(15,23,42,.55); padding: 16px; }
+        #th-pw.open { display: flex; }
+        #th-pw .box { background: #fff; border-radius: 16px; padding: 18px 18px 16px; width: 100%; max-width: 300px;
+            box-shadow: 0 16px 48px rgba(15,23,42,.45); text-align: center; }
+        #th-pw .ttl { font-weight: 800; font-size: .95rem; color: #1e293b; }
+        #th-pw .sub { font-size: .72rem; color: #64748b; margin: 4px 0 12px; }
+        #th-pw input { width: 100%; box-sizing: border-box; padding: 10px 12px; font-size: 16px; text-align: center; letter-spacing: .4em;
+            border: 2px solid #cbd5e1; border-radius: 10px; outline: none; }
+        #th-pw input:focus { border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,.2); }
+        #th-pw .err { min-height: 1.1em; margin: 6px 0 2px; font-size: .72rem; font-weight: 700; color: #dc2626; }
+        #th-pw .row { display: flex; gap: 8px; margin-top: 6px; }
+        #th-pw .row button { flex: 1; padding: 9px; border: none; border-radius: 9px; font-weight: 800; font-size: .8rem; cursor: pointer; }
+        #th-pw .ok { background: linear-gradient(135deg, #a78bfa, #6d28d9); color: #fff; }
+        #th-pw .no { background: #f1f5f9; color: #475569; }
+        #th-pw .box.salah { animation: th-pw-goyang .35s; }
+        @keyframes th-pw-goyang { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-9px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(4px); } }
         #th-panel .th-head { display: flex; align-items: center; justify-content: space-between; font-weight: 800; font-size: .95rem; }
         #th-panel .th-head button { background: #f1f5f9; border: none; border-radius: 8px; width: 28px; height: 28px; font-weight: 800; cursor: pointer; color: #475569; }
         #th-panel .th-sec { font-weight: 800; font-size: .68rem; letter-spacing: .06em; color: #64748b; margin: 13px 0 6px; text-transform: uppercase; }
@@ -2393,9 +2410,9 @@
     // Warna kartu = gradien di <defs> (grad-real-*), jadi ganti tema cukup mengganti isi gradien:
     // semua kartu yang sudah tampil langsung ikut berubah tanpa digambar ulang.
     // =====================================================================
-    const THEME_KEY = 'silsilah_tema_v2';
+    const THEME_KEY = 'silsilah_tema_v3';
     const THEME_TYPES = ['gen1', 'gen2', 'gen3', 'gen4', 'gen5', 'wife', 'farath', 'root'];
-    const TH_DEFAULT = { bg: 'hitam', mat: 'bawaan', model: 'tabung', text: '#000000', anim: 'glow' };
+    const TH_DEFAULT = { bg: 'hitam', mat: 'bawaan', model: 'tabung', text: '#000000', anim: 'getar' };
     let TH = Object.assign({}, TH_DEFAULT);
     try { Object.assign(TH, JSON.parse(localStorage.getItem(THEME_KEY) || '{}')); } catch (e) {}
 
@@ -2782,21 +2799,56 @@
         TH.text = 'auto';
         themeSave(); applyTheme(); renderThemePanel();
     }
+    // Panel tema dikunci password. Setelah benar, panel tetap terbuka-tutup bebas sampai halaman dimuat ulang.
+    // (Catatan: ini situs statis, jadi pengaman ini hanya menahan pengguna biasa, bukan keamanan sungguhan.)
+    const THEME_PW = '21';
+    let themeUnlocked = false;
+    function askThemePassword(onOk) {
+        let m = document.getElementById('th-pw');
+        if (!m) {
+            m = document.createElement('div'); m.id = 'th-pw';
+            m.innerHTML = '<div class="box"><div class="ttl">🔒 Pengaturan Tema</div><div class="sub">Masukkan password untuk membuka</div>' +
+                '<input type="password" inputmode="numeric" autocomplete="off" maxlength="12" aria-label="Password">' +
+                '<div class="err"></div><div class="row"><button class="no" type="button">Batal</button><button class="ok" type="button">Buka</button></div></div>';
+            document.body.appendChild(m);
+        }
+        const box = m.querySelector('.box'), inp = m.querySelector('input'), err = m.querySelector('.err');
+        const close = () => { m.classList.remove('open'); inp.blur(); };
+        const submit = () => {
+            if (inp.value.trim() === THEME_PW) { close(); onOk(); return; }
+            err.textContent = 'Password salah';
+            inp.value = '';
+            box.classList.remove('salah'); void box.offsetWidth; box.classList.add('salah');
+            inp.focus();
+        };
+        m.querySelector('.ok').onclick = submit;
+        m.querySelector('.no').onclick = close;
+        m.onclick = e => { if (e.target === m) close(); };
+        inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); submit(); } else if (e.key === 'Escape') close(); else err.textContent = ''; };
+        inp.value = ''; err.textContent = '';
+        m.classList.add('open');
+        setTimeout(() => inp.focus(), 50);
+    }
     function toggleThemePanel() {
         let p = document.getElementById('th-panel');
-        if (!p) { p = document.createElement('div'); p.id = 'th-panel'; document.body.appendChild(p); }
-        const open = !p.classList.contains('open');
-        p.classList.toggle('open', open);
-        if (open) renderThemePanel();
+        if (p && p.classList.contains('open')) { p.classList.remove('open'); return; }
+        const bukaPanel = () => {
+            let q = document.getElementById('th-panel');
+            if (!q) { q = document.createElement('div'); q.id = 'th-panel'; document.body.appendChild(q); }
+            q.classList.add('open');
+            renderThemePanel();
+        };
+        if (themeUnlocked) bukaPanel();
+        else askThemePassword(() => { themeUnlocked = true; bukaPanel(); });
     }
     document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') { const p = document.getElementById('th-panel'); if (p) p.classList.remove('open'); }
+        if (e.key === 'Escape') { const p = document.getElementById('th-panel'); if (p) p.classList.remove('open'); const m = document.getElementById('th-pw'); if (m) m.classList.remove('open'); }
     });
     // data lama / tidak valid di localStorage -> kembali ke bawaan
     if (!BACKGROUNDS[TH.bg]) TH.bg = 'bawaan';
     if (!MATERIALS[TH.mat]) TH.mat = 'bawaan';
     if (!MODELS[TH.model]) TH.model = 'glossy';
-    if (!ANIMS[TH.anim]) TH.anim = 'glow';
+    if (!ANIMS[TH.anim]) TH.anim = TH_DEFAULT.anim;
     applyTheme();
 
     const gContainer = svg.append("g");
