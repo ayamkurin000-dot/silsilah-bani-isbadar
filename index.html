@@ -230,6 +230,7 @@
             transform: translateY(0);
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
+        svg.lod-lite text { display: none; }
         #chart-container {
             width: 100vw;
             height: 100vh;
@@ -2212,12 +2213,21 @@
         .on("start", (event) => { if (event.sourceEvent) minimizeGenLegend(); })
         .on("zoom", (event) => {
             gContainer.attr("transform", event.transform);
+            if (lastZoomK !== null && Math.abs(event.transform.k - lastZoomK) > 1e-4) {
+                lastScaleChange = performance.now();
+                clearTimeout(liteTimer);
+                liteTimer = setTimeout(scheduleCull, 200); // pulihkan teks setelah zoom berhenti
+            }
+            lastZoomK = event.transform.k;
             scheduleCull();
         });
 
     svg.call(zoom);
     let cullFrame = 0;
     let cullBusyUntil = 0;
+    let lastZoomK = null;        // skala terakhir (untuk mendeteksi pinch/zoom, bukan sekadar geser)
+    let lastScaleChange = 0;     // waktu terakhir skala berubah
+    let liteTimer = null;
     // Jaga-jaga untuk tap singkat yang tidak memicu event zoom "start" (mis. klik cepat tanpa geser)
     svg.on("pointerdown.genlegend", () => { minimizeGenLegend(); });
 
@@ -2315,14 +2325,21 @@
         cullFrame = 0;
         if (performance.now() < cullBusyUntil) return;
         const t = d3.zoomTransform(svg.node());
-        const W = window.innerWidth, H = window.innerHeight, M = 200;
+        const W = window.innerWidth, H = window.innerHeight;
+        const scaling = (performance.now() - lastScaleChange < 200);
+        const M = scaling ? 60 : 200;   // margin lebih kecil saat zoom
+        let onScreen = 0;
         gContainer.selectAll('g.node').each(function (d) {
             const { w, h } = cardDims(d);
             const sx = t.x + t.k * d.y, sy = t.y + t.k * d.x;
+            if (sx + w * t.k > 0 && sx < W && sy + (h / 2) * t.k > 0 && sy - (h / 2) * t.k < H) onScreen++;
             const vis = sx + (w + 50) * t.k > -M && sx - 10 * t.k < W + M &&
                         sy + (h / 2 + 30) * t.k > -M && sy - (h / 2 + 30) * t.k < H + M;
             if (!!this._culled === vis) { this._culled = !vis; this.style.display = vis ? '' : 'none'; }
         });
+        // Saat pinch/zoom dan banyak kartu terlihat: teks disembunyikan sementara (teks adalah
+        // bagian paling berat digambar ulang tiap perubahan skala). Muncul lagi 0,2 detik setelah berhenti.
+        svg.classed('lod-lite', scaling && onScreen > 10);
         gContainer.selectAll('path.link').each(function (l) {
             const a = l.source, b = l.target;
             const x1 = t.x + t.k * (a.y + cardDims(a).w), x2 = t.x + t.k * b.y;
@@ -2343,6 +2360,8 @@
     const _updateAsli = update;
     update = function (source) {
         cullBusyUntil = performance.now() + duration + 200;
+        svg.classed('lod-lite', false);      // teks harus tampil supaya pengukuran lebar teks akurat
+        lastScaleChange = 0;
         showAllCulled();
         _updateAsli(source);
         setTimeout(scheduleCull, duration + 250);
