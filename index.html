@@ -280,9 +280,19 @@
         .node .node-shape-real {
             transition: transform 0.15s ease, filter 0.15s ease;
         }
-        .node:hover .node-shape-real {
-            transform: scale(1.03);
-            filter: drop-shadow(0 8px 18px rgba(15,23,42,0.32)) brightness(1.05);
+        /* Efek angkat hanya untuk mouse. Di layar sentuh :hover "nyangkut" di kartu yang
+           terakhir diketuk (kartu tampak membesar & terang sendiri), jadi di HP diganti
+           kedipan singkat saat diketuk (class .pressed dari JS). */
+        @media (hover: hover) and (pointer: fine) {
+            .node:hover .node-shape-real {
+                transform: scale(1.03);
+                filter: drop-shadow(0 8px 18px rgba(15,23,42,0.32)) brightness(1.05);
+            }
+        }
+        @media (hover: none), (pointer: coarse) {
+            .node.pressed .node-shape-real {
+                transform: scale(1.03);
+            }
         }
         .node-root .node-shape {
             stroke-width: 3.5px;

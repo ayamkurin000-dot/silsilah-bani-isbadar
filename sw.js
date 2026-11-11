@@ -2,7 +2,7 @@
    - Halaman & berkas situs sendiri -> jaringan dulu (data silsilah selalu terbaru), cadangan dari cache saat offline.
    - Pustaka D3 (d3js.org)          -> cache dulu, supaya tetap jalan tanpa internet.
    Naikkan VERSI setiap ada perubahan agar cache lama dibuang. */
-var VERSI = 'bi-v4';
+var VERSI = 'bi-v5';
 var INTI = ['./', 'index.html', 'manifest.webmanifest', 'logo/ikon-192.png', 'logo/ikon-512.png'];
 var D3 = 'https://d3js.org/d3.v7.min.js';
 
