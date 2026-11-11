@@ -2311,6 +2311,7 @@
     }
 
     function fitToView(duration) {
+        if (window.innerWidth < 100 || window.innerHeight < 100) return; // jendela PWA belum selesai diukur
         const bbox = computeVisibleBBox();
         if (!isFinite(bbox.width) || !isFinite(bbox.height) || bbox.width <= 0 || bbox.height <= 0) return;
         const padding = 30;
@@ -2329,6 +2330,29 @@
 
     fitToView(0);
 
+    // ---- PERBAIKAN MODE PWA ----
+    // Di PWA (layar penuh) ukuran jendela sering belum final saat script pertama jalan
+    // (bisa 0 atau salah), sehingga kartu "hilang" dan tangan petunjuk pindah ke pojok kiri atas.
+    // Solusi: ukur ulang & atur ulang tampilan awal setiap ukuran jendela berubah / halaman
+    // tampil kembali, sampai pengguna menyentuh layar untuk pertama kali.
+    let initialFitLocked = false;
+    function refitInitial() {
+        if (initialFitLocked) return;
+        if (window.innerWidth < 100 || window.innerHeight < 100) return;
+        svg.attr('width', window.innerWidth).attr('height', window.innerHeight);
+        fitToView(0);
+        positionRootTapHint();
+        positionRootPhotoFrame();
+    }
+    window.addEventListener('pointerdown', function () { initialFitLocked = true; }, { capture: true, passive: true });
+    window.addEventListener('wheel', function () { initialFitLocked = true; }, { capture: true, passive: true });
+    window.addEventListener('resize', refitInitial);
+    window.addEventListener('orientationchange', function () { setTimeout(refitInitial, 150); });
+    window.addEventListener('pageshow', refitInitial);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) refitInitial(); });
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', refitInitial);
+    [0, 150, 400, 900, 1600, 3000].forEach(function (ms) { setTimeout(refitInitial, ms); });
+
     // ============================================================
     // HINT AWAL: arahkan user untuk mengetuk shape ISBADAR (root)
     // ============================================================
@@ -2338,6 +2362,7 @@
         const founderShape = document.querySelector('.node-founder .node-shape, .node-founder .node-shape-real');
         if (!founderShape) return;
         const rect = founderShape.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
         hintEl.style.left = (rect.left + rect.width / 2) + 'px';
         hintEl.style.top = (rect.top - 8) + 'px';
         hintEl.style.display = 'flex';
@@ -2365,6 +2390,7 @@
         const founderShape = document.querySelector('.node-founder .node-shape, .node-founder .node-shape-real');
         if (!founderShape) return;
         const rect = founderShape.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
         // Ditempatkan di tengah, menumpuk di atas shape ISBADAR (sebagian menutupi tepi atas shape)
         frameEl.style.left = (rect.left + rect.width / 2) + 'px';
         frameEl.style.top = rect.top + 'px';
