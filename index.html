@@ -2915,7 +2915,7 @@
 
     function flowTick() {
         if (document.hidden || flowDisabled() || FLOW.moving) { flowSchedule(500); return; }
-        const linkNodes = gContainer.selectAll('path.link').nodes().filter(n => n.__data__ && n.__data__.target && n.getAttribute('d'));
+        const linkNodes = gContainer.selectAll('path.link').nodes().filter(n => n.__data__ && n.__data__.target && !n.__data__.source.parent && n.getAttribute('d'));   // hanya garis dari kartu utama -> generasi 1
         if (!linkNodes.length) { flowSchedule(800); return; }
 
         const byId = new Map(linkNodes.map(n => [n.__data__.target.id, n]));
@@ -3113,26 +3113,49 @@
         zapNode(best.el, best.d, FLOW_COLORS[Math.floor(Math.random() * FLOW_COLORS.length)], true);
     }
 
+    // Teruskan aliran dari kartu yang baru dialiri ke SEMUA kartu anaknya yang terbuka (merata, serentak)
+    function flowCascade(node, col) {
+        const kids = new Set(node.children || []);
+        if (!kids.size) return;
+        gContainer.selectAll('path.link').nodes().forEach(n => {
+            const d = n.__data__;
+            if (d && d.source === node && kids.has(d.target) && n.getAttribute('d')) flowPulse(n, col);
+        });
+    }
+
     // Satu denyut warna merambat dari kartu induk ke kartu anak lewat garis lengkung. Mengembalikan durasi (ms).
-    function flowPulse(linkNode) {
+    function flowPulse(linkNode, cascadeCol) {
         const d = linkNode.getAttribute('d');
         let len = 0;
         try { len = linkNode.getTotalLength(); } catch (e) {}
         if (!len || !isFinite(len)) return 400;
 
-        let ci;
-        do { ci = Math.floor(Math.random() * FLOW_COLORS.length); } while (ci === FLOW.lastColor && FLOW_COLORS.length > 1);
-        FLOW.lastColor = ci;
-        const col = FLOW_COLORS[ci];
+        let col = cascadeCol;                                       // aliran berantai: warna sama dengan aliran yang tiba
+        if (!col) {
+            let ci;
+            do { ci = Math.floor(Math.random() * FLOW_COLORS.length); } while (ci === FLOW.lastColor && FLOW_COLORS.length > 1);
+            FLOW.lastColor = ci;
+            col = FLOW_COLORS[ci];
+        }
 
         const dur = Math.max(900, Math.min(1900, 650 + len * 2.2));
         const head = Math.max(26, Math.min(80, len * 0.28));         // panjang kepala yang bersinar
         // Kartu ikut "dialiri": induk berkedip halus saat listrik berangkat, anak tersengat kuat saat listrik tiba
         const ld = linkNode.__data__, gen = FLOW.gen;
-        flowZap(ld.source, col, false);
-        setTimeout(() => { if (gen === FLOW.gen) flowZap(ld.target, col, true); }, dur * 0.9);
+        if (!cascadeCol) flowZap(ld.source, col, false);          // kartu utama berkedip halus tiap melepas aliran
 
         const g = flowLayer.append('g');
+        // Saat aliran tiba: kartu tujuan tersengat kuat, lalu LANGSUNG meneruskan aliran ke semua kartu anaknya
+        // yang terbuka (serentak, terus sampai keturunan terbawah). Memakai animasi (bukan setTimeout) agar ikut
+        // berhenti saat layar dicubit/digeser dan batal sendiri saat struktur kartu berubah.
+        const arrive = g.node().animate([{ opacity: 1 }, { opacity: 1 }], { duration: dur * 0.9 });
+        FLOW.active.add(arrive);
+        arrive.onfinish = () => {
+            FLOW.active.delete(arrive);
+            if (gen !== FLOW.gen) return;
+            flowZap(ld.target, col, true);
+            flowCascade(ld.target, col);
+        };
         const add = (w, color, op) => g.append('path').attr('d', d).attr('stroke', color).attr('stroke-width', w).attr('stroke-opacity', op);
 
         // 1. jejak cairan berwarna: terisi pelan-pelan dari induk sampai anak, lalu memudar
