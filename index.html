@@ -5789,15 +5789,16 @@ window.addEventListener('load',()=> setTimeout(()=>{ renderRekap(); if(panel.cla
 
 
 <script>
-/* Ajakan memasang aplikasi (PWA): "Ya" -> dialog pemasangan; "Tidak" -> tidak muncul lagi selama 7 hari.
+/* Pengingat memasang aplikasi (PWA): muncul SETIAP aplikasi dibuka selama belum terpasang (tidak ada jeda 7 hari lagi).
+   "Nanti" hanya menutupnya untuk kunjungan ini; "Pasang" -> dialog pemasangan. Hilang sendiri setelah terpasang / dibuka dari layar utama.
    Android/komputer (Chrome, Edge): beforeinstallprompt. iPhone/iPad (Safari): petunjuk manual. */
 (function(){
-  var KUNCI='bi-ajak-instal',TUNDA=7*24*3600*1000,tunda=null,tawar=null,kotak=null;
+  var ditutup=false,tunda=null,tawar=null,kotak=null;
   function sudahTerpasang(){
     return (window.matchMedia&&(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches))||navigator.standalone===true;
   }
-  function ditunda(){try{var t=+localStorage.getItem(KUNCI)||0;return t&&Date.now()-t<TUNDA}catch(e){return false}}
-  function catatTunda(){try{localStorage.setItem(KUNCI,String(Date.now()))}catch(e){}}
+  function ditunda(){return ditutup}
+  function catatTunda(){ditutup=true}   /* hanya untuk kunjungan ini; dibuka lagi nanti, pengingat muncul lagi */
   function tutup(){if(kotak){kotak.remove();kotak=null}}
   function ios(){return /iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)}
   function tampil(modeIos){
@@ -5809,6 +5810,11 @@ window.addEventListener('load',()=> setTimeout(()=>{ renderRekap(); if(panel.cla
      +'#ajakInstal img{width:46px;height:46px;border-radius:12px;flex:none}'
      +'#ajakInstal b{display:block;font-size:16px;line-height:1.3;color:#14532d}'
      +'#ajakInstal span.ket{display:block;font-size:13px;line-height:1.45;color:#475569;margin-top:2px}'
+     +'#ajakInstal ul{list-style:none;margin:0 0 12px;padding:0}'
+     +'#ajakInstal li{position:relative;padding:3px 0 3px 24px;font-size:14px;line-height:1.4;color:#0f172a}'
+     +'#ajakInstal li:before{content:"✓";position:absolute;left:2px;top:3px;color:#15803d;font-weight:800}'
+     +'#ajakInstal li b{display:inline;font-size:inherit;color:#14532d}'
+     +'#ajakInstal .cara{margin:0 0 12px;padding:8px 10px;border-radius:10px;background:#f0fdf4;font-size:13px;line-height:1.45;color:#14532d}'
      +'#ajakInstal .bt{display:flex;gap:10px;justify-content:flex-end}'
      +'#ajakInstal button{font:inherit;font-size:15px;font-weight:600;padding:10px 22px;border-radius:12px;cursor:pointer;min-width:84px}'
      +'#ajakInstal .tdk{background:#fff;color:#475569;border:1px solid #cbd5e1}'
@@ -5818,9 +5824,10 @@ window.addEventListener('load',()=> setTimeout(()=>{ renderRekap(); if(panel.cla
     document.head.appendChild(css);
     kotak=document.createElement('div');
     kotak.id='ajakInstal';
-    kotak.innerHTML='<div class="kt" role="dialog" aria-label="Instal aplikasi"><div class="jd"><img src="logo/ikon-192.png" alt=""><div><b>Instal Aplikasi Silsilah Bani Isbadar?</b><span class="ket">'
-      +(modeIos?'Ketuk tombol Bagikan di Safari, lalu pilih “Tambahkan ke Layar Utama”.':'Ada ikon di layar utama, tampil layar penuh, dan lebih cepat dibuka.')
-      +'</span></div></div><div class="bt"><button type="button" class="tdk">Tidak</button><button type="button" class="ya">'+(modeIos?'Mengerti':'Ya')+'</button></div></div>';
+    kotak.innerHTML='<div class="kt" role="dialog" aria-label="Pasang aplikasi"><div class="jd"><img src="logo/ikon-192.png" alt=""><div><b>Pasang aplikasi Silsilah Bani Isbadar</b><span class="ket">Pasang sekali, manfaatnya terasa setiap hari:</span></div></div>'
+      +'<ul><li><b>Link tidak hilang</b> — ikon tetap ada di layar utama</li><li><b>Buka lebih cepat</b></li><li><b>Tampilan layar penuh</b>, tanpa bilah browser</li><li><b>Data &amp; pengaturan aman</b>, tidak terhapus otomatis</li><li><b>Tetap bisa dibuka tanpa internet</b> (silsilah)</li></ul>'
+      +(modeIos?'<div class="cara">Caranya: ketuk tombol <b>Bagikan</b> di Safari, lalu pilih <b>Tambahkan ke Layar Utama</b>.</div>':'')
+      +'<div class="bt"><button type="button" class="tdk">Nanti</button><button type="button" class="ya">'+(modeIos?'Mengerti':'Pasang')+'</button></div></div>';
     document.body.appendChild(kotak);
     kotak.querySelector('.tdk').onclick=function(){catatTunda();tutup()};
     kotak.querySelector('.ya').onclick=function(){
